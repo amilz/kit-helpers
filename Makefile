@@ -1,4 +1,4 @@
-.PHONY: install build test lint fix format format-check dev clean example-builder example-nonce kill-validator
+.PHONY: install build test lint fix format format-check dev clean example-builder example-nonce example-token kill-validator clear-ledger all
 
 # Install all dependencies
 install:
@@ -75,6 +75,17 @@ example-builder:
 example-nonce:
 	pnpm --filter durable-nonces-demo demo
 
+# Run tokens example (manages its own validator via local-validator plugin)
+example-token:
+	pnpm --filter tokens-demo demo
+
+# Kill local validator
 kill-validator:
 	pkill solana-test-validator
-	
+
+# Clear Local Validator Ledger
+clear-ledger:
+	rm -rf .test-ledger
+
+# All
+all: install build test fix

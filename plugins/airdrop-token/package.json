@@ -1,0 +1,80 @@
+{
+    "name": "@kit-helpers/airdrop-token",
+    "version": "0.1.0",
+    "description": "Airdrop utility plugin for creating token mints, ATAs, and minting tokens with @solana/kit",
+    "exports": {
+        "types": "./dist/types/index.d.ts",
+        "react-native": "./dist/index.react-native.mjs",
+        "browser": {
+            "import": "./dist/index.browser.mjs",
+            "require": "./dist/index.browser.cjs"
+        },
+        "node": {
+            "import": "./dist/index.node.mjs",
+            "require": "./dist/index.node.cjs"
+        }
+    },
+    "browser": {
+        "./dist/index.node.cjs": "./dist/index.browser.cjs",
+        "./dist/index.node.mjs": "./dist/index.browser.mjs"
+    },
+    "main": "./dist/index.node.cjs",
+    "module": "./dist/index.node.mjs",
+    "react-native": "./dist/index.react-native.mjs",
+    "types": "./dist/types/index.d.ts",
+    "type": "commonjs",
+    "files": [
+        "./dist/types",
+        "./dist/index.*"
+    ],
+    "sideEffects": false,
+    "keywords": [
+        "solana",
+        "kit",
+        "plugin",
+        "token",
+        "mint",
+        "testing"
+    ],
+    "scripts": {
+        "build": "rimraf dist && tsup && tsc -p ./tsconfig.declarations.json",
+        "dev": "vitest --project node",
+        "lint": "eslint . && prettier --check .",
+        "lint:fix": "eslint --fix . && prettier --write .",
+        "test": "pnpm test:types && pnpm test:treeshakability && pnpm test:unit",
+        "test:treeshakability": "for file in dist/index.*.mjs; do agadoo $file; done",
+        "test:types": "tsc --noEmit",
+        "test:unit": "vitest run"
+    },
+    "peerDependencies": {
+        "@solana/kit": "^5.2.0"
+    },
+    "dependencies": {
+        "@solana-program/system": "^0.10.0",
+        "@solana-program/token": "^0.9.0",
+        "@solana-program/token-2022": "^0.6.1"
+    },
+    "devDependencies": {
+        "@solana/kit": "^5.3.0",
+        "@types/node": "^24.10.9",
+        "agadoo": "^3.0.0",
+        "browserslist-to-esbuild": "^2.1.1",
+        "happy-dom": "^20.3.1",
+        "rimraf": "^6.0.0",
+        "tsup": "^8.0.0",
+        "vitest": "^4.0.0"
+    },
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/amilz/kit-helpers",
+        "directory": "plugins/airdrop-token"
+    },
+    "bugs": {
+        "url": "https://github.com/amilz/kit-helpers/issues"
+    },
+    "browserslist": [
+        "supports bigint and not dead",
+        "maintained node versions"
+    ]
+}

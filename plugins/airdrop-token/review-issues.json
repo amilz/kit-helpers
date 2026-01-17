@@ -1,0 +1,143 @@
+{
+    "plugin": "@kit-helpers/test-token",
+    "reviewDate": "2026-01-17",
+    "summary": "Good quality plugin with solid Kit integration. Two critical issues need addressing before merge.",
+    "issues": {
+        "critical": [
+            {
+                "id": "CRIT-001",
+                "title": "LiteSVM transaction result ignored - silent failure",
+                "file": "src/test-token-plugin.ts",
+                "line": 253,
+                "description": "sendTransaction() return value is not checked. If transaction fails, plugin returns signature as if it succeeded. User gets valid-looking result but token/ATA don't exist.",
+                "impact": "Silent failure causing hours of debugging when subsequent code fails with 'account not found'",
+                "fix": "Check return value of sendTransaction or verify it throws on error. If it returns error info, validate and throw."
+            },
+            {
+                "id": "CRIT-002",
+                "title": "Unused _additionalSigners parameter - dead code",
+                "file": "src/test-token-plugin.ts",
+                "lines": [132, 220, 232, 262],
+                "description": "Parameter passed through 3 functions but never used. signTransactionMessageWithSigners() extracts signers from instructions automatically.",
+                "impact": "Dead code suggesting incomplete implementation. Confusing for maintainers.",
+                "fix": "Remove parameter from executeTransaction, executeLiteSVMTransaction, executeRpcTransaction. Remove [mint] argument on line 132."
+            }
+        ],
+        "important": [
+            {
+                "id": "IMP-001",
+                "title": "RPC execution path has zero test coverage",
+                "file": "test/index.test.ts",
+                "description": "All functional tests use LiteSVM mocks. RPC path (lines 259-285 in source) is untested despite mock infrastructure existing.",
+                "impact": "Regressions in RPC path won't be caught. Different blockhash unwrapping, sendAndConfirmFactory usage untested.",
+                "fix": "Add test that calls createTestToken() on RPC-based client. Mock setup already exists (createMockRpc, createMockRpcSubscriptions)."
+            },
+            {
+                "id": "IMP-002",
+                "title": "No error context on async operations",
+                "file": "src/test-token-plugin.ts",
+                "lines": [109, 113, 160, 250, 264, 273, 282],
+                "description": "6+ async operations propagate raw errors without context. Users see cryptic errors with no indication createTestToken() was involved.",
+                "impact": "Poor DX. 'Network error' or 'Invalid signer' gives no clue which step failed.",
+                "fix": "Wrap critical operations in try-catch with contextual error messages, e.g., 'Failed to generate mint keypair for test token: {original error}'"
+            },
+            {
+                "id": "IMP-003",
+                "title": "Token-2022 support is semantically incorrect",
+                "file": "src/test-token-plugin.ts",
+                "line": 289,
+                "description": "Uses @solana-program/token instruction builders with TOKEN_2022_PROGRAM_ADDRESS. Works for basic mints but wrong package.",
+                "impact": "May fail for extension-enabled Token-2022 mints. Confusing API.",
+                "fix": "Either: (1) Import and conditionally use @solana-program/token-2022 builders, or (2) Document this only supports basic Token-2022 mints without extensions."
+            },
+            {
+                "id": "IMP-004",
+                "title": "signature typed as string instead of Signature",
+                "file": "src/types.ts",
+                "line": 61,
+                "description": "TestTokenResult.signature is string but Kit provides branded Signature type.",
+                "impact": "Loses type safety. Consumers could accidentally compare to non-signature strings.",
+                "fix": "Change to `signature: Signature` and import Signature from @solana/kit."
+            },
+            {
+                "id": "IMP-005",
+                "title": "LiteSVMClient.svm.sendTransaction accepts unknown",
+                "file": "src/test-token-plugin.ts",
+                "line": 48,
+                "description": "Type is `sendTransaction: (tx: unknown) => string` - too permissive.",
+                "impact": "No type safety on transaction passed to LiteSVM.",
+                "fix": "Use proper signed transaction type from Kit."
+            },
+            {
+                "id": "IMP-006",
+                "title": "No input validation for config",
+                "file": "src/test-token-plugin.ts",
+                "lines": [98, 99, 100, 101, 102],
+                "description": "decimals accepts any number (Solana supports 0-255), amount accepts negatives. Invalid values cause cryptic runtime failures.",
+                "impact": "Poor error messages when users pass bad config.",
+                "fix": "Add validation at start of createTestToken: decimals 0-255 integer, amount >= 0n."
+            }
+        ],
+        "suggestions": [
+            {
+                "id": "SUG-001",
+                "title": "Extract shared transaction building logic",
+                "file": "src/test-token-plugin.ts",
+                "lines": [236, 266],
+                "description": "pipe() block is nearly identical in both execute functions. Only blockhash source differs.",
+                "benefit": "DRY, ~8 lines saved, single source of truth for tx structure."
+            },
+            {
+                "id": "SUG-002",
+                "title": "Consolidate execute functions into one",
+                "file": "src/test-token-plugin.ts",
+                "lines": [217, 285],
+                "description": "executeLiteSVMTransaction and executeRpcTransaction could be one function with conditional paths.",
+                "benefit": "~20 lines saved, simpler structure."
+            },
+            {
+                "id": "SUG-003",
+                "title": "Use Blockhash branded type in LiteSVMClient",
+                "file": "src/test-token-plugin.ts",
+                "line": 46,
+                "description": "blockhash: string should be blockhash: Blockhash for consistency with Kit.",
+                "benefit": "Type consistency, prevents passing arbitrary strings."
+            },
+            {
+                "id": "SUG-004",
+                "title": "Remove type assertion for programId default",
+                "file": "src/test-token-plugin.ts",
+                "line": 100,
+                "description": "TOKEN_PROGRAM_ADDRESS as TokenProgramId cast suggests type mismatch.",
+                "benefit": "Cleaner types, compiler catches drift."
+            },
+            {
+                "id": "SUG-005",
+                "title": "Add runtime validation for client requirements",
+                "file": "src/test-token-plugin.ts",
+                "lines": [97, 98],
+                "description": "No runtime check that client has payer, rpc/svm. JS users get cryptic errors.",
+                "benefit": "Better error: 'testTokenPlugin requires a client with a payer. Did you forget to add a payer plugin?'"
+            }
+        ]
+    },
+    "strengths": [
+        "Clean plugin pattern with proper generic type preservation",
+        "Well-structured Kit API usage for instruction building",
+        "Excellent TokenProgramId branded union type",
+        "Good test coverage for LiteSVM path and all config options",
+        "Multi-platform build config (node, browser, react-native) correct",
+        "All types use readonly modifiers appropriately",
+        "Comprehensive JSDoc documentation"
+    ],
+    "typeDesignRatings": {
+        "TokenProgramId": 9.0,
+        "TestTokenConfig": 6.75,
+        "TestTokenResult": 7.0,
+        "CreateTestTokenFunction": 9.0,
+        "RpcClient": 7.75,
+        "LiteSVMClient": 6.25,
+        "PluginGeneric": 8.25,
+        "overall": 7.7
+    }
+}

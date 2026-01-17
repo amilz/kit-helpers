@@ -8,6 +8,7 @@ Helpers, plugins, and tools for [`@solana/kit`](https://github.com/anza-xyz/kit)
 | ----------------------------------------------------------------- | ----------------------------------------------------------------- | ------- |
 | [@kit-helpers/transaction-builder](./plugins/transaction-builder) | Fluent API for building, signing, and sending Solana transactions | 0.1.0   |
 | [@kit-helpers/local-validator](./plugins/local-validator)         | Plugin for managing local validator lifecycle                     | 0.1.0   |
+| [@kit-helpers/airdrop-token](./plugins/airdrop-token)             | Plugin for creating test tokens                                   | 0.1.0   |
 
 ## Development
 
