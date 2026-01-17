@@ -1,0 +1,56 @@
+{
+    "name": "@kit-helpers/local-validator",
+    "version": "0.1.0",
+    "description": "Solana test validator lifecycle management plugin for @solana/kit",
+    "exports": {
+        "types": "./dist/types/index.d.ts",
+        "node": {
+            "import": "./dist/index.node.mjs",
+            "require": "./dist/index.node.cjs"
+        }
+    },
+    "main": "./dist/index.node.cjs",
+    "module": "./dist/index.node.mjs",
+    "types": "./dist/types/index.d.ts",
+    "type": "commonjs",
+    "files": [
+        "./dist/types",
+        "./dist/index.*"
+    ],
+    "sideEffects": false,
+    "keywords": [
+        "solana",
+        "kit",
+        "plugin",
+        "validator",
+        "test-validator",
+        "local"
+    ],
+    "scripts": {
+        "build": "rimraf dist && tsup && tsc -p ./tsconfig.declarations.json",
+        "dev": "vitest --project node",
+        "lint": "eslint . && prettier --check .",
+        "lint:fix": "eslint --fix . && prettier --write .",
+        "test": "pnpm test:types",
+        "test:types": "tsc --noEmit"
+    },
+    "peerDependencies": {
+        "@solana/kit": "^5.2.0"
+    },
+    "devDependencies": {
+        "@solana/kit": "^5.3.0",
+        "@types/node": "^24.10.9",
+        "rimraf": "^6.0.0",
+        "tsup": "^8.0.0",
+        "vitest": "^4.0.0"
+    },
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/amilz/kit-helpers",
+        "directory": "plugins/local-validator"
+    },
+    "bugs": {
+        "url": "https://github.com/amilz/kit-helpers/issues"
+    }
+}

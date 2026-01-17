@@ -1,0 +1,25 @@
+{
+    "name": "kit-helpers",
+    "version": "0.0.0",
+    "private": true,
+    "description": "Helpers, plugins, and tools for @solana/kit",
+    "scripts": {
+        "build": "pnpm -r build",
+        "test": "pnpm -r test",
+        "test:unit": "pnpm -r test:unit",
+        "lint": "pnpm -r lint",
+        "lint:fix": "pnpm -r lint:fix",
+        "format": "prettier --write .",
+        "format:check": "prettier --check .",
+        "dev": "pnpm -r --parallel dev"
+    },
+    "devDependencies": {
+        "@solana/eslint-config-solana": "^6.0.0",
+        "@solana/prettier-config-solana": "0.0.6",
+        "eslint": "^9.0.0",
+        "prettier": "^3.0.0",
+        "tsx": "^4.21.0",
+        "typescript": "^5.0.0"
+    },
+    "prettier": "@solana/prettier-config-solana"
+}
