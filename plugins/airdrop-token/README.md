@@ -10,6 +10,7 @@ A `@solana/kit` plugin for quickly creating token mints with associated token ac
 - Payer is used as mint authority by default
 
 ## Usage
+
 ```ts
 import { createEmptyClient, lamports } from '@solana/kit';
 import { localhostRpc, generatedPayerWithSol } from '@solana/kit-plugins';
