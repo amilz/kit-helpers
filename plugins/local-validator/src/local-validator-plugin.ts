@@ -1,11 +1,22 @@
 import type {
+    LocalValidatorPluginAutoStartConfig,
     LocalValidatorPluginConfig,
+    LocalValidatorPluginSyncConfig,
     RestartValidatorOptions,
     StartValidatorOptions,
     StartValidatorResult,
     ValidatorHealthResult,
 } from './types.js';
 import { ValidatorManager } from './validator-manager.js';
+
+/** Methods added by the local validator plugin. */
+export type LocalValidatorMethods = {
+    isValidatorRunning(): boolean;
+    restartValidator(options?: RestartValidatorOptions): Promise<StartValidatorResult>;
+    startValidator(options?: StartValidatorOptions): Promise<StartValidatorResult>;
+    stopValidator(): void;
+    waitForValidatorReady(timeoutMs?: number): Promise<ValidatorHealthResult>;
+};
 
 /**
  * Plugin that adds local validator lifecycle management to @solana/kit clients.
@@ -20,6 +31,7 @@ import { ValidatorManager } from './validator-manager.js';
  * @param config.healthCheckIntervalMs - Interval between health checks (default: 500)
  * @param config.binaryName - Custom binary name (default: solana-test-validator)
  * @param config.silent - Suppress console output (default: false)
+ * @param config.startValidator - Auto-start validator on plugin init (default: false)
  *
  * @example Basic usage
  * ```ts
@@ -40,6 +52,26 @@ import { ValidatorManager } from './validator-manager.js';
  *   // Stop when done
  *   client.stopValidator();
  * }
+ * ```
+ *
+ * @example Auto-start validator
+ * ```ts
+ * const client = await createEmptyClient()
+ *   .use(localValidatorPlugin({ startValidator: true }));
+ *
+ * // Validator is already running!
+ * // ... run your tests ...
+ *
+ * client.stopValidator();
+ * ```
+ *
+ * @example Auto-start with options
+ * ```ts
+ * const client = await createEmptyClient()
+ *   .use(localValidatorPlugin({
+ *     startValidator: { stopIfRunning: true, reset: true },
+ *     ledgerPath: './my-test-ledger',
+ *   }));
  * ```
  *
  * @example With configuration
@@ -65,11 +97,20 @@ import { ValidatorManager } from './validator-manager.js';
  * await client.restartValidator({ reset: true });
  * ```
  */
+// Overload: with auto-start config returns async plugin
+export function localValidatorPlugin(
+    config: LocalValidatorPluginAutoStartConfig,
+): <T extends object>(client: T) => Promise<LocalValidatorMethods & T>;
+// Overload: without auto-start returns sync plugin
+export function localValidatorPlugin(
+    config?: LocalValidatorPluginSyncConfig,
+): <T extends object>(client: T) => LocalValidatorMethods & T;
+// Implementation
 export function localValidatorPlugin(config?: LocalValidatorPluginConfig) {
     return <T extends object>(client: T) => {
         const manager = new ValidatorManager(config);
 
-        return {
+        const extendedClient = {
             ...client,
 
             /**
@@ -143,5 +184,14 @@ export function localValidatorPlugin(config?: LocalValidatorPluginConfig) {
                 return await manager.waitForValidatorReady(timeoutMs);
             },
         };
+
+        // If startValidator config is provided, auto-start the validator
+        if (config?.startValidator) {
+            const startOptions = typeof config.startValidator === 'object' ? config.startValidator : undefined;
+
+            return manager.startValidator(startOptions).then(() => extendedClient);
+        }
+
+        return extendedClient;
     };
 }

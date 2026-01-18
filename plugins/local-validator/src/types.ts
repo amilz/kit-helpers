@@ -1,5 +1,5 @@
-/** Configuration for validator lifecycle management. */
-export type LocalValidatorPluginConfig = {
+/** Base configuration for validator lifecycle management (without auto-start). */
+export type LocalValidatorPluginBaseConfig = {
     /**
      * Custom binary name for solana-test-validator.
      * Useful if you have an alias or custom installation.
@@ -51,6 +51,33 @@ export type LocalValidatorPluginConfig = {
      * @default false
      */
     silent?: boolean;
+};
+
+/** Configuration with auto-start enabled (async plugin). */
+export type LocalValidatorPluginAutoStartConfig = LocalValidatorPluginBaseConfig & {
+    /**
+     * Automatically start the validator when the plugin is initialized.
+     * When true, uses default start options.
+     * When an object, uses provided start options.
+     */
+    startValidator: StartValidatorOptions | true;
+};
+
+/** Configuration without auto-start (sync plugin). */
+export type LocalValidatorPluginSyncConfig = LocalValidatorPluginBaseConfig & {
+    startValidator?: false;
+};
+
+/** Full configuration for validator lifecycle management. */
+export type LocalValidatorPluginConfig = LocalValidatorPluginBaseConfig & {
+    /**
+     * Automatically start the validator when the plugin is initialized.
+     * When true, uses default start options.
+     * When an object, uses provided start options.
+     * When false or undefined, does not auto-start (default behavior).
+     * @default false
+     */
+    startValidator?: StartValidatorOptions | boolean;
 };
 
 /** Options for starting the validator. */

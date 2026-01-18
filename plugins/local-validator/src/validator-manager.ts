@@ -22,7 +22,8 @@ const DEFAULT_HEALTH_CHECK_INTERVAL_MS = 500;
 const DEFAULT_BINARY_NAME = 'solana-test-validator';
 const DEFAULT_PID_FILE = '.solana-test-validator.pid';
 
-type ResolvedConfig = Required<LocalValidatorPluginConfig>;
+// Exclude startValidator from manager config - it's only used by the plugin wrapper
+type ResolvedConfig = Required<Omit<LocalValidatorPluginConfig, 'startValidator'>>;
 
 /**
  * Manages local validator lifecycle.
