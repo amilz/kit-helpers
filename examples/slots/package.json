@@ -1,0 +1,19 @@
+{
+    "name": "slots-demo",
+    "version": "1.0.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "demo": "tsx src/index.ts"
+    },
+    "dependencies": {
+        "@kit-helpers/local-validator": "workspace:*",
+        "@solana/kit": "^5.4.0",
+        "@solana/kit-plugins": "^0.2.0"
+    },
+    "devDependencies": {
+        "@types/node": "^24.10.9",
+        "tsx": "^4.21.0",
+        "typescript": "^5.9.3"
+    }
+}

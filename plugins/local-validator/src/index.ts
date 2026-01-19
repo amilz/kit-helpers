@@ -15,6 +15,8 @@ export type {
     StartValidatorOptions,
     StartValidatorResult,
     ValidatorHealthResult,
+    WarpToSlotOptions,
+    WarpToSlotResult,
 } from './types.js';
 
 // Errors
@@ -23,4 +25,5 @@ export {
     ValidatorBinaryNotFoundError,
     ValidatorStartError,
     ValidatorStopError,
+    ValidatorWarpError,
 } from './types.js';

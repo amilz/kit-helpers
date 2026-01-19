@@ -1,4 +1,4 @@
-.PHONY: install build test lint fix format format-check dev clean example-builder example-nonce example-token kill-validator clear-ledger all
+.PHONY: install build test test-unit test-integration lint fix format format-check dev clean example-builder example-nonce example-token example-slot kill-validator clear-ledger all
 
 # Install all dependencies
 install:
@@ -12,9 +12,13 @@ build:
 test:
 	pnpm test
 
-# Run unit tests only
+# Run unit tests only (fast, no external dependencies)
 test-unit:
 	pnpm test:unit
+
+# Run integration tests only (requires solana-test-validator)
+test-integration:
+	pnpm test:integration
 
 # Lint all packages
 lint:
@@ -78,6 +82,10 @@ example-nonce:
 # Run tokens example (manages its own validator via local-validator plugin)
 example-token:
 	pnpm --filter tokens-demo demo
+
+# Run slots example (demonstrates slot warping via local-validator plugin)
+example-slot:
+	pnpm --filter slots-demo demo
 
 # Kill local validator
 kill-validator:

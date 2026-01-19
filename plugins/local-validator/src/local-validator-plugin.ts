@@ -6,16 +6,20 @@ import type {
     StartValidatorOptions,
     StartValidatorResult,
     ValidatorHealthResult,
+    WarpToSlotOptions,
+    WarpToSlotResult,
 } from './types.js';
 import { ValidatorManager } from './validator-manager.js';
 
 /** Methods added by the local validator plugin. */
 export type LocalValidatorMethods = {
+    getCurrentSlot(): Promise<number>;
     isValidatorRunning(): boolean;
     restartValidator(options?: RestartValidatorOptions): Promise<StartValidatorResult>;
     startValidator(options?: StartValidatorOptions): Promise<StartValidatorResult>;
     stopValidator(): void;
     waitForValidatorReady(timeoutMs?: number): Promise<ValidatorHealthResult>;
+    warpToSlot(slot: number, options?: WarpToSlotOptions): Promise<WarpToSlotResult>;
 };
 
 /**
@@ -114,6 +118,16 @@ export function localValidatorPlugin(config?: LocalValidatorPluginConfig) {
             ...client,
 
             /**
+             * Get the current slot from the validator.
+             *
+             * @returns The current slot number.
+             * @throws {ValidatorWarpError} if unable to get current slot
+             */
+            async getCurrentSlot(): Promise<number> {
+                return await manager.getCurrentSlot();
+            },
+
+            /**
              * Check if a local validator is running.
              *
              * Behavior depends on manageExternal config:
@@ -182,6 +196,27 @@ export function localValidatorPlugin(config?: LocalValidatorPluginConfig) {
              */
             async waitForValidatorReady(timeoutMs?: number): Promise<ValidatorHealthResult> {
                 return await manager.waitForValidatorReady(timeoutMs);
+            },
+
+            /**
+             * Warp the validator to a specific slot.
+             *
+             * This stops the current validator and restarts it with the -w (warp) flag,
+             * preserving the existing ledger (no reset).
+             *
+             * @param slot - The slot number to warp to. Must be >= current slot.
+             * @param options - Options for the warp operation.
+             * @returns The PID, RPC URL, and actual slot of the warped validator.
+             *
+             * @throws {ValidatorWarpError} if slot is not a valid non-negative integer
+             * @throws {ValidatorWarpError} if validator is not running
+             * @throws {ValidatorWarpError} if validator cannot be stopped (started externally with manageExternal=false)
+             * @throws {ValidatorWarpError} if slot is less than current slot
+             * @throws {ValidatorWarpError} if validator restarted but did not reach target slot
+             * @throws {ValidatorStartError} if validator fails to restart
+             */
+            async warpToSlot(slot: number, options?: WarpToSlotOptions): Promise<WarpToSlotResult> {
+                return await manager.warpToSlot(slot, options);
             },
         };
 

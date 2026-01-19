@@ -123,6 +123,35 @@ export type RestartValidatorOptions = Omit<StartValidatorOptions, 'stopIfRunning
     delayMs?: number;
 };
 
+/** Options for warping to a specific slot. */
+export type WarpToSlotOptions = {
+    /**
+     * Additional CLI arguments to pass to solana-test-validator.
+     */
+    extraArgs?: string[];
+
+    /**
+     * Path to file where validator logs should be written.
+     * If not provided, logs are discarded.
+     */
+    logFile?: string;
+
+    /**
+     * Override default ready timeout for this warp operation.
+     */
+    readyTimeoutMs?: number;
+};
+
+/** Result from warping to a slot. */
+export type WarpToSlotResult = {
+    /** Process ID of the validator. */
+    pid: number;
+    /** RPC URL the validator is listening on. */
+    rpcUrl: string;
+    /** The slot the validator was warped to. */
+    slot: number;
+};
+
 /** Result from starting validator. */
 export type StartValidatorResult = {
     /** Process ID of started validator. */
@@ -172,6 +201,15 @@ export class ValidatorStartError extends Error {
 /** Error thrown when validator operations fail. */
 export class ValidatorStopError extends Error {
     override name = 'ValidatorStopError' as const;
+
+    constructor(message: string, options?: ErrorOptions) {
+        super(message, options);
+    }
+}
+
+/** Error thrown when warp to slot fails. */
+export class ValidatorWarpError extends Error {
+    override name = 'ValidatorWarpError' as const;
 
     constructor(message: string, options?: ErrorOptions) {
         super(message, options);
