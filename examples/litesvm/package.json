@@ -1,0 +1,30 @@
+{
+    "name": "litesvm-demo",
+    "version": "1.0.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "demo:all": "pnpm run demo:01 && pnpm run demo:02 && pnpm run demo:03 && pnpm run demo:04 && pnpm run demo:05 && pnpm run demo:06 && pnpm run demo:07 && pnpm run demo:08 && pnpm run demo:09 && pnpm run demo:10",
+        "demo:01": "tsx src/01-basic-setup.ts",
+        "demo:02": "tsx src/02-sol-transfer.ts",
+        "demo:03": "tsx src/03-account-management.ts",
+        "demo:04": "tsx src/04-program-deployment.ts",
+        "demo:05": "tsx src/05-transactions.ts",
+        "demo:06": "tsx src/06-clock-manipulation.ts",
+        "demo:07": "tsx src/07-sysvars.ts",
+        "demo:08": "tsx src/08-builder-methods.ts",
+        "demo:09": "tsx src/09-kit-integration.ts",
+        "demo:10": "tsx src/10-rpc-compatibility.ts"
+    },
+    "dependencies": {
+        "@loris-sandbox/litesvm-kit": "^0.5.0",
+        "@solana/kit": "^5.4.0",
+        "@solana/kit-plugins": "^0.2.0",
+        "@solana-program/system": "^0.9.0"
+    },
+    "devDependencies": {
+        "@types/node": "^24.10.9",
+        "tsx": "^4.21.0",
+        "typescript": "^5.9.3"
+    }
+}

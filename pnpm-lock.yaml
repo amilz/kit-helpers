@@ -57,6 +57,31 @@ importers:
         specifier: ^5.9.3
         version: 5.9.3
 
+  examples/litesvm:
+    dependencies:
+      '@loris-sandbox/litesvm-kit':
+        specifier: ^0.5.0
+        version: 0.5.0(typescript@5.9.3)
+      '@solana-program/system':
+        specifier: ^0.9.0
+        version: 0.9.1(@solana/kit@5.4.0(typescript@5.9.3))
+      '@solana/kit':
+        specifier: ^5.4.0
+        version: 5.4.0(typescript@5.9.3)
+      '@solana/kit-plugins':
+        specifier: ^0.2.0
+        version: 0.2.0(@solana/kit@5.4.0(typescript@5.9.3))(typescript@5.9.3)
+    devDependencies:
+      '@types/node':
+        specifier: ^24.10.9
+        version: 24.10.9
+      tsx:
+        specifier: ^4.21.0
+        version: 4.21.0
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
   examples/slots:
     dependencies:
       '@kit-helpers/local-validator':
@@ -1095,6 +1120,12 @@ packages:
   '@solana-program/system@0.10.0':
     resolution:
       { integrity: sha512-Go+LOEZmqmNlfr+Gjy5ZWAdY5HbYzk2RBewD9QinEU/bBSzpFfzqDRT55JjFRBGJUvMgf3C2vfXEGT4i8DSI4g== }
+    peerDependencies:
+      '@solana/kit': ^5.0
+
+  '@solana-program/system@0.9.1':
+    resolution:
+      { integrity: sha512-2N30CgYJw0qX8jKU8vW808yLmx5oRoDSM+FC6tqhsLQiph7agK9eRXJlnrq6OUfTAZd5yCYQHQvGtx0S8I9SAA== }
     peerDependencies:
       '@solana/kit': ^5.0
 
@@ -4505,6 +4536,10 @@ snapshots:
       '@solana/kit': 5.4.0(typescript@5.9.3)
 
   '@solana-program/system@0.10.0(@solana/kit@5.4.0(typescript@5.9.3))':
+    dependencies:
+      '@solana/kit': 5.4.0(typescript@5.9.3)
+
+  '@solana-program/system@0.9.1(@solana/kit@5.4.0(typescript@5.9.3))':
     dependencies:
       '@solana/kit': 5.4.0(typescript@5.9.3)
 
