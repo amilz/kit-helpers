@@ -1,4 +1,10 @@
-import { address, createEmptyClient, generateKeyPairSigner, type Instruction } from '@solana/kit';
+import {
+    address,
+    createEmptyClient,
+    generateKeyPairSigner,
+    sequentialInstructionPlan,
+    type Instruction,
+} from '@solana/kit';
 import { describe, expect, it, vi } from 'vitest';
 
 import { createTransactionBuilder, transactionBuilderPlugin } from '../src';
@@ -35,6 +41,19 @@ describe('createTransactionBuilder', () => {
 
         const instructions = [createMockInstruction(), createMockInstruction()];
         const builder2 = builder1.addMany(instructions);
+
+        expect(builder2).not.toBe(builder1);
+    });
+
+    it('returns a new builder when adding an instruction plan', async () => {
+        const payer = await generateKeyPairSigner();
+        const rpc = createMockRpc();
+        const builder1 = createTransactionBuilder({ payer, rpc });
+
+        const instruction1 = createMockInstruction();
+        const instruction2 = createMockInstruction();
+        const instructionPlan = sequentialInstructionPlan([instruction1, instruction2]);
+        const builder2 = builder1.addPlan(instructionPlan);
 
         expect(builder2).not.toBe(builder1);
     });

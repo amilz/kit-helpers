@@ -8,6 +8,7 @@ import type {
     GetLatestBlockhashApi,
     GetSignatureStatusesApi,
     Instruction,
+    InstructionPlan,
     Nonce,
     Rpc,
     RpcSubscriptions,
@@ -127,6 +128,12 @@ export type TransactionBuilderBuilding = {
      * @param instructions - The instructions to add.
      */
     addMany(instructions: Instruction[]): TransactionBuilderBuilding;
+
+    /**
+     * Add the instructions from an instruction plan to the transaction.
+     * @param plan - The instruction plan to add.
+     */
+    addPlan(plan: InstructionPlan): TransactionBuilderBuilding;
 
     /**
      * Enable or disable auto-estimation of compute units.

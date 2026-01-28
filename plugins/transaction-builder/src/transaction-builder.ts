@@ -1,4 +1,5 @@
 import {
+    appendTransactionMessageInstructionPlan,
     appendTransactionMessageInstructions,
     assertIsFullySignedTransaction,
     assertIsSendableTransaction,
@@ -10,6 +11,7 @@ import {
     getBase64EncodedWireTransaction,
     getSignatureFromTransaction,
     type Instruction,
+    InstructionPlan,
     isSolanaError,
     type MicroLamports,
     pipe,
@@ -158,12 +160,20 @@ function createBuildingBuilder(state: BuilderState): TransactionBuilderBuilding 
             return this.addMany([instruction]);
         },
 
-        addMany(instructions: Instruction[]): TransactionBuilderBuilding {
+        addMany(instructions: readonly Instruction[]): TransactionBuilderBuilding {
             const newState: BuilderState = Object.freeze({
                 ...state,
                 instructions: [...state.instructions, ...instructions],
             });
             return createBuildingBuilder(newState);
+        },
+
+        addPlan(instructionPlan: InstructionPlan): TransactionBuilderBuilding {
+            const tempMessage = pipe(createTransactionMessage({ version: 0 }), tx =>
+                setTransactionMessageFeePayerSigner(state.client.payer, tx),
+            );
+            const withPlan = appendTransactionMessageInstructionPlan(instructionPlan, tempMessage);
+            return this.addMany(withPlan.instructions);
         },
 
         autoEstimateCus(enabled: boolean): TransactionBuilderBuilding {
