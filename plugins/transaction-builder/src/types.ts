@@ -117,6 +117,9 @@ export type SimulateResult = {
 
 /** Building state - can add instructions and prepare. */
 export type TransactionBuilderBuilding = {
+    /** @internal */
+    _state(): BuilderState;
+
     /**
      * Add a single instruction to the transaction.
      * @param instruction - The instruction to add.
@@ -227,4 +230,15 @@ export type TransactionBuilderSigned = {
      * @param options - Optional send options.
      */
     sendAndConfirm(options?: SendOptions): Promise<string>;
+};
+
+/** @internal */
+export type BuilderState = {
+    autoEstimateCus: boolean;
+    client: TransactionBuilderClientRequirements;
+    computeUnitLimit?: number;
+    computeUnitPrice?: bigint;
+    estimateMargin: number;
+    instructions: Instruction[];
+    nonceConfig?: NonceConfig;
 };

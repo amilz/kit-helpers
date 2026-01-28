@@ -32,6 +32,7 @@ import {
 } from '@solana-program/compute-budget';
 
 import type {
+    BuilderState,
     NonceConfig,
     SendOptions,
     SignableTransactionMessage,
@@ -43,16 +44,6 @@ import type {
     TransactionBuilderPrepared,
     TransactionBuilderSigned,
 } from './types';
-
-type BuilderState = {
-    autoEstimateCus: boolean;
-    client: TransactionBuilderClientRequirements;
-    computeUnitLimit?: number;
-    computeUnitPrice?: bigint;
-    estimateMargin: number;
-    instructions: Instruction[];
-    nonceConfig?: NonceConfig;
-};
 
 /**
  * Rethrows SolanaErrors unchanged, wraps other errors with context.
@@ -156,6 +147,10 @@ export function createTransactionBuilder(
 
 function createBuildingBuilder(state: BuilderState): TransactionBuilderBuilding {
     return Object.freeze({
+        _state(): BuilderState {
+            return state;
+        },
+
         add(instruction: Instruction): TransactionBuilderBuilding {
             return this.addMany([instruction]);
         },
