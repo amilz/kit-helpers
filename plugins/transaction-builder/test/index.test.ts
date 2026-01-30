@@ -1,4 +1,10 @@
-import { address, createEmptyClient, generateKeyPairSigner, type Instruction } from '@solana/kit';
+import {
+    address,
+    createEmptyClient,
+    generateKeyPairSigner,
+    sequentialInstructionPlan,
+    type Instruction,
+} from '@solana/kit';
 import { describe, expect, it, vi } from 'vitest';
 
 import { createTransactionBuilder, transactionBuilderPlugin } from '../src';
@@ -26,6 +32,7 @@ describe('createTransactionBuilder', () => {
 
         expect(builder2).not.toBe(builder1);
         expect(builder2).toHaveProperty('add');
+        expect(builder2._state().instructions).toStrictEqual([instruction]);
     });
 
     it('returns a new builder when adding many instructions', async () => {
@@ -33,10 +40,27 @@ describe('createTransactionBuilder', () => {
         const rpc = createMockRpc();
         const builder1 = createTransactionBuilder({ payer, rpc });
 
-        const instructions = [createMockInstruction(), createMockInstruction()];
+        const instruction1 = createMockInstructionWithData(new Uint8Array([1, 2, 3]));
+        const instruction2 = createMockInstructionWithData(new Uint8Array([4, 5, 6]));
+        const instructions = [instruction1, instruction2];
         const builder2 = builder1.addMany(instructions);
 
         expect(builder2).not.toBe(builder1);
+        expect(builder2._state().instructions).toStrictEqual(instructions);
+    });
+
+    it('returns a new builder when adding an instruction plan', async () => {
+        const payer = await generateKeyPairSigner();
+        const rpc = createMockRpc();
+        const builder1 = createTransactionBuilder({ payer, rpc });
+
+        const instruction1 = createMockInstructionWithData(new Uint8Array([1, 2, 3]));
+        const instruction2 = createMockInstructionWithData(new Uint8Array([4, 5, 6]));
+        const instructionPlan = sequentialInstructionPlan([instruction1, instruction2]);
+        const builder2 = builder1.addPlan(instructionPlan);
+
+        expect(builder2).not.toBe(builder1);
+        expect(builder2._state().instructions).toStrictEqual([instruction1, instruction2]);
     });
 
     it('returns a new builder when setting compute limit', async () => {
@@ -982,6 +1006,14 @@ function createMockInstruction(): Instruction {
     return {
         accounts: [],
         data: new Uint8Array([0, 0, 0, 0]),
+        programAddress: address('11111111111111111111111111111111'),
+    };
+}
+
+function createMockInstructionWithData(data: Uint8Array): Instruction {
+    return {
+        accounts: [],
+        data,
         programAddress: address('11111111111111111111111111111111'),
     };
 }

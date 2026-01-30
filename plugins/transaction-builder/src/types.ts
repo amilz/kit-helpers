@@ -8,6 +8,7 @@ import type {
     GetLatestBlockhashApi,
     GetSignatureStatusesApi,
     Instruction,
+    InstructionPlan,
     Nonce,
     Rpc,
     RpcSubscriptions,
@@ -116,6 +117,9 @@ export type SimulateResult = {
 
 /** Building state - can add instructions and prepare. */
 export type TransactionBuilderBuilding = {
+    /** @internal */
+    _state(): BuilderState;
+
     /**
      * Add a single instruction to the transaction.
      * @param instruction - The instruction to add.
@@ -127,6 +131,12 @@ export type TransactionBuilderBuilding = {
      * @param instructions - The instructions to add.
      */
     addMany(instructions: Instruction[]): TransactionBuilderBuilding;
+
+    /**
+     * Add the instructions from an instruction plan to the transaction.
+     * @param plan - The instruction plan to add.
+     */
+    addPlan(plan: InstructionPlan): TransactionBuilderBuilding;
 
     /**
      * Enable or disable auto-estimation of compute units.
@@ -220,4 +230,15 @@ export type TransactionBuilderSigned = {
      * @param options - Optional send options.
      */
     sendAndConfirm(options?: SendOptions): Promise<string>;
+};
+
+/** @internal */
+export type BuilderState = {
+    autoEstimateCus: boolean;
+    client: TransactionBuilderClientRequirements;
+    computeUnitLimit?: number;
+    computeUnitPrice?: bigint;
+    estimateMargin: number;
+    instructions: Instruction[];
+    nonceConfig?: NonceConfig;
 };

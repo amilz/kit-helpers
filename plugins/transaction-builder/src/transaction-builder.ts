@@ -1,4 +1,5 @@
 import {
+    appendTransactionMessageInstructionPlan,
     appendTransactionMessageInstructions,
     assertIsFullySignedTransaction,
     assertIsSendableTransaction,
@@ -10,6 +11,7 @@ import {
     getBase64EncodedWireTransaction,
     getSignatureFromTransaction,
     type Instruction,
+    InstructionPlan,
     isSolanaError,
     type MicroLamports,
     pipe,
@@ -30,6 +32,7 @@ import {
 } from '@solana-program/compute-budget';
 
 import type {
+    BuilderState,
     NonceConfig,
     SendOptions,
     SignableTransactionMessage,
@@ -41,16 +44,6 @@ import type {
     TransactionBuilderPrepared,
     TransactionBuilderSigned,
 } from './types';
-
-type BuilderState = {
-    autoEstimateCus: boolean;
-    client: TransactionBuilderClientRequirements;
-    computeUnitLimit?: number;
-    computeUnitPrice?: bigint;
-    estimateMargin: number;
-    instructions: Instruction[];
-    nonceConfig?: NonceConfig;
-};
 
 /**
  * Rethrows SolanaErrors unchanged, wraps other errors with context.
@@ -154,16 +147,28 @@ export function createTransactionBuilder(
 
 function createBuildingBuilder(state: BuilderState): TransactionBuilderBuilding {
     return Object.freeze({
+        _state(): BuilderState {
+            return state;
+        },
+
         add(instruction: Instruction): TransactionBuilderBuilding {
             return this.addMany([instruction]);
         },
 
-        addMany(instructions: Instruction[]): TransactionBuilderBuilding {
+        addMany(instructions: readonly Instruction[]): TransactionBuilderBuilding {
             const newState: BuilderState = Object.freeze({
                 ...state,
                 instructions: [...state.instructions, ...instructions],
             });
             return createBuildingBuilder(newState);
+        },
+
+        addPlan(instructionPlan: InstructionPlan): TransactionBuilderBuilding {
+            const tempMessage = pipe(createTransactionMessage({ version: 0 }), tx =>
+                setTransactionMessageFeePayerSigner(state.client.payer, tx),
+            );
+            const withPlan = appendTransactionMessageInstructionPlan(instructionPlan, tempMessage);
+            return this.addMany(withPlan.instructions);
         },
 
         autoEstimateCus(enabled: boolean): TransactionBuilderBuilding {
