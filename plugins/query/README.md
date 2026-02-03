@@ -71,7 +71,7 @@ const balanceQuery = client.query.tokenBalance(usdcMint, walletOwner);
 Pass an optional decoder to `account()` or `programAccounts()`:
 
 ```ts
-const decoder = { decode: (data: Uint8Array) => mySchema.decode(data) };
+const decoder = myProgramAccountDecoder(); // e.g., getMintDecoder()
 const accountQuery = client.query.account(address, decoder);
 ```
 
