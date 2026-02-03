@@ -1,4 +1,5 @@
 import type { Address, Lamports, Signature } from '@solana/kit';
+import { findAssociatedTokenPda, TOKEN_PROGRAM_ADDRESS } from '@solana-program/token';
 
 import type {
     AccountInfo,
@@ -14,19 +15,11 @@ import type {
 
 /** Default stale times in milliseconds. */
 const STALE_TIMES = {
-    // 10s
-    account: 30_000,
-
-    balance: 10_000,
-
-    // 2s - confirmation status changes quickly
-    programAccounts: 60_000,
-
-    // 30s - general account data
-    signatureStatus: 2_000,
-
-    // 10s - balances change frequently
-    tokenBalance: 10_000, // 60s - GPA is expensive, cache longer
+    account: 30_000, // 30s - general account data
+    balance: 10_000, // 10s - balances change frequently
+    programAccounts: 60_000, // 60s - GPA is expensive
+    signatureStatus: 2_000, // 2s - confirmation changes quickly
+    tokenBalance: 10_000, // 10s - balances change frequently
 } as const;
 
 /**
@@ -58,7 +51,7 @@ export function createQueryNamespace(client: QueryClientRequirements): QueryName
                         space: value.space,
                     };
                 },
-                key: ['account', address, decoder ? 'decoded' : 'raw'] as const,
+                key: ['account', address, decoder ? (decoder.name ?? 'decoded') : 'raw'] as const,
                 staleTime: STALE_TIMES.account,
             };
         },
@@ -117,7 +110,12 @@ export function createQueryNamespace(client: QueryClientRequirements): QueryName
                         };
                     });
                 },
-                key: ['programAccounts', programId, dataSize ?? null, decoder ? 'decoded' : 'raw'] as const,
+                key: [
+                    'programAccounts',
+                    programId,
+                    dataSize ?? null,
+                    decoder ? (decoder.name ?? 'decoded') : 'raw',
+                ] as const,
                 staleTime: STALE_TIMES.programAccounts,
             };
         },
@@ -140,9 +138,20 @@ export function createQueryNamespace(client: QueryClientRequirements): QueryName
             };
         },
 
-        tokenBalance(ata: Address): QueryDef<TokenBalance> {
+        tokenBalance(mintOrAta: Address, owner?: Address): QueryDef<TokenBalance> {
             return {
                 fn: async () => {
+                    // If owner provided, derive ATA from mint + owner
+                    const ata = owner
+                        ? (
+                              await findAssociatedTokenPda({
+                                  mint: mintOrAta,
+                                  owner,
+                                  tokenProgram: TOKEN_PROGRAM_ADDRESS,
+                              })
+                          )[0]
+                        : mintOrAta;
+
                     const { value } = await rpc.getTokenAccountBalance(ata).send();
                     return {
                         amount: BigInt(value.amount),
@@ -151,7 +160,8 @@ export function createQueryNamespace(client: QueryClientRequirements): QueryName
                         uiAmountString: value.uiAmountString,
                     };
                 },
-                key: ['tokenBalance', ata] as const,
+                // Use mint+owner or ata directly in cache key
+                key: owner ? ['tokenBalance', mintOrAta, owner] : ['tokenBalance', mintOrAta],
                 staleTime: STALE_TIMES.tokenBalance,
             };
         },

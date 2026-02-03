@@ -9,23 +9,22 @@ import type { QueryClientRequirements, QueryNamespace } from './types';
  *
  * @example
  * ```ts
- * import { createSolanaClient, rpc } from '@solana/kit-plugins';
+ * import { createSolanaRpc } from '@solana/kit';
  * import { queryPlugin } from '@kit-helpers/query';
  *
- * const client = createSolanaClient()
- *   .use(rpc('https://api.devnet.solana.com'))
- *   .use(queryPlugin());
+ * // Create RPC client
+ * const rpc = createSolanaRpc('https://api.devnet.solana.com');
  *
- * // Vanilla JS - direct execution
+ * // Apply plugin to client object
+ * const client = queryPlugin()({ rpc });
+ *
+ * // Use query definitions - direct execution
  * const balanceQuery = client.query.balance(address);
  * const balance = await balanceQuery.fn();
  *
- * // The query definition can be passed to any framework adapter:
- * // TanStack Query:
- * // const { data } = useQuery(balanceQuery);
- * //
- * // SWR:
- * // const { data } = useSWR(balanceQuery.key, balanceQuery.fn);
+ * // Or pass to any framework adapter:
+ * // TanStack Query: const { data } = useQuery(balanceQuery);
+ * // SWR: const { data } = useSWR(balanceQuery.key, balanceQuery.fn);
  * ```
  */
 export function queryPlugin() {

@@ -17,6 +17,8 @@ import type {
  */
 export type Decoder<T> = {
     decode: (data: Uint8Array) => T;
+    /** Optional name for cache key differentiation between decoders. */
+    name?: string;
 };
 
 /**
@@ -133,8 +135,15 @@ export type QueryNamespace = {
     signatureStatus(signature: Signature): QueryDef<SignatureStatus | null>;
 
     /**
-     * Query SPL token balance for an owner.
+     * Query SPL token balance.
+     *
+     * @overload Pass an ATA address directly.
      * @param ata - The associated token account address.
+     *
+     * @overload Pass mint + owner to derive ATA automatically.
+     * @param mint - The token mint address.
+     * @param owner - The wallet owner address.
      */
     tokenBalance(ata: Address): QueryDef<TokenBalance>;
+    tokenBalance(mint: Address, owner: Address): QueryDef<TokenBalance>;
 };
