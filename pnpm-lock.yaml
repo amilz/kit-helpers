@@ -246,6 +246,33 @@ importers:
         specifier: ^4.0.0
         version: 4.0.17(@types/node@24.10.9)(happy-dom@20.3.1)(tsx@4.21.0)
 
+  plugins/query:
+    devDependencies:
+      '@solana/kit':
+        specifier: ^5.3.0
+        version: 5.4.0(typescript@5.9.3)
+      '@types/node':
+        specifier: ^24.10.9
+        version: 24.10.9
+      agadoo:
+        specifier: ^3.0.0
+        version: 3.0.0
+      browserslist-to-esbuild:
+        specifier: ^2.1.1
+        version: 2.1.1(browserslist@4.28.1)
+      happy-dom:
+        specifier: ^20.3.1
+        version: 20.3.1
+      rimraf:
+        specifier: ^6.0.0
+        version: 6.1.2
+      tsup:
+        specifier: ^8.0.0
+        version: 8.5.1(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)
+      vitest:
+        specifier: ^4.0.0
+        version: 4.0.17(@types/node@24.10.9)(happy-dom@20.3.1)(tsx@4.21.0)
+
   plugins/transaction-builder:
     dependencies:
       '@solana-program/compute-budget':
@@ -3416,8 +3443,8 @@ packages:
   undici-types@7.18.2:
     resolution: {integrity: sha512-AsuCzffGHJybSaRrmr5eHr81mwJU3kjw6M+uprWvCXiNeN9SOGwQ3Jn8jb8m3Z6izVgknn1R0FTCEAP2QrLY/w==}
 
-  undici-types@7.19.2:
-    resolution: {integrity: sha512-qYVnV5OEm2AW8cJMCpdV20CDyaN3g0AjDlOGf1OW4iaDEx8MwdtChUp4zu4H0VP3nDRF/8RKWH+IPp9uW0YGZg==}
+  undici-types@7.20.0:
+    resolution: {integrity: sha512-PZDAAlMkNw5ZzN/ebfyrwzrMWfIf7Jbn9iM/I6SF456OKrb2wnfqVowaxEY/cMAM8MjFu1zhdpJyA0L+rTYwNw==}
 
   unrs-resolver@1.11.1:
     resolution: {integrity: sha512-bSjt9pjaEBnNiGgc9rUiHGKv5l4/TGzDmYw3RhnkJGtLhbnnA/5qJj7x3dNDCRx/PJxu774LlH8lCOlB4hEfKg==}
@@ -5002,7 +5029,7 @@ snapshots:
       '@solana/errors': 5.5.1(typescript@5.9.3)
       '@solana/rpc-spec': 5.5.1(typescript@5.9.3)
       '@solana/rpc-spec-types': 5.5.1(typescript@5.9.3)
-      undici-types: 7.19.2
+      undici-types: 7.20.0
     optionalDependencies:
       typescript: 5.9.3
 
@@ -7057,7 +7084,7 @@ snapshots:
 
   undici-types@7.18.2: {}
 
-  undici-types@7.19.2: {}
+  undici-types@7.20.0: {}
 
   unrs-resolver@1.11.1:
     dependencies:
