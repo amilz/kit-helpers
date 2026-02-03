@@ -1,25 +1,18 @@
 import type {
     Address,
     Commitment,
+    Decoder,
     GetAccountInfoApi,
     GetBalanceApi,
     GetProgramAccountsApi,
+    GetProgramAccountsDatasizeFilter,
+    GetProgramAccountsMemcmpFilter,
     GetSignatureStatusesApi,
     GetTokenAccountBalanceApi,
     Lamports,
     Rpc,
     Signature,
 } from '@solana/kit';
-
-/**
- * A decoder that transforms raw account bytes into a typed structure.
- * Simpler than @solana/kit's full Codec type - just needs a decode function.
- */
-export type Decoder<T> = {
-    decode: (data: Uint8Array) => T;
-    /** Optional name for cache key differentiation between decoders. */
-    name?: string;
-};
 
 /**
  * A framework-agnostic query definition.
@@ -95,12 +88,29 @@ export type SignatureStatus = {
     slot: bigint;
 };
 
+/** Union of all supported getProgramAccounts filters. */
+export type ProgramAccountsFilter = GetProgramAccountsDatasizeFilter | GetProgramAccountsMemcmpFilter;
+
 /** Options for programAccounts query. */
 export type ProgramAccountsOptions<TData = Uint8Array> = {
-    /** Data size filter - only return accounts with this exact size. */
-    dataSize?: bigint;
     /** Decoder to transform raw account bytes into typed data. */
     decoder?: Decoder<TData>;
+    /**
+     * Filters to apply. Supports memcmp and dataSize filters.
+     * All filters must match (AND logic). Max 4 filters.
+     *
+     * @example
+     * ```ts
+     * // Filter by discriminator and data size
+     * const options = {
+     *   filters: [
+     *     { memcmp: { offset: 0n, bytes: 'abc...', encoding: 'base58' } },
+     *     { dataSize: 165n },
+     *   ],
+     * };
+     * ```
+     */
+    filters?: readonly ProgramAccountsFilter[];
 };
 
 /** The query namespace added by the plugin. */
@@ -120,8 +130,25 @@ export type QueryNamespace = {
 
     /**
      * Query all accounts owned by a program.
+     *
      * @param programId - The program address.
-     * @param options - Optional data size filter and decoder.
+     * @param options - Optional filters and decoder.
+     *
+     * @example
+     * ```ts
+     * // Filter by dataSize
+     * client.query.programAccounts(programId, {
+     *   filters: [{ dataSize: 165n }],
+     * });
+     *
+     * // Filter by discriminator (memcmp)
+     * client.query.programAccounts(programId, {
+     *   filters: [
+     *     { memcmp: { offset: 0n, bytes: 'abc...', encoding: 'base58' } },
+     *   ],
+     *   decoder: myDecoder,
+     * });
+     * ```
      */
     programAccounts<TData = Uint8Array>(
         programId: Address,
@@ -137,13 +164,16 @@ export type QueryNamespace = {
     /**
      * Query SPL token balance.
      *
-     * @overload Pass an ATA address directly.
-     * @param ata - The associated token account address.
+     * @example
+     * ```ts
+     * // Pass ATA directly
+     * client.query.tokenBalance({ ata: ataAddress });
      *
-     * @overload Pass mint + owner to derive ATA automatically.
-     * @param mint - The token mint address.
-     * @param owner - The wallet owner address.
+     * // Or pass mint + owner to derive ATA
+     * client.query.tokenBalance({ mint: mintAddress, owner: walletAddress });
+     * ```
      */
-    tokenBalance(ata: Address): QueryDef<TokenBalance>;
-    tokenBalance(mint: Address, owner: Address): QueryDef<TokenBalance>;
+    tokenBalance(query: TokenBalanceQuery): QueryDef<TokenBalance>;
 };
+
+export type TokenBalanceQuery = { ata: Address } | { mint: Address; owner: Address };

@@ -1,8 +1,19 @@
-import { address, lamports, signature } from '@solana/kit';
+import { address, type Decoder, lamports, signature } from '@solana/kit';
 import { describe, expect, it, vi } from 'vitest';
 
 import { createQueryNamespace, queryPlugin } from '../src';
 import type { QueryRpc } from '../src/types';
+
+/**
+ * Helper to create a mock decoder that satisfies the Decoder interface.
+ * The `read` method is stubbed since we only use `decode` in our implementation.
+ */
+function createMockDecoder<T>(decodeFn: (data: Uint8Array) => T): Decoder<T> {
+    return {
+        decode: decodeFn,
+        read: (bytes: Uint8Array, offset: number) => [decodeFn(bytes.slice(offset)), bytes.length] as [T, number],
+    } as Decoder<T>;
+}
 
 // Helper to create mock RPC
 function createMockRpc(overrides: Partial<Record<keyof QueryRpc, unknown>> = {}): QueryRpc {
@@ -117,12 +128,12 @@ describe('createQueryNamespace', () => {
     });
 
     describe('tokenBalance', () => {
-        it('returns QueryDef with correct key', () => {
+        it('returns QueryDef with correct key when ata provided', () => {
             const mockRpc = createMockRpc();
             const query = createQueryNamespace({ rpc: mockRpc });
             const ata = address('7v91N7iZ9mNicL8WfG6cgSCKyRXydQjLh6UYBWwm6y1Q');
 
-            const tokenQuery = query.tokenBalance(ata);
+            const tokenQuery = query.tokenBalance({ ata });
 
             expect(tokenQuery.key).toEqual(['tokenBalance', ata]);
             expect(tokenQuery.staleTime).toBe(10_000);
@@ -144,7 +155,7 @@ describe('createQueryNamespace', () => {
             const query = createQueryNamespace({ rpc: mockRpc });
             const ata = address('7v91N7iZ9mNicL8WfG6cgSCKyRXydQjLh6UYBWwm6y1Q');
 
-            const result = await query.tokenBalance(ata).fn();
+            const result = await query.tokenBalance({ ata }).fn();
 
             expect(result.amount).toBe(1_000_000_000n);
             expect(result.decimals).toBe(9);
@@ -169,7 +180,7 @@ describe('createQueryNamespace', () => {
             const mockRpc = createMockRpc();
             const query = createQueryNamespace({ rpc: mockRpc });
             const addr = address('7v91N7iZ9mNicL8WfG6cgSCKyRXydQjLh6UYBWwm6y1Q');
-            const mockDecoder = { decode: vi.fn(data => ({ parsed: data })) };
+            const mockDecoder = createMockDecoder(data => ({ parsed: data }));
 
             const accountQuery = query.account(addr, mockDecoder);
 
@@ -208,13 +219,12 @@ describe('createQueryNamespace', () => {
             const mockRpc = createMockRpc();
             const query = createQueryNamespace({ rpc: mockRpc });
             const addr = address('7v91N7iZ9mNicL8WfG6cgSCKyRXydQjLh6UYBWwm6y1Q');
-            const mockDecoder = {
-                decode: vi.fn((data: Uint8Array) => ({ length: data.length })),
-            };
+            const decodeFn = vi.fn((data: Uint8Array) => ({ length: data.length }));
+            const mockDecoder = createMockDecoder(decodeFn);
 
             const result = await query.account(addr, mockDecoder).fn();
 
-            expect(mockDecoder.decode).toHaveBeenCalled();
+            expect(decodeFn).toHaveBeenCalled();
             expect(result!.data).toEqual({ length: 4 });
         });
     });
@@ -275,14 +285,18 @@ describe('createQueryNamespace', () => {
             expect(gpaQuery.staleTime).toBe(60_000);
         });
 
-        it('returns QueryDef with dataSize in key', () => {
+        it('returns QueryDef with filters in key', () => {
             const mockRpc = createMockRpc();
             const query = createQueryNamespace({ rpc: mockRpc });
             const programId = address('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA');
 
-            const gpaQuery = query.programAccounts(programId, { dataSize: 165n });
+            const gpaQuery = query.programAccounts(programId, { filters: [{ dataSize: 165n }] });
 
-            expect(gpaQuery.key).toEqual(['programAccounts', programId, 165n, 'raw']);
+            // Filters are serialized to a stable string for the cache key
+            expect(gpaQuery.key[0]).toBe('programAccounts');
+            expect(gpaQuery.key[1]).toBe(programId);
+            expect(gpaQuery.key[2]).toBe('[{"d":"165"}]');
+            expect(gpaQuery.key[3]).toBe('raw');
         });
 
         it('fetches program accounts', async () => {
@@ -301,13 +315,12 @@ describe('createQueryNamespace', () => {
             const mockRpc = createMockRpc();
             const query = createQueryNamespace({ rpc: mockRpc });
             const programId = address('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA');
-            const mockDecoder = {
-                decode: vi.fn((data: Uint8Array) => ({ size: data.length })),
-            };
+            const decodeFn = vi.fn((data: Uint8Array) => ({ size: data.length }));
+            const mockDecoder = createMockDecoder(decodeFn);
 
             const result = await query.programAccounts(programId, { decoder: mockDecoder }).fn();
 
-            expect(mockDecoder.decode).toHaveBeenCalled();
+            expect(decodeFn).toHaveBeenCalled();
             expect(result[0].account.data).toEqual({ size: 4 });
         });
     });
@@ -331,19 +344,19 @@ describe('tokenBalance with mint+owner', () => {
         const mint = address('EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'); // USDC
         const owner = address('7v91N7iZ9mNicL8WfG6cgSCKyRXydQjLh6UYBWwm6y1Q');
 
-        const result = await query.tokenBalance(mint, owner).fn();
+        const result = await query.tokenBalance({ mint, owner }).fn();
 
         expect(result.amount).toBe(500_000_000n);
         expect(result.decimals).toBe(6);
         expect(mockRpc.getTokenAccountBalance).toHaveBeenCalled();
     });
 
-    it('uses ATA directly when only one arg provided', async () => {
+    it('uses ATA directly when ata provided', async () => {
         const mockRpc = createMockRpc();
         const query = createQueryNamespace({ rpc: mockRpc });
         const ata = address('7v91N7iZ9mNicL8WfG6cgSCKyRXydQjLh6UYBWwm6y1Q');
 
-        const tokenQuery = query.tokenBalance(ata);
+        const tokenQuery = query.tokenBalance({ ata });
 
         expect(tokenQuery.key).toEqual(['tokenBalance', ata]);
     });
@@ -354,44 +367,33 @@ describe('tokenBalance with mint+owner', () => {
         const mint = address('EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v');
         const owner = address('7v91N7iZ9mNicL8WfG6cgSCKyRXydQjLh6UYBWwm6y1Q');
 
-        const tokenQuery = query.tokenBalance(mint, owner);
+        const tokenQuery = query.tokenBalance({ mint, owner });
 
         expect(tokenQuery.key).toEqual(['tokenBalance', mint, owner]);
     });
 });
 
-describe('decoder.name in cache key', () => {
-    it('uses decoder.name when provided', () => {
+describe('decoder in cache key', () => {
+    it('uses "decoded" when decoder provided for account', () => {
         const mockRpc = createMockRpc();
         const query = createQueryNamespace({ rpc: mockRpc });
         const addr = address('7v91N7iZ9mNicL8WfG6cgSCKyRXydQjLh6UYBWwm6y1Q');
-        const decoder = { decode: (data: Uint8Array) => data, name: 'MyDecoder' };
-
-        const accountQuery = query.account(addr, decoder);
-
-        expect(accountQuery.key).toEqual(['account', addr, 'MyDecoder']);
-    });
-
-    it('uses "decoded" when decoder has no name', () => {
-        const mockRpc = createMockRpc();
-        const query = createQueryNamespace({ rpc: mockRpc });
-        const addr = address('7v91N7iZ9mNicL8WfG6cgSCKyRXydQjLh6UYBWwm6y1Q');
-        const decoder = { decode: (data: Uint8Array) => data };
+        const decoder = createMockDecoder((data: Uint8Array) => data);
 
         const accountQuery = query.account(addr, decoder);
 
         expect(accountQuery.key).toEqual(['account', addr, 'decoded']);
     });
 
-    it('uses decoder.name in programAccounts', () => {
+    it('uses "decoded" when decoder provided for programAccounts', () => {
         const mockRpc = createMockRpc();
         const query = createQueryNamespace({ rpc: mockRpc });
         const programId = address('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA');
-        const decoder = { decode: (data: Uint8Array) => data, name: 'TokenAccount' };
+        const decoder = createMockDecoder((data: Uint8Array) => data);
 
         const gpaQuery = query.programAccounts(programId, { decoder });
 
-        expect(gpaQuery.key).toEqual(['programAccounts', programId, null, 'TokenAccount']);
+        expect(gpaQuery.key).toEqual(['programAccounts', programId, null, 'decoded']);
     });
 });
 
@@ -412,11 +414,9 @@ describe('error scenarios', () => {
         const mockRpc = createMockRpc();
         const query = createQueryNamespace({ rpc: mockRpc });
         const addr = address('7v91N7iZ9mNicL8WfG6cgSCKyRXydQjLh6UYBWwm6y1Q');
-        const decoder = {
-            decode: () => {
-                throw new Error('Invalid account data');
-            },
-        };
+        const decoder = createMockDecoder(() => {
+            throw new Error('Invalid account data');
+        });
 
         await expect(query.account(addr, decoder).fn()).rejects.toThrow('Invalid account data');
     });

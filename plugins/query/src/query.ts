@@ -1,16 +1,17 @@
-import type { Address, Lamports, Signature } from '@solana/kit';
+import { type Address, type Decoder, getBase64Encoder, type Lamports, type Signature } from '@solana/kit';
 import { findAssociatedTokenPda, TOKEN_PROGRAM_ADDRESS } from '@solana-program/token';
 
 import type {
     AccountInfo,
-    Decoder,
     ProgramAccount,
+    ProgramAccountsFilter,
     ProgramAccountsOptions,
     QueryClientRequirements,
     QueryDef,
     QueryNamespace,
     SignatureStatus,
     TokenBalance,
+    TokenBalanceQuery,
 } from './types';
 
 /** Default stale times in milliseconds. */
@@ -21,6 +22,30 @@ const STALE_TIMES = {
     signatureStatus: 2_000, // 2s - confirmation changes quickly
     tokenBalance: 10_000, // 10s - balances change frequently
 } as const;
+
+/**
+ * Serialize filters to a stable string for cache key.
+ * Sorts by type and offset to ensure consistent ordering.
+ */
+function serializeFiltersForKey(filters: readonly ProgramAccountsFilter[]): string {
+    const sorted = [...filters].sort((a, b) => {
+        // dataSize filters come first
+        if ('dataSize' in a && !('dataSize' in b)) return -1;
+        if (!('dataSize' in a) && 'dataSize' in b) return 1;
+        // Sort memcmp by offset
+        if ('memcmp' in a && 'memcmp' in b) {
+            return Number(a.memcmp.offset - b.memcmp.offset);
+        }
+        return 0;
+    });
+
+    return JSON.stringify(
+        sorted.map(f => {
+            if ('dataSize' in f) return { d: f.dataSize.toString() };
+            return { m: [f.memcmp.offset.toString(), f.memcmp.bytes, f.memcmp.encoding] };
+        }),
+    );
+}
 
 /**
  * Creates the query namespace with all query definitions.
@@ -38,7 +63,7 @@ export function createQueryNamespace(client: QueryClientRequirements): QueryName
                     if (!value) return null;
 
                     // Decode base64 data to Uint8Array
-                    const dataBytes = base64ToBytes(value.data[0]);
+                    const dataBytes = getBase64Encoder().encode(value.data[0]);
 
                     // If decoder provided, decode the data
                     const data = decoder ? decoder.decode(dataBytes) : (dataBytes as unknown as TData);
@@ -51,7 +76,7 @@ export function createQueryNamespace(client: QueryClientRequirements): QueryName
                         space: value.space,
                     };
                 },
-                key: ['account', address, decoder ? (decoder.name ?? 'decoded') : 'raw'] as const,
+                key: ['account', address, decoder ? 'decoded' : 'raw'] as const,
                 staleTime: STALE_TIMES.account,
             };
         },
@@ -71,10 +96,13 @@ export function createQueryNamespace(client: QueryClientRequirements): QueryName
             programId: Address,
             options?: ProgramAccountsOptions<TData>,
         ): QueryDef<ProgramAccount<TData>[]> {
-            const { dataSize, decoder } = options ?? {};
+            const { decoder, filters } = options ?? {};
+
+            // Build a stable cache key from filters
+            const filtersKey = filters ? serializeFiltersForKey(filters) : null;
+
             return {
                 fn: async () => {
-                    const filters = dataSize ? [{ dataSize }] : undefined;
                     const accounts = await rpc
                         .getProgramAccounts(programId, {
                             encoding: 'base64',
@@ -82,20 +110,8 @@ export function createQueryNamespace(client: QueryClientRequirements): QueryName
                         })
                         .send();
 
-                    // Type assertion for the response - getProgramAccounts returns array directly
-                    type GpaAccount = {
-                        account: {
-                            data: [string, string];
-                            executable: boolean;
-                            lamports: Lamports;
-                            owner: Address;
-                            space: bigint;
-                        };
-                        pubkey: Address;
-                    };
-
-                    return (accounts as unknown as GpaAccount[]).map(({ pubkey, account }) => {
-                        const dataBytes = base64ToBytes(account.data[0]);
+                    return accounts.map(({ pubkey, account }) => {
+                        const dataBytes = getBase64Encoder().encode(account.data[0]);
                         const data = decoder ? decoder.decode(dataBytes) : (dataBytes as unknown as TData);
 
                         return {
@@ -110,12 +126,7 @@ export function createQueryNamespace(client: QueryClientRequirements): QueryName
                         };
                     });
                 },
-                key: [
-                    'programAccounts',
-                    programId,
-                    dataSize ?? null,
-                    decoder ? (decoder.name ?? 'decoded') : 'raw',
-                ] as const,
+                key: ['programAccounts', programId, filtersKey, decoder ? 'decoded' : 'raw'] as const,
                 staleTime: STALE_TIMES.programAccounts,
             };
         },
@@ -138,21 +149,21 @@ export function createQueryNamespace(client: QueryClientRequirements): QueryName
             };
         },
 
-        tokenBalance(mintOrAta: Address, owner?: Address): QueryDef<TokenBalance> {
+        tokenBalance(query: TokenBalanceQuery): QueryDef<TokenBalance> {
             return {
                 fn: async () => {
-                    // If owner provided, derive ATA from mint + owner
-                    const ata = owner
-                        ? (
-                              await findAssociatedTokenPda({
-                                  mint: mintOrAta,
-                                  owner,
-                                  tokenProgram: TOKEN_PROGRAM_ADDRESS,
-                              })
-                          )[0]
-                        : mintOrAta;
+                    const tokenAccount =
+                        'ata' in query
+                            ? query.ata
+                            : (
+                                  await findAssociatedTokenPda({
+                                      mint: query.mint,
+                                      owner: query.owner,
+                                      tokenProgram: TOKEN_PROGRAM_ADDRESS,
+                                  })
+                              )[0];
 
-                    const { value } = await rpc.getTokenAccountBalance(ata).send();
+                    const { value } = await rpc.getTokenAccountBalance(tokenAccount).send();
                     return {
                         amount: BigInt(value.amount),
                         decimals: value.decimals,
@@ -160,29 +171,9 @@ export function createQueryNamespace(client: QueryClientRequirements): QueryName
                         uiAmountString: value.uiAmountString,
                     };
                 },
-                // Use mint+owner or ata directly in cache key
-                key: owner ? ['tokenBalance', mintOrAta, owner] : ['tokenBalance', mintOrAta],
+                key: 'ata' in query ? ['tokenBalance', query.ata] : ['tokenBalance', query.mint, query.owner],
                 staleTime: STALE_TIMES.tokenBalance,
             };
         },
     };
-}
-
-/**
- * Decode base64 string to Uint8Array.
- * Works in both browser and Node.js environments.
- */
-function base64ToBytes(base64: string): Uint8Array {
-    if (typeof atob === 'function') {
-        // Browser
-        const binary = atob(base64);
-        const bytes = new Uint8Array(binary.length);
-        for (let i = 0; i < binary.length; i++) {
-            bytes[i] = binary.charCodeAt(i);
-        }
-        return bytes;
-    } else {
-        // Node.js
-        return new Uint8Array(Buffer.from(base64, 'base64'));
-    }
 }

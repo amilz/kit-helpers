@@ -7,8 +7,8 @@ export { createQueryNamespace } from './query';
 // Types
 export type {
     AccountInfo,
-    Decoder,
     ProgramAccount,
+    ProgramAccountsFilter,
     ProgramAccountsOptions,
     QueryClientRequirements,
     QueryDef,
@@ -17,3 +17,6 @@ export type {
     SignatureStatus,
     TokenBalance,
 } from './types';
+
+// Re-export filter types from Kit for convenience
+export type { GetProgramAccountsDatasizeFilter, GetProgramAccountsMemcmpFilter } from '@solana/kit';
