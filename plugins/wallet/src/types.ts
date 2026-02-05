@@ -34,6 +34,8 @@ export type WalletSession = {
     connector: WalletConnectorMetadata;
     /** Disconnect from the wallet. */
     disconnect: () => Promise<void>;
+    /** Subscribe to account changes. Returns unsubscribe function. */
+    onAccountsChanged?: (listener: (accounts: WalletAccount[]) => void) => () => void;
     /** Sign an arbitrary message. */
     signMessage: (message: Uint8Array) => Promise<SignatureBytes>;
     /** A transaction signer compatible with @solana/kit. */
@@ -96,8 +98,8 @@ export type WalletSubscribeCallback = (status: WalletStatus) => void;
 
 /** The wallet API added to the client by the wallet plugin. */
 export type WalletApi = {
-    /** Current wallet status (state machine). */
-    readonly status: WalletStatus;
+    /** Current wallet state (state machine). */
+    readonly state: WalletStatus;
     /** Current address (null if disconnected). */
     readonly address: Address | null;
     /** Whether a wallet is connected. */

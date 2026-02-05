@@ -56,8 +56,8 @@ import type {
  * function useWallet() {
  *   return useSyncExternalStore(
  *     client.wallet.subscribe,
- *     () => client.wallet.status,
- *     () => client.wallet.status,
+ *     () => client.wallet.state,
+ *     () => client.wallet.state,
  *   );
  * }
  * ```
@@ -67,31 +67,32 @@ export function walletPlugin(options: WalletPluginOptions) {
 
     return <T>(client: T): T & { wallet: WalletApi } => {
         // Internal state
-        let status: WalletStatus = { status: 'disconnected' };
+        let state: WalletStatus = { status: 'disconnected' };
+        let accountChangeUnsubscribe: (() => void) | null = null;
         const listeners = new Set<WalletSubscribeCallback>();
 
         // Notify all subscribers of state changes
         const notify = () => {
             for (const listener of listeners) {
-                listener(status);
+                listener(state);
             }
         };
 
         const wallet: WalletApi = {
             // Getters for current state
-            get status() {
-                return status;
+            get state() {
+                return state;
             },
 
             get address(): Address | null {
-                if (status.status === 'connected') {
-                    return status.session.account.address;
+                if (state.status === 'connected') {
+                    return state.session.account.address;
                 }
                 return null;
             },
 
             get connected(): boolean {
-                return status.status === 'connected';
+                return state.status === 'connected';
             },
 
             get connectors(): readonly WalletConnector[] {
@@ -108,21 +109,35 @@ export function walletPlugin(options: WalletPluginOptions) {
                     );
                 }
 
-                // Update status to connecting
-                status = { status: 'connecting', connectorId };
+                // Update state to connecting
+                state = { status: 'connecting', connectorId };
                 notify();
 
                 try {
                     const session = await connector.connect(connectOptions);
 
-                    // Update status to connected
-                    status = { status: 'connected', session, connectorId };
+                    // Update state to connected
+                    state = { status: 'connected', session, connectorId };
                     notify();
+
+                    // Subscribe to account changes if supported
+                    if (session.onAccountsChanged) {
+                        accountChangeUnsubscribe = session.onAccountsChanged((accounts) => {
+                            if (accounts.length === 0) {
+                                // No accounts means wallet disconnected
+                                wallet.disconnect();
+                            } else if (state.status === 'connected') {
+                                // Update state with the new session (already updated by connector)
+                                state = { ...state, session: { ...state.session, account: accounts[0] } };
+                                notify();
+                            }
+                        });
+                    }
 
                     return session;
                 } catch (error) {
-                    // Update status to error
-                    status = { status: 'error', error, connectorId };
+                    // Update state to error
+                    state = { status: 'error', error, connectorId };
                     notify();
 
                     throw error;
@@ -131,24 +146,26 @@ export function walletPlugin(options: WalletPluginOptions) {
 
             // Disconnect from the current wallet
             async disconnect(): Promise<void> {
-                if (status.status === 'connected') {
+                if (accountChangeUnsubscribe) {
+                    accountChangeUnsubscribe();
+                    accountChangeUnsubscribe = null;
+                }
+
+                if (state.status === 'connected') {
                     try {
-                        await status.session.disconnect();
+                        await state.session.disconnect();
                     } catch {
                         // Ignore disconnect errors, just update state
                     }
                 }
 
-                status = { status: 'disconnected' };
+                state = { status: 'disconnected' };
                 notify();
             },
 
             // Subscribe to status changes
             subscribe(callback: WalletSubscribeCallback): () => void {
                 listeners.add(callback);
-
-                // Immediately invoke with current status
-                callback(status);
 
                 // Return unsubscribe function
                 return () => {

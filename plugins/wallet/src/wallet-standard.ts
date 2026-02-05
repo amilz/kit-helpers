@@ -92,6 +92,7 @@ export function createWalletStandardConnector(wallet: Wallet, options?: WalletSt
 
     let activeSession: WalletSession | null = null;
     let accountChangeUnsubscribe: (() => void) | null = null;
+    const accountChangeListeners = new Set<(accounts: WalletAccount[]) => void>();
 
     const connector: WalletConnector = {
         ...metadata,
@@ -126,14 +127,23 @@ export function createWalletStandardConnector(wallet: Wallet, options?: WalletSt
                     if (typeof onFn === 'function') {
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         accountChangeUnsubscribe = onFn('change', ({ accounts: newAccounts }: any) => {
-                            if (newAccounts && newAccounts.length > 0 && activeSession) {
-                                // Update the session with the new primary account
-                                const newPrimaryAccount = newAccounts[0] as StandardWalletAccount;
-                                activeSession = {
-                                    ...activeSession,
-                                    account: toWalletAccount(newPrimaryAccount),
-                                    signer: createWalletStandardSigner(wallet, newPrimaryAccount),
-                                };
+                            if (newAccounts && activeSession) {
+                                const walletAccounts = (newAccounts as StandardWalletAccount[]).map(toWalletAccount);
+
+                                if (newAccounts.length > 0) {
+                                    // Update the session with the new primary account
+                                    const newPrimaryAccount = newAccounts[0] as StandardWalletAccount;
+                                    activeSession = {
+                                        ...activeSession,
+                                        account: toWalletAccount(newPrimaryAccount),
+                                        signer: createWalletStandardSigner(wallet, newPrimaryAccount),
+                                    };
+                                }
+
+                                // Notify all account change listeners
+                                for (const listener of accountChangeListeners) {
+                                    listener(walletAccounts);
+                                }
                             }
                         });
                     }
@@ -144,6 +154,12 @@ export function createWalletStandardConnector(wallet: Wallet, options?: WalletSt
                     connector: metadata,
                     disconnect: async () => {
                         await connector.disconnect();
+                    },
+                    onAccountsChanged: (listener) => {
+                        accountChangeListeners.add(listener);
+                        return () => {
+                            accountChangeListeners.delete(listener);
+                        };
                     },
                     signMessage: async (message: Uint8Array): Promise<SignatureBytes> => {
                         const signMessageFeature = wallet.features[SolanaSignMessage] as
@@ -184,6 +200,7 @@ export function createWalletStandardConnector(wallet: Wallet, options?: WalletSt
                 accountChangeUnsubscribe = null;
             }
 
+            accountChangeListeners.clear();
             activeSession = null;
 
             if (disconnectFeature) {

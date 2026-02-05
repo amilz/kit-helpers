@@ -149,10 +149,12 @@ export function backpack(): WalletConnector[] {
 export function onWalletRegistered(callback: (connector: WalletConnector) => void): () => void {
     const { on } = getWallets();
 
-    return on('register', (wallet) => {
-        if (isWalletStandardCompatible(wallet)) {
-            const connector = createWalletStandardConnector(wallet);
-            callback(connector);
+    return on('register', (...wallets) => {
+        for (const wallet of wallets) {
+            if (isWalletStandardCompatible(wallet)) {
+                const connector = createWalletStandardConnector(wallet);
+                callback(connector);
+            }
         }
     });
 }

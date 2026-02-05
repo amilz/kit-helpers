@@ -48,7 +48,7 @@ const unsubscribe = client.wallet.subscribe((status) => {
 function useWallet() {
   return useSyncExternalStore(
     client.wallet.subscribe,
-    () => client.wallet.status,
+    () => client.wallet.state,
   );
 }
 ```
@@ -76,7 +76,7 @@ const client = createEmptyClient()
 
 | Property/Method | Type | Description |
 |-----------------|------|-------------|
-| `status` | `WalletStatus` | Current connection status |
+| `state` | `WalletStatus` | Current connection state |
 | `address` | `Address \| null` | Connected address or null |
 | `connected` | `boolean` | Whether a wallet is connected |
 | `connectors` | `WalletConnector[]` | Available connectors |

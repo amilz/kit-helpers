@@ -138,14 +138,14 @@ disconnectBtn.addEventListener('click', async () => {
 
 // Sign message handler
 signBtn.addEventListener('click', async () => {
-    if (client.wallet.status.status !== 'connected') return;
+    if (client.wallet.state.status !== 'connected') return;
 
     const message = messageInput.value;
     if (!message) return;
 
     try {
         signBtn.disabled = true;
-        const session = client.wallet.status.session;
+        const session = client.wallet.state.session;
         const sig = await session.signMessage(new TextEncoder().encode(message));
         // Convert SignatureBytes to hex for display
         const hex = Array.from(sig, (b) => b.toString(16).padStart(2, '0')).join('');

@@ -9,7 +9,7 @@ import {
     isWalletStandardCompatible,
     walletPlugin,
 } from '../src';
-import type { WalletConnector, WalletSession, WalletStatus } from '../src';
+import type { WalletAccount, WalletConnector, WalletSession, WalletStatus } from '../src';
 
 describe('walletPlugin', () => {
     it('adds wallet property to client', () => {
@@ -17,7 +17,7 @@ describe('walletPlugin', () => {
         const client = createEmptyClient().use(walletPlugin({ connectors }));
 
         expect(client).toHaveProperty('wallet');
-        expect(client.wallet).toHaveProperty('status');
+        expect(client.wallet).toHaveProperty('state');
         expect(client.wallet).toHaveProperty('address');
         expect(client.wallet).toHaveProperty('connected');
         expect(client.wallet).toHaveProperty('connectors');
@@ -30,7 +30,7 @@ describe('walletPlugin', () => {
         const connectors: WalletConnector[] = [];
         const client = createEmptyClient().use(walletPlugin({ connectors }));
 
-        expect(client.wallet.status).toEqual({ status: 'disconnected' });
+        expect(client.wallet.state).toEqual({ status: 'disconnected' });
         expect(client.wallet.address).toBeNull();
         expect(client.wallet.connected).toBe(false);
     });
@@ -66,11 +66,10 @@ describe('walletPlugin', () => {
 
         await client.wallet.connect('phantom');
 
-        // Should have: initial disconnected, connecting, connected
-        expect(states).toHaveLength(3);
-        expect(states[0].status).toBe('disconnected');
-        expect(states[1].status).toBe('connecting');
-        expect(states[2].status).toBe('connected');
+        // Should have: connecting, connected
+        expect(states).toHaveLength(2);
+        expect(states[0].status).toBe('connecting');
+        expect(states[1].status).toBe('connected');
     });
 
     it('connect() returns the session', async () => {
@@ -129,11 +128,11 @@ describe('walletPlugin', () => {
 
         await expect(client.wallet.connect('phantom')).rejects.toThrow('User rejected');
 
-        expect(states).toHaveLength(3);
-        expect(states[2].status).toBe('error');
-        if (states[2].status === 'error') {
-            expect(states[2].error).toBe(error);
-            expect(states[2].connectorId).toBe('phantom');
+        expect(states).toHaveLength(2);
+        expect(states[1].status).toBe('error');
+        if (states[1].status === 'error') {
+            expect(states[1].error).toBe(error);
+            expect(states[1].connectorId).toBe('phantom');
         }
     });
 
@@ -149,7 +148,7 @@ describe('walletPlugin', () => {
 
         await client.wallet.disconnect();
 
-        expect(client.wallet.status).toEqual({ status: 'disconnected' });
+        expect(client.wallet.state).toEqual({ status: 'disconnected' });
         expect(client.wallet.address).toBeNull();
         expect(client.wallet.connected).toBe(false);
     });
@@ -179,7 +178,7 @@ describe('walletPlugin', () => {
         // Should not throw
         await client.wallet.disconnect();
 
-        expect(client.wallet.status).toEqual({ status: 'disconnected' });
+        expect(client.wallet.state).toEqual({ status: 'disconnected' });
     });
 
     it('subscribe() returns unsubscribe function', () => {
@@ -191,18 +190,8 @@ describe('walletPlugin', () => {
 
         expect(typeof unsubscribe).toBe('function');
 
-        // Should have been called once immediately
-        expect(callback).toHaveBeenCalledTimes(1);
-    });
-
-    it('subscribe() immediately invokes callback with current state', () => {
-        const connectors: WalletConnector[] = [];
-        const client = createEmptyClient().use(walletPlugin({ connectors }));
-
-        const callback = vi.fn();
-        client.wallet.subscribe(callback);
-
-        expect(callback).toHaveBeenCalledWith({ status: 'disconnected' });
+        // Should not have been called (no immediate invocation)
+        expect(callback).toHaveBeenCalledTimes(0);
     });
 
     it('unsubscribe() stops notifications', async () => {
@@ -215,17 +204,14 @@ describe('walletPlugin', () => {
         const callback = vi.fn();
         const unsubscribe = client.wallet.subscribe(callback);
 
-        // Initial call
-        expect(callback).toHaveBeenCalledTimes(1);
-
         // Unsubscribe
         unsubscribe();
 
         // Connect should not trigger callback
         await client.wallet.connect('phantom');
 
-        // Still only 1 call (the initial one)
-        expect(callback).toHaveBeenCalledTimes(1);
+        // No calls at all
+        expect(callback).toHaveBeenCalledTimes(0);
     });
 
     it('multiple subscribers all receive updates', async () => {
@@ -242,9 +228,74 @@ describe('walletPlugin', () => {
 
         await client.wallet.connect('phantom');
 
-        // Each should have: initial + connecting + connected = 3 calls
-        expect(callback1).toHaveBeenCalledTimes(3);
-        expect(callback2).toHaveBeenCalledTimes(3);
+        // Each should have: connecting + connected = 2 calls
+        expect(callback1).toHaveBeenCalledTimes(2);
+        expect(callback2).toHaveBeenCalledTimes(2);
+    });
+
+    it('account change notifies subscribers with updated state', async () => {
+        let accountChangeListener: ((accounts: WalletAccount[]) => void) | null = null;
+        const mockSession = createMockSession({
+            onAccountsChanged: (listener) => {
+                accountChangeListener = listener;
+                return () => {
+                    accountChangeListener = null;
+                };
+            },
+        });
+        const connector = createMockConnector('phantom', {
+            connect: async () => mockSession,
+        });
+        const client = createEmptyClient().use(walletPlugin({ connectors: [connector] }));
+
+        const states: WalletStatus[] = [];
+        client.wallet.subscribe((s) => states.push({ ...s }));
+
+        await client.wallet.connect('phantom');
+        expect(states).toHaveLength(2); // connecting, connected
+
+        // Simulate account change
+        const newAccount: WalletAccount = {
+            address: address('FcaY9zGSAhA7GPqjKHYPwsMqGGPENosMbPevJjaNuejF'),
+            publicKey: new Uint8Array(32),
+        };
+        accountChangeListener!([ newAccount ]);
+
+        expect(states).toHaveLength(3);
+        expect(states[2].status).toBe('connected');
+        if (states[2].status === 'connected') {
+            expect(states[2].session.account.address).toBe('FcaY9zGSAhA7GPqjKHYPwsMqGGPENosMbPevJjaNuejF');
+        }
+    });
+
+    it('account change to zero accounts triggers disconnect', async () => {
+        let accountChangeListener: ((accounts: WalletAccount[]) => void) | null = null;
+        const mockSession = createMockSession({
+            onAccountsChanged: (listener) => {
+                accountChangeListener = listener;
+                return () => {
+                    accountChangeListener = null;
+                };
+            },
+        });
+        const connector = createMockConnector('phantom', {
+            connect: async () => mockSession,
+        });
+        const client = createEmptyClient().use(walletPlugin({ connectors: [connector] }));
+
+        const states: WalletStatus[] = [];
+        client.wallet.subscribe((s) => states.push({ ...s }));
+
+        await client.wallet.connect('phantom');
+        expect(states).toHaveLength(2); // connecting, connected
+
+        // Simulate zero accounts (wallet disconnected externally)
+        accountChangeListener!([]);
+
+        // disconnect is async, wait for it
+        await vi.waitFor(() => {
+            expect(client.wallet.state).toEqual({ status: 'disconnected' });
+        });
     });
 });
 
@@ -439,6 +490,7 @@ function createMockSession(
     overrides?: Partial<{
         address: ReturnType<typeof address>;
         disconnect: () => Promise<void>;
+        onAccountsChanged: (listener: (accounts: WalletAccount[]) => void) => () => void;
     }>,
 ): WalletSession {
     const testAddress = overrides?.address ?? address('7v91N7iZ9mNicL8WfG6cgSCKyRXydQjLh6UYBWwm6y1Q');
@@ -457,6 +509,7 @@ function createMockSession(
             ready: true,
         },
         disconnect: overrides?.disconnect ?? (async () => {}),
+        onAccountsChanged: overrides?.onAccountsChanged,
         signMessage: async () => new Uint8Array(64) as unknown as ReturnType<WalletSession['signMessage']>,
         signer: {
             address: testAddress,
