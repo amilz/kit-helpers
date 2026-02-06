@@ -3,8 +3,11 @@ import type { Address, Instruction, TransactionSigner } from '@solana/kit';
 /** Structural type for wallet-like objects. */
 export type WalletLike = {
     connected: boolean;
-    session?: {
-        signer: TransactionSigner;
+    state?: {
+        status: string;
+        session?: {
+            signer: TransactionSigner;
+        };
     };
 };
 

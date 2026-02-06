@@ -26,6 +26,25 @@ importers:
         specifier: ^5.0.0
         version: 5.9.3
 
+  examples/client/wallet:
+    dependencies:
+      '@kit-helpers/client':
+        specifier: workspace:*
+        version: link:../../../plugins/client
+      '@kit-helpers/wallet':
+        specifier: workspace:*
+        version: link:../../../plugins/wallet
+      '@solana/kit':
+        specifier: ^5.5.1
+        version: 5.5.1(typescript@5.9.3)
+    devDependencies:
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+      vite:
+        specifier: ^6.0.0
+        version: 6.4.1(@types/node@24.10.9)(tsx@4.21.0)
+
   examples/durable-nonces:
     dependencies:
       '@kit-helpers/local-validator':
@@ -260,9 +279,12 @@ importers:
       '@kit-helpers/wallet':
         specifier: workspace:*
         version: link:../wallet
-      '@solana/kit-plugins':
+      '@solana/kit-plugin-payer':
         specifier: ^0.2.0
-        version: 0.2.0(@solana/kit@5.5.1(typescript@5.9.3))(typescript@5.9.3)
+        version: 0.2.0(@solana/kit@5.5.1(typescript@5.9.3))
+      '@solana/kit-plugin-rpc':
+        specifier: ^0.2.0
+        version: 0.2.0(@solana/kit@5.5.1(typescript@5.9.3))
     devDependencies:
       '@solana-program/system':
         specifier: ^0.10.0
@@ -5335,9 +5357,9 @@ snapshots:
 
   '@loris-sandbox/litesvm-kit@0.5.0(typescript@5.9.3)':
     dependencies:
-      '@solana-program/system': 0.10.0(@solana/kit@5.4.0(typescript@5.9.3))
-      '@solana-program/token': 0.9.0(@solana/kit@5.4.0(typescript@5.9.3))
-      '@solana/kit': 5.4.0(typescript@5.9.3)
+      '@solana-program/system': 0.10.0(@solana/kit@5.5.1(typescript@5.9.3))
+      '@solana-program/token': 0.9.0(@solana/kit@5.5.1(typescript@5.9.3))
+      '@solana/kit': 5.5.1(typescript@5.9.3)
     optionalDependencies:
       '@loris-sandbox/litesvm-kit-darwin-arm64': 0.5.0
       '@loris-sandbox/litesvm-kit-darwin-x64': 0.5.0
@@ -5768,25 +5790,10 @@ snapshots:
       '@solana-program/compute-budget': 0.11.0(@solana/kit@5.4.0(typescript@5.9.3))
       '@solana/kit': 5.4.0(typescript@5.9.3)
 
-  '@solana/kit-plugin-instruction-plan@0.2.0(@solana/kit@5.5.1(typescript@5.9.3))':
-    dependencies:
-      '@solana-program/compute-budget': 0.11.0(@solana/kit@5.5.1(typescript@5.9.3))
-      '@solana/kit': 5.5.1(typescript@5.9.3)
-
   '@solana/kit-plugin-litesvm@0.2.0(@solana/kit@5.4.0(typescript@5.9.3))(typescript@5.9.3)':
     dependencies:
       '@loris-sandbox/litesvm-kit': 0.5.0(typescript@5.9.3)
       '@solana/kit': 5.4.0(typescript@5.9.3)
-    transitivePeerDependencies:
-      - bufferutil
-      - fastestsmallesttextencoderdecoder
-      - typescript
-      - utf-8-validate
-
-  '@solana/kit-plugin-litesvm@0.2.0(@solana/kit@5.5.1(typescript@5.9.3))(typescript@5.9.3)':
-    dependencies:
-      '@loris-sandbox/litesvm-kit': 0.5.0(typescript@5.9.3)
-      '@solana/kit': 5.5.1(typescript@5.9.3)
     transitivePeerDependencies:
       - bufferutil
       - fastestsmallesttextencoderdecoder
@@ -5819,20 +5826,6 @@ snapshots:
       '@solana/kit-plugin-litesvm': 0.2.0(@solana/kit@5.4.0(typescript@5.9.3))(typescript@5.9.3)
       '@solana/kit-plugin-payer': 0.2.0(@solana/kit@5.4.0(typescript@5.9.3))
       '@solana/kit-plugin-rpc': 0.2.0(@solana/kit@5.4.0(typescript@5.9.3))
-    transitivePeerDependencies:
-      - bufferutil
-      - fastestsmallesttextencoderdecoder
-      - typescript
-      - utf-8-validate
-
-  '@solana/kit-plugins@0.2.0(@solana/kit@5.5.1(typescript@5.9.3))(typescript@5.9.3)':
-    dependencies:
-      '@solana/kit': 5.5.1(typescript@5.9.3)
-      '@solana/kit-plugin-airdrop': 0.2.0(@solana/kit@5.5.1(typescript@5.9.3))
-      '@solana/kit-plugin-instruction-plan': 0.2.0(@solana/kit@5.5.1(typescript@5.9.3))
-      '@solana/kit-plugin-litesvm': 0.2.0(@solana/kit@5.5.1(typescript@5.9.3))(typescript@5.9.3)
-      '@solana/kit-plugin-payer': 0.2.0(@solana/kit@5.5.1(typescript@5.9.3))
-      '@solana/kit-plugin-rpc': 0.2.0(@solana/kit@5.5.1(typescript@5.9.3))
     transitivePeerDependencies:
       - bufferutil
       - fastestsmallesttextencoderdecoder

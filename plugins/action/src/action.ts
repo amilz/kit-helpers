@@ -221,8 +221,8 @@ export function createActionNamespace(
 
         async signMessage(message: Uint8Array): Promise<SignatureBytes> {
             // Try wallet session signMessage
-            if ('wallet' in client && client.wallet.connected && client.wallet.session?.signMessage) {
-                return await client.wallet.session.signMessage(message);
+            if ('wallet' in client && client.wallet.connected && client.wallet.state?.session?.signMessage) {
+                return await client.wallet.state.session.signMessage(message);
             }
 
             // Try payer's signMessages (available on KeyPairSigner)

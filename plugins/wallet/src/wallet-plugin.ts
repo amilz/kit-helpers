@@ -79,7 +79,6 @@ export function walletPlugin(options: WalletPluginOptions) {
         };
 
         const wallet: WalletApi = {
-            
             get address(): Address | null {
                 if (state.status === 'connected') {
                     return state.session.account.address;
@@ -87,9 +86,8 @@ export function walletPlugin(options: WalletPluginOptions) {
                 return null;
             },
 
-            
-// Connect to a wallet
-async connect(connectorId: string, connectOptions?): Promise<WalletSession> {
+            // Connect to a wallet
+            async connect(connectorId: string, connectOptions?): Promise<WalletSession> {
                 const connector = connectors.find(c => c.id === connectorId);
                 if (!connector) {
                     const availableIds = connectors.map(c => c.id).join(', ');
@@ -133,22 +131,16 @@ async connect(connectorId: string, connectOptions?): Promise<WalletSession> {
                 }
             },
 
-            
-
-get connected(): boolean {
+            get connected(): boolean {
                 return state.status === 'connected';
             },
 
-            
-
-get connectors(): readonly WalletConnector[] {
+            get connectors(): readonly WalletConnector[] {
                 return connectors;
             },
 
-            
-            
-// Disconnect from the current wallet
-async disconnect(): Promise<void> {
+            // Disconnect from the current wallet
+            async disconnect(): Promise<void> {
                 if (accountChangeUnsubscribe) {
                     accountChangeUnsubscribe();
                     accountChangeUnsubscribe = null;
@@ -166,9 +158,8 @@ async disconnect(): Promise<void> {
                 notify();
             },
 
-            
             // Getters for current state
-get state() {
+            get state() {
                 return state;
             },
 

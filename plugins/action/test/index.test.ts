@@ -77,9 +77,12 @@ function createMockWallet(connected: boolean, signer?: TransactionSigner): Walle
     }
     return {
         connected: true,
-        session: {
-            signer,
-            signMessage: vi.fn().mockResolvedValue(new Uint8Array(64) as SignatureBytes),
+        state: {
+            status: 'connected',
+            session: {
+                signer,
+                signMessage: vi.fn().mockResolvedValue(new Uint8Array(64) as SignatureBytes),
+            },
         },
     };
 }
@@ -375,9 +378,12 @@ describe('action.signMessage', () => {
         const rpc = createMockRpc();
         const wallet: WalletLike = {
             connected: true,
-            session: {
-                signer: walletSigner,
-                signMessage: mockSignMessage,
+            state: {
+                status: 'connected',
+                session: {
+                    signer: walletSigner,
+                    signMessage: mockSignMessage,
+                },
             },
         };
         const action = createActionNamespace({ rpc, wallet });

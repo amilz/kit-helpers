@@ -22,8 +22,8 @@ export function resolveSigner(client: ActionClientRequirements, override?: Trans
     }
 
     // 2. Connected wallet
-    if ('wallet' in client && client.wallet.connected && client.wallet.session?.signer) {
-        return client.wallet.session.signer;
+    if ('wallet' in client && client.wallet.connected && client.wallet.state?.session?.signer) {
+        return client.wallet.state.session.signer;
     }
 
     // 3. Client payer

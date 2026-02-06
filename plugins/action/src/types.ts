@@ -54,9 +54,12 @@ export type SimulateResult = {
  */
 export type WalletLike = {
     connected: boolean;
-    session?: {
-        signMessage?: (message: Uint8Array) => Promise<SignatureBytes>;
-        signer: TransactionSigner;
+    state?: {
+        session?: {
+            signMessage?: (message: Uint8Array) => Promise<SignatureBytes>;
+            signer: TransactionSigner;
+        };
+        status: string;
     };
 };
 

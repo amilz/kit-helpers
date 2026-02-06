@@ -1,8 +1,19 @@
-import type { SignatureBytes, TransactionSigner } from '@solana/kit';
-import { address } from '@solana/kit';
+import type { SignatureBytes, TransactionModifyingSigner } from '@solana/kit';
+import {
+    address,
+    assertIsTransactionWithinSizeLimit,
+    getCompiledTransactionMessageDecoder,
+    getTransactionCodec,
+    getTransactionLifetimeConstraintFromCompiledTransactionMessage,
+} from '@solana/kit';
 import type { SolanaSignMessageFeature, SolanaSignTransactionFeature } from '@solana/wallet-standard-features';
 import { SolanaSignMessage, SolanaSignTransaction } from '@solana/wallet-standard-features';
 import type { Wallet, WalletAccount as StandardWalletAccount } from '@wallet-standard/base';
+import type {
+    StandardConnectFeature,
+    StandardDisconnectFeature,
+    StandardEventsFeature,
+} from '@wallet-standard/features';
 import { StandardConnect, StandardDisconnect, StandardEvents } from '@wallet-standard/features';
 
 import type { WalletAccount, WalletConnector, WalletConnectorMetadata, WalletSession } from './types';
@@ -24,35 +35,48 @@ function toWalletAccount(account: StandardWalletAccount): WalletAccount {
     };
 }
 
-/** Create a TransactionSigner from a wallet-standard wallet and account. */
-function createWalletStandardSigner(wallet: Wallet, account: StandardWalletAccount): TransactionSigner {
+/**
+ * Create a TransactionModifyingSigner from a wallet-standard wallet and account.
+ *
+ * Uses TransactionModifyingSigner because the app cannot control whether the
+ * wallet will modify the transaction before signing (e.g. adding guard
+ * instructions or a priority fee budget).
+ */
+function createWalletStandardSigner(wallet: Wallet, account: StandardWalletAccount): TransactionModifyingSigner {
     const walletAddress = address(account.address);
+    const transactionCodec = getTransactionCodec();
+
+    const signFeature = wallet.features[SolanaSignTransaction] as
+        | SolanaSignTransactionFeature[typeof SolanaSignTransaction]
+        | undefined;
+
+    const compiledMessageDecoder = getCompiledTransactionMessageDecoder();
 
     return {
         address: walletAddress,
-        signTransactions: async transactions => {
-            const signFeature = wallet.features[SolanaSignTransaction] as SolanaSignTransactionFeature | undefined;
+        async modifyAndSignTransactions(transactions, config) {
+            config?.abortSignal?.throwIfAborted();
+
             if (!signFeature) {
                 throw new Error('Wallet does not support signing transactions');
             }
 
-            // The wallet-standard signTransaction method takes an array of inputs
-            const inputs = transactions.map(tx => ({
-                account,
-                transaction: tx as unknown as Uint8Array,
-            }));
+            const results = [];
+            for (const tx of transactions) {
+                const wireBytes = transactionCodec.encode(tx) as Uint8Array;
+                const [output] = await signFeature.signTransaction({ account, transaction: wireBytes });
+                const decoded = transactionCodec.decode(output.signedTransaction);
 
-            // Access the signTransaction method
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const signTransactionFn = (signFeature as any).signTransaction;
-            if (typeof signTransactionFn !== 'function') {
-                throw new Error('SignTransaction feature does not have a signTransaction method');
+                assertIsTransactionWithinSizeLimit(decoded);
+
+                const compiledMessage = compiledMessageDecoder.decode(decoded.messageBytes);
+                const lifetimeConstraint =
+                    await getTransactionLifetimeConstraintFromCompiledTransactionMessage(compiledMessage);
+
+                results.push(Object.freeze({ ...decoded, lifetimeConstraint }));
             }
 
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const results: any[] = await signTransactionFn(...inputs);
-
-            return results.map(result => result.signedTransaction) as typeof transactions;
+            return Object.freeze(results);
         },
     };
 }
@@ -74,10 +98,14 @@ export function createWalletStandardConnector(
     wallet: Wallet,
     options?: WalletStandardConnectorOptions,
 ): WalletConnector {
-    // Access features using the feature namespace strings
-    const connectFeature = wallet.features[StandardConnect];
-    const disconnectFeature = wallet.features[StandardDisconnect];
-    const eventsFeature = wallet.features[StandardEvents];
+    // Access features using the feature namespace strings with correct type casts
+    const connectFeature = wallet.features[StandardConnect] as
+        | StandardConnectFeature[typeof StandardConnect]
+        | undefined;
+    const disconnectFeature = wallet.features[StandardDisconnect] as
+        | StandardDisconnectFeature[typeof StandardDisconnect]
+        | undefined;
+    const eventsFeature = wallet.features[StandardEvents] as StandardEventsFeature[typeof StandardEvents] | undefined;
 
     if (!connectFeature) {
         throw new Error(`Wallet "${wallet.name}" does not support the connect feature`);
@@ -104,14 +132,7 @@ export function createWalletStandardConnector(
             const { autoConnect = false } = connectOptions ?? {};
 
             try {
-                // Access the connect method from the feature
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const connectFn = (connectFeature as any).connect;
-                if (typeof connectFn !== 'function') {
-                    throw new Error('Connect feature does not have a connect method');
-                }
-
-                const { accounts } = await connectFn({
+                const { accounts } = await connectFeature.connect({
                     silent: autoConnect,
                 });
 
@@ -125,31 +146,24 @@ export function createWalletStandardConnector(
 
                 // Set up account change listener
                 if (eventsFeature) {
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    const onFn = (eventsFeature as any).on;
-                    if (typeof onFn === 'function') {
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        accountChangeUnsubscribe = onFn('change', ({ accounts: newAccounts }: any) => {
-                            if (newAccounts && activeSession) {
-                                const walletAccounts = (newAccounts as StandardWalletAccount[]).map(toWalletAccount);
+                    accountChangeUnsubscribe = eventsFeature.on('change', ({ accounts: newAccounts }) => {
+                        if (newAccounts && activeSession) {
+                            const walletAccounts = (newAccounts as StandardWalletAccount[]).map(toWalletAccount);
 
-                                if (newAccounts.length > 0) {
-                                    // Update the session with the new primary account
-                                    const newPrimaryAccount = newAccounts[0] as StandardWalletAccount;
-                                    activeSession = {
-                                        ...activeSession,
-                                        account: toWalletAccount(newPrimaryAccount),
-                                        signer: createWalletStandardSigner(wallet, newPrimaryAccount),
-                                    };
-                                }
-
-                                // Notify all account change listeners
-                                for (const listener of accountChangeListeners) {
-                                    listener(walletAccounts);
-                                }
+                            if (newAccounts.length > 0) {
+                                const newPrimaryAccount = newAccounts[0] as StandardWalletAccount;
+                                activeSession = {
+                                    ...activeSession,
+                                    account: toWalletAccount(newPrimaryAccount),
+                                    signer: createWalletStandardSigner(wallet, newPrimaryAccount),
+                                };
                             }
-                        });
-                    }
+
+                            for (const listener of accountChangeListeners) {
+                                listener(walletAccounts);
+                            }
+                        }
+                    });
                 }
 
                 const session: WalletSession = {
@@ -166,20 +180,13 @@ export function createWalletStandardConnector(
                     },
                     signMessage: async (message: Uint8Array): Promise<SignatureBytes> => {
                         const signMessageFeature = wallet.features[SolanaSignMessage] as
-                            | SolanaSignMessageFeature
+                            | SolanaSignMessageFeature[typeof SolanaSignMessage]
                             | undefined;
                         if (!signMessageFeature) {
                             throw new Error('Wallet does not support signing messages');
                         }
 
-                        // Access the signMessage method
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        const signMessageFn = (signMessageFeature as any).signMessage;
-                        if (typeof signMessageFn !== 'function') {
-                            throw new Error('SignMessage feature does not have a signMessage method');
-                        }
-
-                        const [result] = await signMessageFn({
+                        const [result] = await signMessageFeature.signMessage({
                             account: primaryAccount,
                             message,
                         });
@@ -207,11 +214,7 @@ export function createWalletStandardConnector(
             activeSession = null;
 
             if (disconnectFeature) {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const disconnectFn = (disconnectFeature as any).disconnect;
-                if (typeof disconnectFn === 'function') {
-                    await disconnectFn();
-                }
+                await disconnectFeature.disconnect();
             }
         },
 

@@ -12,7 +12,10 @@ function createMockWallet(connected: boolean, signer?: TransactionSigner): Walle
     }
     return {
         connected: true,
-        session: { signer },
+        state: {
+            status: 'connected',
+            session: { signer },
+        },
     };
 }
 

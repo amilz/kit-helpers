@@ -4,7 +4,8 @@ import { tokenProgramPlugin } from '@kit-helpers/program-token';
 import { queryPlugin } from '@kit-helpers/query';
 import { walletPlugin } from '@kit-helpers/wallet';
 import { createEmptyClient } from '@solana/kit';
-import { payer, rpc } from '@solana/kit-plugins';
+import { payer } from '@solana/kit-plugin-payer';
+import { rpc } from '@solana/kit-plugin-rpc';
 import type {
     PayerClientConfig,
     PayerSolanaClient,
@@ -42,7 +43,7 @@ import type {
 export function createSolanaClient(config: PayerClientConfig): PayerSolanaClient;
 export function createSolanaClient(config: WalletClientConfig): WalletSolanaClient;
 export function createSolanaClient(config: SolanaClientConfig): SolanaClient {
-    const rpcClient = createEmptyClient().use(rpc(config.url));
+    const rpcClient = createEmptyClient().use(rpc(config.url, config.wsUrl ? { url: config.wsUrl } : undefined));
 
     if ('wallet' in config) {
         return rpcClient

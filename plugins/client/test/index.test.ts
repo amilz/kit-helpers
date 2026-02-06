@@ -74,7 +74,7 @@ describe('createSolanaClient', () => {
         expect(client).not.toHaveProperty('payer');
     });
 
-    it('creates client with both payer and wallet', async () => {
+    it('rejects passing both payer and wallet at the type level', async () => {
         const kp = await generateKeyPairSigner();
         const mockConnector = {
             canAutoConnect: false,
@@ -88,18 +88,12 @@ describe('createSolanaClient', () => {
             ready: true,
         };
 
-        const client = createSolanaClient({
+        // @ts-expect-error — payer and wallet are mutually exclusive
+        createSolanaClient({
             payer: kp,
             url: URL,
             wallet: { connectors: [mockConnector] },
         });
-
-        expect(client).toHaveProperty('payer');
-        expect(client).toHaveProperty('wallet');
-        expect(client).toHaveProperty('query');
-        expect(client).toHaveProperty('action');
-        expect(client.program).toHaveProperty('system');
-        expect(client.program).toHaveProperty('token');
     });
 
     it('passes action options through', async () => {

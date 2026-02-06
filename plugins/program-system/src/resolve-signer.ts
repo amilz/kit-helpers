@@ -15,8 +15,8 @@ import type { SystemProgramClientRequirements } from './types';
  */
 export function resolveSigner(client: SystemProgramClientRequirements): TransactionSigner {
     // 1. Connected wallet
-    if (client.wallet?.connected && client.wallet.session?.signer) {
-        return client.wallet.session.signer;
+    if (client.wallet?.connected && client.wallet.state?.session?.signer) {
+        return client.wallet.state.session.signer;
     }
 
     // 2. Client payer

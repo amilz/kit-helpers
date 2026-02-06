@@ -54,7 +54,8 @@
         "@kit-helpers/program-token": "workspace:*",
         "@kit-helpers/query": "workspace:*",
         "@kit-helpers/wallet": "workspace:*",
-        "@solana/kit-plugins": "^0.2.0"
+        "@solana/kit-plugin-payer": "^0.2.0",
+        "@solana/kit-plugin-rpc": "^0.2.0"
     },
     "devDependencies": {
         "@solana-program/system": "^0.10.0",

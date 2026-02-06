@@ -11,6 +11,8 @@ type SolanaClientConfigBase = {
     action?: ActionPluginOptions;
     /** Solana cluster URL. */
     url: ClusterUrl;
+    /** WebSocket URL for RPC subscriptions. Defaults to the HTTP URL with the protocol swapped to `ws(s)`. */
+    wsUrl?: ClusterUrl;
 };
 
 /** Server/script config — payer required. */
