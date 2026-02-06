@@ -244,6 +244,58 @@ importers:
         specifier: ^4.0.0
         version: 4.0.17(@types/node@24.10.9)(happy-dom@20.3.1)(tsx@4.21.0)
 
+  plugins/client:
+    dependencies:
+      '@kit-helpers/action':
+        specifier: workspace:*
+        version: link:../action
+      '@kit-helpers/program-system':
+        specifier: workspace:*
+        version: link:../program-system
+      '@kit-helpers/program-token':
+        specifier: workspace:*
+        version: link:../program-token
+      '@kit-helpers/query':
+        specifier: workspace:*
+        version: link:../query
+      '@kit-helpers/wallet':
+        specifier: workspace:*
+        version: link:../wallet
+      '@solana/kit-plugins':
+        specifier: ^0.2.0
+        version: 0.2.0(@solana/kit@5.5.1(typescript@5.9.3))(typescript@5.9.3)
+    devDependencies:
+      '@solana-program/system':
+        specifier: ^0.10.0
+        version: 0.10.0(@solana/kit@5.5.1(typescript@5.9.3))
+      '@solana-program/token':
+        specifier: ^0.9.0
+        version: 0.9.0(@solana/kit@5.5.1(typescript@5.9.3))
+      '@solana/kit':
+        specifier: ^5.5.1
+        version: 5.5.1(typescript@5.9.3)
+      '@types/node':
+        specifier: ^24.10.9
+        version: 24.10.9
+      agadoo:
+        specifier: ^3.0.0
+        version: 3.0.0
+      browserslist-to-esbuild:
+        specifier: ^2.1.1
+        version: 2.1.1(browserslist@4.28.1)
+      happy-dom:
+        specifier: ^20.3.1
+        version: 20.3.1
+      rimraf:
+        specifier: ^6.0.0
+        version: 6.1.2
+      tsup:
+        specifier: ^8.0.0
+        version: 8.5.1(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)
+      vitest:
+        specifier: ^4.0.0
+        version: 4.0.17(@types/node@24.10.9)(happy-dom@20.3.1)(tsx@4.21.0)
+
   plugins/jito:
     devDependencies:
       '@solana/kit':
@@ -279,6 +331,66 @@ importers:
       '@types/node':
         specifier: ^24.10.9
         version: 24.10.9
+      rimraf:
+        specifier: ^6.0.0
+        version: 6.1.2
+      tsup:
+        specifier: ^8.0.0
+        version: 8.5.1(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)
+      vitest:
+        specifier: ^4.0.0
+        version: 4.0.17(@types/node@24.10.9)(happy-dom@20.3.1)(tsx@4.21.0)
+
+  plugins/program-system:
+    devDependencies:
+      '@solana-program/system':
+        specifier: ^0.10.0
+        version: 0.10.0(@solana/kit@5.5.1(typescript@5.9.3))
+      '@solana/kit':
+        specifier: ^5.5.1
+        version: 5.5.1(typescript@5.9.3)
+      '@types/node':
+        specifier: ^24.10.9
+        version: 24.10.9
+      agadoo:
+        specifier: ^3.0.0
+        version: 3.0.0
+      browserslist-to-esbuild:
+        specifier: ^2.1.1
+        version: 2.1.1(browserslist@4.28.1)
+      happy-dom:
+        specifier: ^20.3.1
+        version: 20.3.1
+      rimraf:
+        specifier: ^6.0.0
+        version: 6.1.2
+      tsup:
+        specifier: ^8.0.0
+        version: 8.5.1(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)
+      vitest:
+        specifier: ^4.0.0
+        version: 4.0.17(@types/node@24.10.9)(happy-dom@20.3.1)(tsx@4.21.0)
+
+  plugins/program-token:
+    devDependencies:
+      '@solana-program/token':
+        specifier: ^0.9.0
+        version: 0.9.0(@solana/kit@5.5.1(typescript@5.9.3))
+      '@solana/kit':
+        specifier: ^5.5.1
+        version: 5.5.1(typescript@5.9.3)
+      '@types/node':
+        specifier: ^24.10.9
+        version: 24.10.9
+      agadoo:
+        specifier: ^3.0.0
+        version: 3.0.0
+      browserslist-to-esbuild:
+        specifier: ^2.1.1
+        version: 2.1.1(browserslist@4.28.1)
+      happy-dom:
+        specifier: ^20.3.1
+        version: 20.3.1
       rimraf:
         specifier: ^6.0.0
         version: 6.1.2
@@ -4684,6 +4796,10 @@ snapshots:
     dependencies:
       '@solana/kit': 5.4.0(typescript@5.9.3)
 
+  '@solana-program/system@0.10.0(@solana/kit@5.5.1(typescript@5.9.3))':
+    dependencies:
+      '@solana/kit': 5.5.1(typescript@5.9.3)
+
   '@solana-program/system@0.9.1(@solana/kit@5.4.0(typescript@5.9.3))':
     dependencies:
       '@solana/kit': 5.4.0(typescript@5.9.3)
@@ -4959,10 +5075,19 @@ snapshots:
     dependencies:
       '@solana/kit': 5.4.0(typescript@5.9.3)
 
+  '@solana/kit-plugin-airdrop@0.2.0(@solana/kit@5.5.1(typescript@5.9.3))':
+    dependencies:
+      '@solana/kit': 5.5.1(typescript@5.9.3)
+
   '@solana/kit-plugin-instruction-plan@0.2.0(@solana/kit@5.4.0(typescript@5.9.3))':
     dependencies:
       '@solana-program/compute-budget': 0.11.0(@solana/kit@5.4.0(typescript@5.9.3))
       '@solana/kit': 5.4.0(typescript@5.9.3)
+
+  '@solana/kit-plugin-instruction-plan@0.2.0(@solana/kit@5.5.1(typescript@5.9.3))':
+    dependencies:
+      '@solana-program/compute-budget': 0.11.0(@solana/kit@5.5.1(typescript@5.9.3))
+      '@solana/kit': 5.5.1(typescript@5.9.3)
 
   '@solana/kit-plugin-litesvm@0.2.0(@solana/kit@5.4.0(typescript@5.9.3))(typescript@5.9.3)':
     dependencies:
@@ -4974,14 +5099,33 @@ snapshots:
       - typescript
       - utf-8-validate
 
+  '@solana/kit-plugin-litesvm@0.2.0(@solana/kit@5.5.1(typescript@5.9.3))(typescript@5.9.3)':
+    dependencies:
+      '@loris-sandbox/litesvm-kit': 0.5.0(typescript@5.9.3)
+      '@solana/kit': 5.5.1(typescript@5.9.3)
+    transitivePeerDependencies:
+      - bufferutil
+      - fastestsmallesttextencoderdecoder
+      - typescript
+      - utf-8-validate
+
   '@solana/kit-plugin-payer@0.2.0(@solana/kit@5.4.0(typescript@5.9.3))':
     dependencies:
       '@solana/kit': 5.4.0(typescript@5.9.3)
       '@solana/kit-plugin-airdrop': 0.2.0(@solana/kit@5.4.0(typescript@5.9.3))
 
+  '@solana/kit-plugin-payer@0.2.0(@solana/kit@5.5.1(typescript@5.9.3))':
+    dependencies:
+      '@solana/kit': 5.5.1(typescript@5.9.3)
+      '@solana/kit-plugin-airdrop': 0.2.0(@solana/kit@5.5.1(typescript@5.9.3))
+
   '@solana/kit-plugin-rpc@0.2.0(@solana/kit@5.4.0(typescript@5.9.3))':
     dependencies:
       '@solana/kit': 5.4.0(typescript@5.9.3)
+
+  '@solana/kit-plugin-rpc@0.2.0(@solana/kit@5.5.1(typescript@5.9.3))':
+    dependencies:
+      '@solana/kit': 5.5.1(typescript@5.9.3)
 
   '@solana/kit-plugins@0.2.0(@solana/kit@5.4.0(typescript@5.9.3))(typescript@5.9.3)':
     dependencies:
@@ -4991,6 +5135,20 @@ snapshots:
       '@solana/kit-plugin-litesvm': 0.2.0(@solana/kit@5.4.0(typescript@5.9.3))(typescript@5.9.3)
       '@solana/kit-plugin-payer': 0.2.0(@solana/kit@5.4.0(typescript@5.9.3))
       '@solana/kit-plugin-rpc': 0.2.0(@solana/kit@5.4.0(typescript@5.9.3))
+    transitivePeerDependencies:
+      - bufferutil
+      - fastestsmallesttextencoderdecoder
+      - typescript
+      - utf-8-validate
+
+  '@solana/kit-plugins@0.2.0(@solana/kit@5.5.1(typescript@5.9.3))(typescript@5.9.3)':
+    dependencies:
+      '@solana/kit': 5.5.1(typescript@5.9.3)
+      '@solana/kit-plugin-airdrop': 0.2.0(@solana/kit@5.5.1(typescript@5.9.3))
+      '@solana/kit-plugin-instruction-plan': 0.2.0(@solana/kit@5.5.1(typescript@5.9.3))
+      '@solana/kit-plugin-litesvm': 0.2.0(@solana/kit@5.5.1(typescript@5.9.3))(typescript@5.9.3)
+      '@solana/kit-plugin-payer': 0.2.0(@solana/kit@5.5.1(typescript@5.9.3))
+      '@solana/kit-plugin-rpc': 0.2.0(@solana/kit@5.5.1(typescript@5.9.3))
     transitivePeerDependencies:
       - bufferutil
       - fastestsmallesttextencoderdecoder
