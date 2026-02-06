@@ -73,17 +73,25 @@ await client.action.send([ix]);
 
 ## Config
 
+`createSolanaClient` accepts one of two mutually exclusive configs:
+
 ```ts
-type SolanaClientConfig = {
-    url: ClusterUrl; // Required — cluster endpoint
-    payer?: TransactionSigner; // Server/script signer
-    wallet?: {
-        // Browser wallet config
-        connectors: WalletConnector[];
-    };
-    action?: ActionPluginOptions; // Action plugin options (commitment, etc.)
+// Server / scripts
+type PayerClientConfig = {
+    url: ClusterUrl;
+    payer: TransactionSigner;
+    action?: ActionPluginOptions;
+};
+
+// Browser
+type WalletClientConfig = {
+    url: ClusterUrl;
+    wallet: { connectors: WalletConnector[] };
+    action?: ActionPluginOptions;
 };
 ```
+
+Return types are narrowed per config — `PayerSolanaClient` guarantees `.payer`, `WalletSolanaClient` guarantees `.wallet`.
 
 ## Using Plugins Individually
 
