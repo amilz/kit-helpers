@@ -13,18 +13,14 @@ type SolanaClientConfigBase = {
     url: ClusterUrl;
 };
 
-/** Server/script config — payer required, wallet optional. */
+/** Server/script config — payer required. */
 export type PayerClientConfig = SolanaClientConfigBase & {
     /** Transaction signer for scripting/server usage. */
     payer: TransactionSigner;
-    /** Wallet configuration for browser usage. */
-    wallet?: { connectors: WalletConnector[] };
 };
 
-/** Browser config — wallet required, payer optional. */
+/** Browser config — wallet required. */
 export type WalletClientConfig = SolanaClientConfigBase & {
-    /** Transaction signer (optional when wallet is provided). */
-    payer?: TransactionSigner;
     /** Wallet configuration for browser usage. */
     wallet: { connectors: WalletConnector[] };
 };
@@ -48,3 +44,9 @@ export type SolanaClient = {
     rpcSubscriptions: ReturnType<typeof import('@solana/kit').createSolanaRpcSubscriptions>;
     wallet?: WalletApi;
 };
+
+/** Client with a guaranteed payer (server/script usage). */
+export type PayerSolanaClient = SolanaClient & { payer: TransactionSigner };
+
+/** Client with a guaranteed wallet (browser usage). */
+export type WalletSolanaClient = SolanaClient & { wallet: WalletApi };

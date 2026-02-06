@@ -18,8 +18,7 @@ Framework-agnostic wallet plugin for `@solana/kit` with Wallet Standard support.
 import { createEmptyClient } from '@solana/kit';
 import { walletPlugin, autoDiscover } from '@kit-helpers/wallet';
 
-const client = createEmptyClient()
-  .use(walletPlugin({ connectors: autoDiscover() }));
+const client = createEmptyClient().use(walletPlugin({ connectors: autoDiscover() }));
 ```
 
 ### Connecting
@@ -32,24 +31,21 @@ console.log(client.wallet.connectors);
 await client.wallet.connect('phantom');
 
 // Access connected state
-console.log(client.wallet.address);    // Address | null
-console.log(client.wallet.connected);  // boolean
+console.log(client.wallet.address); // Address | null
+console.log(client.wallet.connected); // boolean
 ```
 
 ### Subscribing to Changes
 
 ```ts
 // Subscribe to status changes
-const unsubscribe = client.wallet.subscribe((status) => {
-  console.log('Status:', status);
+const unsubscribe = client.wallet.subscribe(status => {
+    console.log('Status:', status);
 });
 
 // Works with React's useSyncExternalStore
 function useWallet() {
-  return useSyncExternalStore(
-    client.wallet.subscribe,
-    () => client.wallet.state,
-  );
+    return useSyncExternalStore(client.wallet.subscribe, () => client.wallet.state);
 }
 ```
 
@@ -58,51 +54,52 @@ function useWallet() {
 ```ts
 import { walletPlugin, phantom, solflare, backpack } from '@kit-helpers/wallet';
 
-const client = createEmptyClient()
-  .use(walletPlugin({
-    connectors: [...phantom(), ...solflare(), ...backpack()],
-  }));
+const client = createEmptyClient().use(
+    walletPlugin({
+        connectors: [...phantom(), ...solflare(), ...backpack()],
+    }),
+);
 ```
 
 ## API
 
 ### `walletPlugin(options)`
 
-| Option | Type | Description |
-|--------|------|-------------|
+| Option       | Type                | Description                |
+| ------------ | ------------------- | -------------------------- |
 | `connectors` | `WalletConnector[]` | Array of wallet connectors |
 
 ### `client.wallet`
 
-| Property/Method | Type | Description |
-|-----------------|------|-------------|
-| `state` | `WalletStatus` | Current connection state |
-| `address` | `Address \| null` | Connected address or null |
-| `connected` | `boolean` | Whether a wallet is connected |
-| `connectors` | `WalletConnector[]` | Available connectors |
-| `connect(id, opts?)` | `Promise<WalletSession>` | Connect to a wallet |
-| `disconnect()` | `Promise<void>` | Disconnect current wallet |
-| `subscribe(cb)` | `() => void` | Subscribe to status changes |
+| Property/Method      | Type                     | Description                   |
+| -------------------- | ------------------------ | ----------------------------- |
+| `state`              | `WalletStatus`           | Current connection state      |
+| `address`            | `Address \| null`        | Connected address or null     |
+| `connected`          | `boolean`                | Whether a wallet is connected |
+| `connectors`         | `WalletConnector[]`      | Available connectors          |
+| `connect(id, opts?)` | `Promise<WalletSession>` | Connect to a wallet           |
+| `disconnect()`       | `Promise<void>`          | Disconnect current wallet     |
+| `subscribe(cb)`      | `() => void`             | Subscribe to status changes   |
 
 ### Status Types
 
 ```ts
 type WalletStatus =
-  | { status: 'disconnected' }
-  | { status: 'connecting'; connectorId: string }
-  | { status: 'connected'; session: WalletSession; connectorId: string }
-  | { status: 'error'; error: unknown; connectorId: string };
+    | { status: 'disconnected' }
+    | { status: 'connecting'; connectorId: string }
+    | { status: 'connected'; session: WalletSession; connectorId: string }
+    | { status: 'error'; error: unknown; connectorId: string };
 ```
 
 ### Connector Factories
 
-| Function | Description |
-|----------|-------------|
-| `autoDiscover()` | Discover all Wallet Standard wallets |
-| `phantom()` | Phantom wallet connector |
-| `solflare()` | Solflare wallet connector |
-| `backpack()` | Backpack wallet connector |
-| `filterByNames(...names)` | Create filter for autoDiscover |
+| Function                  | Description                          |
+| ------------------------- | ------------------------------------ |
+| `autoDiscover()`          | Discover all Wallet Standard wallets |
+| `phantom()`               | Phantom wallet connector             |
+| `solflare()`              | Solflare wallet connector            |
+| `backpack()`              | Backpack wallet connector            |
+| `filterByNames(...names)` | Create filter for autoDiscover       |
 
 ## License
 

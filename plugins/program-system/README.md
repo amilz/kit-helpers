@@ -16,13 +16,11 @@ pnpm add @kit-helpers/program-system @solana-program/system @solana/kit
 import { systemProgramPlugin } from '@kit-helpers/program-system';
 import { createEmptyClient } from '@solana/kit';
 
-const client = createEmptyClient()
-  .use(rpc('https://api.devnet.solana.com'))
-  .use(systemProgramPlugin());
+const client = createEmptyClient().use(rpc('https://api.devnet.solana.com')).use(systemProgramPlugin());
 
 const ix = client.program.system.transfer({
-  destination: recipientAddress,
-  amount: 1_000_000n,
+    destination: recipientAddress,
+    amount: 1_000_000n,
 });
 ```
 

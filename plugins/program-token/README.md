@@ -16,15 +16,13 @@ pnpm add @kit-helpers/program-token @solana-program/token @solana/kit
 import { tokenProgramPlugin } from '@kit-helpers/program-token';
 import { createEmptyClient } from '@solana/kit';
 
-const client = createEmptyClient()
-  .use(rpc('https://api.devnet.solana.com'))
-  .use(tokenProgramPlugin());
+const client = createEmptyClient().use(rpc('https://api.devnet.solana.com')).use(tokenProgramPlugin());
 
 const ix = client.program.token.transfer({
-  source: sourceTokenAccount,
-  destination: destTokenAccount,
-  authority: ownerAddress,
-  amount: 1_000_000n,
+    source: sourceTokenAccount,
+    destination: destTokenAccount,
+    authority: ownerAddress,
+    amount: 1_000_000n,
 });
 ```
 

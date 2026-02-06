@@ -94,7 +94,8 @@ function updateUI(walletStatus: WalletStatus) {
             break;
         }
         case 'error': {
-            const errMsg = walletStatus.error instanceof Error ? walletStatus.error.message : String(walletStatus.error);
+            const errMsg =
+                walletStatus.error instanceof Error ? walletStatus.error.message : String(walletStatus.error);
             addressEl.textContent = '\u2014';
             disconnectBtn.classList.add('hidden');
             signSection.classList.add('hidden');
@@ -115,7 +116,7 @@ client.wallet.subscribe((walletStatus: WalletStatus) => {
 renderConnectors(client.wallet.connectors);
 
 // Listen for late wallet registrations
-onWalletRegistered((connector) => {
+onWalletRegistered(connector => {
     log(`new wallet registered: ${connector.name}`);
     renderConnectorButton(connector);
     noWalletsEl.style.display = 'none';
@@ -148,7 +149,7 @@ signBtn.addEventListener('click', async () => {
         const session = client.wallet.state.session;
         const sig = await session.signMessage(new TextEncoder().encode(message));
         // Convert SignatureBytes to hex for display
-        const hex = Array.from(sig, (b) => b.toString(16).padStart(2, '0')).join('');
+        const hex = Array.from(sig, b => b.toString(16).padStart(2, '0')).join('');
         signatureEl.textContent = hex;
         log(`signed message: "${message}"`);
     } catch (e) {

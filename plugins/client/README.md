@@ -16,8 +16,8 @@ pnpm add @kit-helpers/client @solana/kit
 import { createSolanaClient } from '@kit-helpers/client';
 
 const client = createSolanaClient({
-  url: 'https://api.devnet.solana.com',
-  payer: myKeypair,
+    url: 'https://api.devnet.solana.com',
+    payer: myKeypair,
 });
 
 // Query
@@ -25,8 +25,8 @@ const balance = await client.query.balance(address).fn();
 
 // Build instructions
 const ix = client.program.system.transfer({
-  destination: recipientAddress,
-  amount: 1_000_000n,
+    destination: recipientAddress,
+    amount: 1_000_000n,
 });
 
 // Send transaction
@@ -40,8 +40,8 @@ import { createSolanaClient } from '@kit-helpers/client';
 import { phantom, solflare } from '@kit-helpers/wallet/connectors';
 
 const client = createSolanaClient({
-  url: 'https://api.devnet.solana.com',
-  wallet: { connectors: [phantom(), solflare()] },
+    url: 'https://api.devnet.solana.com',
+    wallet: { connectors: [phantom(), solflare()] },
 });
 
 // Connect wallet
@@ -49,7 +49,10 @@ await client.wallet.connect('phantom');
 
 // Everything else works the same
 const ix = client.program.token.transfer({
-  source, destination, authority, amount: 1_000_000n,
+    source,
+    destination,
+    authority,
+    amount: 1_000_000n,
 });
 await client.action.send([ix]);
 ```
@@ -58,26 +61,27 @@ await client.action.send([ix]);
 
 `createSolanaClient` composes these plugins automatically:
 
-| Namespace | Plugin | Description |
-|-----------|--------|-------------|
-| `client.rpc` | `@solana/kit-plugins` | RPC and subscriptions |
-| `client.payer` | — | Transaction signer (server) |
-| `client.wallet` | `@kit-helpers/wallet` | Wallet adapter (browser) |
-| `client.query.*` | `@kit-helpers/query` | Balance, token balance, account queries |
-| `client.action.*` | `@kit-helpers/action` | Send, simulate, sign transactions |
-| `client.program.system.*` | `@kit-helpers/program-system` | System program instructions |
-| `client.program.token.*` | `@kit-helpers/program-token` | Token program instructions |
+| Namespace                 | Plugin                        | Description                             |
+| ------------------------- | ----------------------------- | --------------------------------------- |
+| `client.rpc`              | `@solana/kit-plugins`         | RPC and subscriptions                   |
+| `client.payer`            | —                             | Transaction signer (server)             |
+| `client.wallet`           | `@kit-helpers/wallet`         | Wallet adapter (browser)                |
+| `client.query.*`          | `@kit-helpers/query`          | Balance, token balance, account queries |
+| `client.action.*`         | `@kit-helpers/action`         | Send, simulate, sign transactions       |
+| `client.program.system.*` | `@kit-helpers/program-system` | System program instructions             |
+| `client.program.token.*`  | `@kit-helpers/program-token`  | Token program instructions              |
 
 ## Config
 
 ```ts
 type SolanaClientConfig = {
-  url: ClusterUrl;             // Required — cluster endpoint
-  payer?: TransactionSigner;   // Server/script signer
-  wallet?: {                   // Browser wallet config
-    connectors: WalletConnector[];
-  };
-  action?: ActionPluginOptions; // Action plugin options (commitment, etc.)
+    url: ClusterUrl; // Required — cluster endpoint
+    payer?: TransactionSigner; // Server/script signer
+    wallet?: {
+        // Browser wallet config
+        connectors: WalletConnector[];
+    };
+    action?: ActionPluginOptions; // Action plugin options (commitment, etc.)
 };
 ```
 
@@ -92,7 +96,7 @@ import { queryPlugin } from '@kit-helpers/query';
 import { systemProgramPlugin } from '@kit-helpers/program-system';
 
 const client = createEmptyClient()
-  .use(rpc('https://api.devnet.solana.com'))
-  .use(queryPlugin())
-  .use(systemProgramPlugin());
+    .use(rpc('https://api.devnet.solana.com'))
+    .use(queryPlugin())
+    .use(systemProgramPlugin());
 ```

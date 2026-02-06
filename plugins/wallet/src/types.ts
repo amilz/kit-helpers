@@ -57,15 +57,15 @@ export type WalletConnector = WalletConnectorMetadata & {
 
 /** Wallet is connected with an active session. */
 export type WalletStatusConnected = {
-    status: 'connected';
-    session: WalletSession;
     connectorId: string;
+    session: WalletSession;
+    status: 'connected';
 };
 
 /** Wallet is in the process of connecting. */
 export type WalletStatusConnecting = {
-    status: 'connecting';
     connectorId: string;
+    status: 'connecting';
 };
 
 /** Wallet is disconnected. */
@@ -75,9 +75,9 @@ export type WalletStatusDisconnected = {
 
 /** Wallet connection failed with an error. */
 export type WalletStatusError = {
-    status: 'error';
-    error: unknown;
     connectorId: string;
+    error: unknown;
+    status: 'error';
 };
 
 /** Discriminated union of all wallet states. */
@@ -98,22 +98,22 @@ export type WalletSubscribeCallback = (status: WalletStatus) => void;
 
 /** The wallet API added to the client by the wallet plugin. */
 export type WalletApi = {
-    /** Current wallet state (state machine). */
-    readonly state: WalletStatus;
     /** Current address (null if disconnected). */
     readonly address: Address | null;
-    /** Whether a wallet is connected. */
-    readonly connected: boolean;
-    /** Available wallet connectors. */
-    readonly connectors: readonly WalletConnector[];
     /**
      * Connect to a wallet by connector ID.
      * @param connectorId - The ID of the connector to use.
      * @param options.autoConnect - Attempt silent connection without user interaction.
      */
     connect: (connectorId: string, options?: { autoConnect?: boolean }) => Promise<WalletSession>;
+    /** Whether a wallet is connected. */
+    readonly connected: boolean;
+    /** Available wallet connectors. */
+    readonly connectors: readonly WalletConnector[];
     /** Disconnect from the current wallet. */
     disconnect: () => Promise<void>;
+    /** Current wallet state (state machine). */
+    readonly state: WalletStatus;
     /**
      * Subscribe to wallet status changes.
      * @returns Unsubscribe function.

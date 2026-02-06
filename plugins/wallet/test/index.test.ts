@@ -62,7 +62,7 @@ describe('walletPlugin', () => {
         const client = createEmptyClient().use(walletPlugin({ connectors: [connector] }));
 
         const states: WalletStatus[] = [];
-        client.wallet.subscribe((status) => states.push({ ...status }));
+        client.wallet.subscribe(status => states.push({ ...status }));
 
         await client.wallet.connect('phantom');
 
@@ -102,7 +102,7 @@ describe('walletPlugin', () => {
         const mockSession = createMockSession();
         let receivedOptions: unknown;
         const connector = createMockConnector('phantom', {
-            connect: async (options) => {
+            connect: async options => {
                 receivedOptions = options;
                 return mockSession;
             },
@@ -124,7 +124,7 @@ describe('walletPlugin', () => {
         const client = createEmptyClient().use(walletPlugin({ connectors: [connector] }));
 
         const states: WalletStatus[] = [];
-        client.wallet.subscribe((status) => states.push({ ...status }));
+        client.wallet.subscribe(status => states.push({ ...status }));
 
         await expect(client.wallet.connect('phantom')).rejects.toThrow('User rejected');
 
@@ -236,7 +236,7 @@ describe('walletPlugin', () => {
     it('account change notifies subscribers with updated state', async () => {
         let accountChangeListener: ((accounts: WalletAccount[]) => void) | null = null;
         const mockSession = createMockSession({
-            onAccountsChanged: (listener) => {
+            onAccountsChanged: listener => {
                 accountChangeListener = listener;
                 return () => {
                     accountChangeListener = null;
@@ -249,7 +249,7 @@ describe('walletPlugin', () => {
         const client = createEmptyClient().use(walletPlugin({ connectors: [connector] }));
 
         const states: WalletStatus[] = [];
-        client.wallet.subscribe((s) => states.push({ ...s }));
+        client.wallet.subscribe(s => states.push({ ...s }));
 
         await client.wallet.connect('phantom');
         expect(states).toHaveLength(2); // connecting, connected
@@ -259,7 +259,7 @@ describe('walletPlugin', () => {
             address: address('FcaY9zGSAhA7GPqjKHYPwsMqGGPENosMbPevJjaNuejF'),
             publicKey: new Uint8Array(32),
         };
-        accountChangeListener!([ newAccount ]);
+        accountChangeListener!([newAccount]);
 
         expect(states).toHaveLength(3);
         expect(states[2].status).toBe('connected');
@@ -271,7 +271,7 @@ describe('walletPlugin', () => {
     it('account change to zero accounts triggers disconnect', async () => {
         let accountChangeListener: ((accounts: WalletAccount[]) => void) | null = null;
         const mockSession = createMockSession({
-            onAccountsChanged: (listener) => {
+            onAccountsChanged: listener => {
                 accountChangeListener = listener;
                 return () => {
                     accountChangeListener = null;
@@ -284,7 +284,7 @@ describe('walletPlugin', () => {
         const client = createEmptyClient().use(walletPlugin({ connectors: [connector] }));
 
         const states: WalletStatus[] = [];
-        client.wallet.subscribe((s) => states.push({ ...s }));
+        client.wallet.subscribe(s => states.push({ ...s }));
 
         await client.wallet.connect('phantom');
         expect(states).toHaveLength(2); // connecting, connected
@@ -513,7 +513,7 @@ function createMockSession(
         signMessage: async () => new Uint8Array(64) as unknown as ReturnType<WalletSession['signMessage']>,
         signer: {
             address: testAddress,
-            signTransactions: async (txs) => txs,
+            signTransactions: async txs => txs,
         },
     };
 }

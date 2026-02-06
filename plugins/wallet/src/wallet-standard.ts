@@ -12,7 +12,7 @@ const REQUIRED_FEATURES = [StandardConnect, SolanaSignTransaction] as const;
 
 /** Check if a wallet has all required features. */
 export function isWalletStandardCompatible(wallet: Wallet): boolean {
-    return REQUIRED_FEATURES.every((feature) => feature in wallet.features);
+    return REQUIRED_FEATURES.every(feature => feature in wallet.features);
 }
 
 /** Convert a wallet-standard account to our WalletAccount type. */
@@ -30,14 +30,14 @@ function createWalletStandardSigner(wallet: Wallet, account: StandardWalletAccou
 
     return {
         address: walletAddress,
-        signTransactions: async (transactions) => {
+        signTransactions: async transactions => {
             const signFeature = wallet.features[SolanaSignTransaction] as SolanaSignTransactionFeature | undefined;
             if (!signFeature) {
                 throw new Error('Wallet does not support signing transactions');
             }
 
             // The wallet-standard signTransaction method takes an array of inputs
-            const inputs = transactions.map((tx) => ({
+            const inputs = transactions.map(tx => ({
                 account,
                 transaction: tx as unknown as Uint8Array,
             }));
@@ -52,7 +52,7 @@ function createWalletStandardSigner(wallet: Wallet, account: StandardWalletAccou
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const results: any[] = await signTransactionFn(...inputs);
 
-            return results.map((result) => result.signedTransaction) as typeof transactions;
+            return results.map(result => result.signedTransaction) as typeof transactions;
         },
     };
 }
@@ -70,7 +70,10 @@ export type WalletStandardConnectorOptions = {
  * @param options - Optional configuration.
  * @returns A WalletConnector that wraps the wallet-standard wallet.
  */
-export function createWalletStandardConnector(wallet: Wallet, options?: WalletStandardConnectorOptions): WalletConnector {
+export function createWalletStandardConnector(
+    wallet: Wallet,
+    options?: WalletStandardConnectorOptions,
+): WalletConnector {
     // Access features using the feature namespace strings
     const connectFeature = wallet.features[StandardConnect];
     const disconnectFeature = wallet.features[StandardDisconnect];
@@ -155,7 +158,7 @@ export function createWalletStandardConnector(wallet: Wallet, options?: WalletSt
                     disconnect: async () => {
                         await connector.disconnect();
                     },
-                    onAccountsChanged: (listener) => {
+                    onAccountsChanged: listener => {
                         accountChangeListeners.add(listener);
                         return () => {
                             accountChangeListeners.delete(listener);

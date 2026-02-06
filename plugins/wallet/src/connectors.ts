@@ -1,5 +1,5 @@
-import type { Wallet } from '@wallet-standard/base';
 import { getWallets } from '@wallet-standard/app';
+import type { Wallet } from '@wallet-standard/base';
 
 import type { WalletConnector, WalletConnectorMetadata } from './types';
 import { createWalletStandardConnector, isWalletStandardCompatible } from './wallet-standard';
@@ -88,10 +88,10 @@ export function autoDiscover(options?: AutoDiscoverOptions): WalletConnector[] {
  * ```
  */
 export function filterByNames(...names: string[]): (wallet: Wallet) => boolean {
-    const lowerNames = names.map((n) => n.toLowerCase());
+    const lowerNames = names.map(n => n.toLowerCase());
     return (wallet: Wallet) => {
         const walletNameLower = wallet.name.toLowerCase();
-        return lowerNames.some((name) => walletNameLower.includes(name));
+        return lowerNames.some(name => walletNameLower.includes(name));
     };
 }
 
