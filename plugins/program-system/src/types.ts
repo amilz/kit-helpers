@@ -1,20 +1,10 @@
+import type { WalletApi } from '@kit-helpers/wallet';
 import type { Address, Instruction, TransactionSigner } from '@solana/kit';
-
-/** Structural type for wallet-like objects. */
-export type WalletLike = {
-    connected: boolean;
-    state?: {
-        status: string;
-        session?: {
-            signer: TransactionSigner;
-        };
-    };
-};
 
 /** Client requirements for the system program plugin. */
 export type SystemProgramClientRequirements = {
     payer?: TransactionSigner;
-    wallet?: WalletLike;
+    wallet?: WalletApi;
 };
 
 /** The system program namespace added by the plugin. */

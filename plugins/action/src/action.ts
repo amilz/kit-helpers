@@ -9,6 +9,7 @@ import {
     getSignatureFromTransaction,
     type Instruction,
     isSolanaError,
+    type MicroLamports,
     pipe,
     sendAndConfirmTransactionFactory,
     setTransactionMessageFeePayerSigner,
@@ -17,6 +18,7 @@ import {
     type SignatureBytes,
     signTransactionMessageWithSigners,
 } from '@solana/kit';
+import { getSetComputeUnitLimitInstruction, getSetComputeUnitPriceInstruction } from '@solana-program/compute-budget';
 
 import { resolveSigner } from './resolve-signer';
 import type {
@@ -50,7 +52,12 @@ function rethrowWithContext(error: unknown, context: string): never {
 async function buildTransactionMessage(
     client: ActionClientRequirements,
     instructions: Instruction[],
-    options?: { abortSignal?: AbortSignal; signer?: import('@solana/kit').TransactionSigner },
+    options?: {
+        abortSignal?: AbortSignal;
+        computeUnitLimit?: number;
+        computeUnitPrice?: bigint;
+        signer?: import('@solana/kit').TransactionSigner;
+    },
 ) {
     const signer = resolveSigner(client, options?.signer);
 
@@ -66,11 +73,22 @@ async function buildTransactionMessage(
 
     options?.abortSignal?.throwIfAborted();
 
+    const allInstructions: Instruction[] = [];
+    if (options?.computeUnitLimit !== undefined) {
+        allInstructions.push(getSetComputeUnitLimitInstruction({ units: options.computeUnitLimit }));
+    }
+    if (options?.computeUnitPrice !== undefined) {
+        allInstructions.push(
+            getSetComputeUnitPriceInstruction({ microLamports: options.computeUnitPrice as MicroLamports }),
+        );
+    }
+    allInstructions.push(...instructions);
+
     const message = pipe(
         createTransactionMessage({ version: 0 }),
         tx => setTransactionMessageFeePayerSigner(signer, tx),
         tx => setTransactionMessageLifetimeUsingBlockhash(latestBlockhash, tx),
-        tx => appendTransactionMessageInstructions(instructions, tx),
+        tx => appendTransactionMessageInstructions(allInstructions, tx),
     );
 
     return { message, signer };
@@ -96,6 +114,8 @@ export function createActionNamespace(
 
             const { message } = await buildTransactionMessage(client, instructions, {
                 abortSignal: options?.abortSignal,
+                computeUnitLimit: options?.computeUnitLimit ?? pluginOptions?.computeUnitLimit,
+                computeUnitPrice: options?.computeUnitPrice ?? pluginOptions?.computeUnitPrice,
                 signer: options?.signer,
             });
 
@@ -204,6 +224,8 @@ export function createActionNamespace(
 
             const { message } = await buildTransactionMessage(client, instructions, {
                 abortSignal: options?.abortSignal,
+                computeUnitLimit: options?.computeUnitLimit ?? pluginOptions?.computeUnitLimit,
+                computeUnitPrice: options?.computeUnitPrice ?? pluginOptions?.computeUnitPrice,
                 signer: options?.signer,
             });
 
@@ -221,7 +243,11 @@ export function createActionNamespace(
 
         async signMessage(message: Uint8Array): Promise<SignatureBytes> {
             // Try wallet session signMessage
-            if ('wallet' in client && client.wallet.connected && client.wallet.state?.session?.signMessage) {
+            if (
+                'wallet' in client &&
+                client.wallet.state.status === 'connected' &&
+                client.wallet.state.session.signMessage
+            ) {
                 return await client.wallet.state.session.signMessage(message);
             }
 
@@ -256,6 +282,8 @@ export function createActionNamespace(
 
             const { message } = await buildTransactionMessage(client, instructions, {
                 abortSignal: options?.abortSignal,
+                computeUnitLimit: options?.computeUnitLimit ?? pluginOptions?.computeUnitLimit,
+                computeUnitPrice: options?.computeUnitPrice ?? pluginOptions?.computeUnitPrice,
                 signer: options?.signer,
             });
 

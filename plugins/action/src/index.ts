@@ -22,5 +22,4 @@ export type {
     SignedTransaction,
     SimulateResult,
     WalletClient,
-    WalletLike,
 } from './types';

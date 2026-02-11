@@ -55,7 +55,11 @@ export function createQueryNamespace(client: QueryClientRequirements): QueryName
     const { rpc } = client;
 
     return {
-        account<TData = Uint8Array>(address: Address, decoder?: Decoder<TData>): QueryDef<AccountInfo<TData> | null> {
+        account<TData = Uint8Array>(
+            address: Address,
+            decoder?: Decoder<TData>,
+            options?: { decoderKey?: string },
+        ): QueryDef<AccountInfo<TData> | null> {
             return {
                 fn: async () => {
                     const { value } = await rpc.getAccountInfo(address, { encoding: 'base64' }).send();
@@ -76,7 +80,7 @@ export function createQueryNamespace(client: QueryClientRequirements): QueryName
                         space: value.space,
                     };
                 },
-                key: ['account', address, decoder ? 'decoded' : 'raw'] as const,
+                key: ['account', address, options?.decoderKey ?? (decoder ? 'decoded' : 'raw')] as const,
                 staleTime: STALE_TIMES.account,
             };
         },
@@ -96,7 +100,7 @@ export function createQueryNamespace(client: QueryClientRequirements): QueryName
             programId: Address,
             options?: ProgramAccountsOptions<TData>,
         ): QueryDef<ProgramAccount<TData>[]> {
-            const { decoder, filters } = options ?? {};
+            const { decoder, decoderKey, filters } = options ?? {};
 
             // Build a stable cache key from filters
             const filtersKey = filters ? serializeFiltersForKey(filters) : null;
@@ -126,7 +130,7 @@ export function createQueryNamespace(client: QueryClientRequirements): QueryName
                         };
                     });
                 },
-                key: ['programAccounts', programId, filtersKey, decoder ? 'decoded' : 'raw'] as const,
+                key: ['programAccounts', programId, filtersKey, decoderKey ?? (decoder ? 'decoded' : 'raw')] as const,
                 staleTime: STALE_TIMES.programAccounts,
             };
         },

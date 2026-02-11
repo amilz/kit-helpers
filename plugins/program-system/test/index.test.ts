@@ -1,14 +1,15 @@
 import { address, createEmptyClient, generateKeyPairSigner, type TransactionSigner } from '@solana/kit';
 import { describe, expect, it } from 'vitest';
 
+import type { WalletApi } from '@kit-helpers/wallet';
+
 import { createSystemProgramNamespace, resolveSigner, systemProgramPlugin } from '../src';
-import type { WalletLike } from '../src';
 
 // ─── Mock Helpers ───────────────────────────────────────────────────────────
 
-function createMockWallet(connected: boolean, signer?: TransactionSigner): WalletLike {
+function createMockWallet(connected: boolean, signer?: TransactionSigner): WalletApi {
     if (!connected || !signer) {
-        return { connected: false };
+        return { connected: false, state: { status: 'disconnected' } } as unknown as WalletApi;
     }
     return {
         connected: true,
@@ -16,7 +17,7 @@ function createMockWallet(connected: boolean, signer?: TransactionSigner): Walle
             status: 'connected',
             session: { signer },
         },
-    };
+    } as unknown as WalletApi;
 }
 
 // ─── Tests ──────────────────────────────────────────────────────────────────

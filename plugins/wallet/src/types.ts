@@ -1,5 +1,7 @@
 import type { Address, SignatureBytes, TransactionSigner } from '@solana/kit';
 
+import type { WalletStorage } from './storage';
+
 /** Metadata describing a wallet connector. */
 export type WalletConnectorMetadata = {
     /** Whether the wallet supports silent/auto-connect without user interaction. */
@@ -89,8 +91,12 @@ export type WalletStatus =
 
 /** Options for the wallet plugin. */
 export type WalletPluginOptions = {
+    /** Attempt to reconnect to the last wallet on init. Default: false. */
+    autoConnect?: boolean;
     /** Wallet connectors to use. Use autoDiscover() or specific connector factories. */
     connectors: WalletConnector[];
+    /** Persistence adapter. Default: auto-detected (localStorage in browser, noop in SSR). */
+    storage?: WalletStorage;
 };
 
 /** Subscription callback for wallet state changes. */

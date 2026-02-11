@@ -45,11 +45,13 @@
         "test:unit": "vitest run"
     },
     "peerDependencies": {
+        "@kit-helpers/wallet": "workspace:*",
         "@solana-program/system": "^0.10.0",
         "@solana/kit": "^5.2.0"
     },
     "dependencies": {},
     "devDependencies": {
+        "@kit-helpers/wallet": "workspace:*",
         "@solana-program/system": "^0.10.0",
         "@solana/kit": "^5.5.1",
         "@types/node": "^24.10.9",

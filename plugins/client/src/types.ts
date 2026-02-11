@@ -19,10 +19,12 @@ type SolanaClientConfigBase = {
 export type PayerClientConfig = SolanaClientConfigBase & {
     /** Transaction signer for scripting/server usage. */
     payer: TransactionSigner;
+    wallet?: never;
 };
 
 /** Browser config — wallet required. */
 export type WalletClientConfig = SolanaClientConfigBase & {
+    payer?: never;
     /** Wallet configuration for browser usage. */
     wallet: { connectors: WalletConnector[] };
 };

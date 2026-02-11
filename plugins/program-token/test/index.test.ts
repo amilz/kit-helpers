@@ -1,8 +1,9 @@
 import { address, createEmptyClient, generateKeyPairSigner, type TransactionSigner } from '@solana/kit';
 import { describe, expect, it } from 'vitest';
 
+import type { WalletApi } from '@kit-helpers/wallet';
+
 import { createTokenProgramNamespace, resolveSigner, tokenProgramPlugin } from '../src';
-import type { WalletLike } from '../src';
 
 // ─── Constants ──────────────────────────────────────────────────────────────
 
@@ -14,14 +15,17 @@ const ADDR_4 = address('SysvarRent111111111111111111111111111111111');
 
 // ─── Mock Helpers ───────────────────────────────────────────────────────────
 
-function createMockWallet(connected: boolean, signer?: TransactionSigner): WalletLike {
+function createMockWallet(connected: boolean, signer?: TransactionSigner): WalletApi {
     if (!connected || !signer) {
-        return { connected: false };
+        return { connected: false, state: { status: 'disconnected' } } as unknown as WalletApi;
     }
     return {
         connected: true,
-        session: { signer },
-    };
+        state: {
+            status: 'connected',
+            session: { signer },
+        },
+    } as unknown as WalletApi;
 }
 
 // ─── Tests ──────────────────────────────────────────────────────────────────

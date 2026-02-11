@@ -6,6 +6,7 @@ import { walletPlugin } from '@kit-helpers/wallet';
 import { createEmptyClient } from '@solana/kit';
 import { payer } from '@solana/kit-plugin-payer';
 import { rpc } from '@solana/kit-plugin-rpc';
+
 import type {
     PayerClientConfig,
     PayerSolanaClient,
@@ -45,7 +46,7 @@ export function createSolanaClient(config: WalletClientConfig): WalletSolanaClie
 export function createSolanaClient(config: SolanaClientConfig): SolanaClient {
     const rpcClient = createEmptyClient().use(rpc(config.url, config.wsUrl ? { url: config.wsUrl } : undefined));
 
-    if ('wallet' in config) {
+    if ('wallet' in config && config.wallet) {
         return rpcClient
             .use(walletPlugin(config.wallet))
             .use(queryPlugin())

@@ -1,7 +1,7 @@
+import type { WalletApi } from '@kit-helpers/wallet';
 import type {
     AccountNotificationsApi,
     Commitment,
-    FullySignedTransaction,
     GetEpochInfoApi,
     GetLatestBlockhashApi,
     GetSignatureStatusesApi,
@@ -31,7 +31,7 @@ export type ActionRpcSubscriptions = RpcSubscriptions<
 >;
 
 /** A signed transaction ready to send. */
-export type SignedTransaction = FullySignedTransaction & SendableTransaction & Transaction & TransactionWithLifetime;
+export type SignedTransaction = SendableTransaction & Transaction & TransactionWithLifetime;
 
 /** Result from simulating a transaction. */
 export type SimulateResult = {
@@ -48,21 +48,6 @@ export type SimulateResult = {
     unitsConsumed: bigint | null;
 };
 
-/**
- * Structural type for wallet-like objects.
- * Uses structural typing to avoid importing from @kit-helpers/wallet.
- */
-export type WalletLike = {
-    connected: boolean;
-    state?: {
-        session?: {
-            signMessage?: (message: Uint8Array) => Promise<SignatureBytes>;
-            signer: TransactionSigner;
-        };
-        status: string;
-    };
-};
-
 /** Client with RPC and a payer signer. */
 export type PayerClient = {
     payer: TransactionSigner;
@@ -74,7 +59,7 @@ export type PayerClient = {
 export type WalletClient = {
     rpc: ActionRpc;
     rpcSubscriptions?: ActionRpcSubscriptions;
-    wallet: WalletLike;
+    wallet: WalletApi;
 };
 
 /** Client requirements for the action plugin. Either payer or wallet (or both) must be present. */
@@ -86,6 +71,10 @@ export type ActionSendOptions = {
     abortSignal?: AbortSignal;
     /** Commitment level for confirmation. Default: 'confirmed'. */
     commitment?: Commitment;
+    /** Compute unit limit for the transaction. */
+    computeUnitLimit?: number;
+    /** Priority fee in microLamports per compute unit. */
+    computeUnitPrice?: bigint;
     /** Override the default signer for this call. */
     signer?: TransactionSigner;
     /** Skip preflight transaction checks. */
@@ -96,6 +85,10 @@ export type ActionSendOptions = {
 export type ActionSimulateOptions = {
     /** Abort signal to cancel the operation. */
     abortSignal?: AbortSignal;
+    /** Compute unit limit for the transaction. */
+    computeUnitLimit?: number;
+    /** Priority fee in microLamports per compute unit. */
+    computeUnitPrice?: bigint;
     /** Override the default signer for this call. */
     signer?: TransactionSigner;
 };
@@ -104,6 +97,10 @@ export type ActionSimulateOptions = {
 export type ActionSignOptions = {
     /** Abort signal to cancel the operation. */
     abortSignal?: AbortSignal;
+    /** Compute unit limit for the transaction. */
+    computeUnitLimit?: number;
+    /** Priority fee in microLamports per compute unit. */
+    computeUnitPrice?: bigint;
     /** Override the default signer for this call. */
     signer?: TransactionSigner;
 };
@@ -122,6 +119,10 @@ export type ActionSendSignedOptions = {
 export type ActionPluginOptions = {
     /** Default commitment for send confirmations. Default: 'confirmed'. */
     commitment?: Commitment;
+    /** Default compute unit limit. */
+    computeUnitLimit?: number;
+    /** Default priority fee in microLamports per compute unit. */
+    computeUnitPrice?: bigint;
 };
 
 /** The action namespace added to the client. */

@@ -8,8 +8,10 @@ import {
 } from '@solana/kit';
 import { describe, expect, it, vi } from 'vitest';
 
+import type { WalletApi } from '@kit-helpers/wallet';
+
 import { actionPlugin, createActionNamespace, resolveSigner } from '../src';
-import type { ActionRpc, WalletLike } from '../src';
+import type { ActionRpc } from '../src';
 
 // ─── Mock Helpers ───────────────────────────────────────────────────────────
 
@@ -71,9 +73,9 @@ function createMockInstruction(): Instruction {
     };
 }
 
-function createMockWallet(connected: boolean, signer?: TransactionSigner): WalletLike {
+function createMockWallet(connected: boolean, signer?: TransactionSigner): WalletApi {
     if (!connected || !signer) {
-        return { connected: false };
+        return { connected: false, state: { status: 'disconnected' } } as unknown as WalletApi;
     }
     return {
         connected: true,
@@ -84,7 +86,7 @@ function createMockWallet(connected: boolean, signer?: TransactionSigner): Walle
                 signMessage: vi.fn().mockResolvedValue(new Uint8Array(64) as SignatureBytes),
             },
         },
-    };
+    } as unknown as WalletApi;
 }
 
 // ─── Tests ──────────────────────────────────────────────────────────────────
@@ -376,7 +378,7 @@ describe('action.signMessage', () => {
         const walletSigner = await generateKeyPairSigner();
         const mockSignMessage = vi.fn().mockResolvedValue(new Uint8Array(64) as SignatureBytes);
         const rpc = createMockRpc();
-        const wallet: WalletLike = {
+        const wallet = {
             connected: true,
             state: {
                 status: 'connected',
@@ -385,7 +387,7 @@ describe('action.signMessage', () => {
                     signMessage: mockSignMessage,
                 },
             },
-        };
+        } as unknown as WalletApi;
         const action = createActionNamespace({ rpc, wallet });
 
         const message = new Uint8Array([1, 2, 3]);
@@ -467,5 +469,5 @@ describe('Error handling', () => {
 type ActionClientRequirementsWithBoth = {
     rpc: ActionRpc;
     payer: TransactionSigner;
-    wallet: WalletLike;
+    wallet: WalletApi;
 };

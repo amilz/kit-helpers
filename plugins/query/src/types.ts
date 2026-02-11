@@ -95,6 +95,8 @@ export type ProgramAccountsFilter = GetProgramAccountsDatasizeFilter | GetProgra
 export type ProgramAccountsOptions<TData = Uint8Array> = {
     /** Decoder to transform raw account bytes into typed data. */
     decoder?: Decoder<TData>;
+    /** Optional key to disambiguate cache entries when multiple decoders target the same account/program. */
+    decoderKey?: string;
     /**
      * Filters to apply. Supports memcmp and dataSize filters.
      * All filters must match (AND logic). Max 4 filters.
@@ -120,7 +122,11 @@ export type QueryNamespace = {
      * @param address - The account address.
      * @param decoder - Optional decoder to transform raw bytes into typed data.
      */
-    account<TData = Uint8Array>(address: Address, decoder?: Decoder<TData>): QueryDef<AccountInfo<TData> | null>;
+    account<TData = Uint8Array>(
+        address: Address,
+        decoder?: Decoder<TData>,
+        options?: { decoderKey?: string },
+    ): QueryDef<AccountInfo<TData> | null>;
 
     /**
      * Query SOL balance for an address.

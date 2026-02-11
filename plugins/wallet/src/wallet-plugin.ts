@@ -1,5 +1,6 @@
 import type { Address } from '@solana/kit';
 
+import { detectStorage } from './storage';
 import type {
     WalletApi,
     WalletConnector,
@@ -64,6 +65,8 @@ import type {
  */
 export function walletPlugin(options: WalletPluginOptions) {
     const { connectors } = options;
+    const storage = options.storage ?? detectStorage();
+    const STORAGE_KEY = 'lastConnector';
 
     return <T>(client: T): T & { wallet: WalletApi } => {
         // Internal state
@@ -107,12 +110,13 @@ export function walletPlugin(options: WalletPluginOptions) {
                     state = { connectorId, session, status: 'connected' };
                     notify();
 
+                    storage.set(STORAGE_KEY, connectorId);
+
                     // Subscribe to account changes if supported
                     if (session.onAccountsChanged) {
                         accountChangeUnsubscribe = session.onAccountsChanged(accounts => {
                             if (accounts.length === 0) {
-                                // No accounts means wallet disconnected
-                                wallet.disconnect();
+                                void wallet.disconnect();
                             } else if (state.status === 'connected') {
                                 // Update state with the new session (already updated by connector)
                                 state = { ...state, session: { ...state.session, account: accounts[0] } };
@@ -155,6 +159,7 @@ export function walletPlugin(options: WalletPluginOptions) {
                 }
 
                 state = { status: 'disconnected' };
+                storage.remove(STORAGE_KEY);
                 notify();
             },
 
@@ -173,6 +178,18 @@ export function walletPlugin(options: WalletPluginOptions) {
                 };
             },
         };
+
+        if (options.autoConnect) {
+            const lastConnectorId = storage.get(STORAGE_KEY);
+            if (lastConnectorId) {
+                const connector = connectors.find(c => c.id === lastConnectorId);
+                if (connector) {
+                    void wallet.connect(lastConnectorId, { autoConnect: true }).catch(() => {
+                        storage.remove(STORAGE_KEY);
+                    });
+                }
+            }
+        }
 
         return {
             ...client,

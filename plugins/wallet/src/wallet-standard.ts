@@ -140,7 +140,7 @@ export function createWalletStandardConnector(
                     throw new Error('No accounts returned from wallet');
                 }
 
-                const primaryAccount = accounts[0] as StandardWalletAccount;
+                const primaryAccount = accounts[0];
                 const walletAccount = toWalletAccount(primaryAccount);
                 const signer = createWalletStandardSigner(wallet, primaryAccount);
 
@@ -151,7 +151,7 @@ export function createWalletStandardConnector(
                             const walletAccounts = (newAccounts as StandardWalletAccount[]).map(toWalletAccount);
 
                             if (newAccounts.length > 0) {
-                                const newPrimaryAccount = newAccounts[0] as StandardWalletAccount;
+                                const newPrimaryAccount = newAccounts[0];
                                 activeSession = {
                                     ...activeSession,
                                     account: toWalletAccount(newPrimaryAccount),

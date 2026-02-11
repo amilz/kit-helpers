@@ -8,4 +8,4 @@ export { createTokenProgramNamespace } from './token-program';
 export { resolveSigner } from './resolve-signer';
 
 // Types
-export type { TokenProgramClientRequirements, TokenProgramNamespace, WalletLike } from './types';
+export type { TokenProgramClientRequirements, TokenProgramNamespace } from './types';

@@ -199,7 +199,14 @@ importers:
         version: 6.4.1(@types/node@24.10.9)(tsx@4.21.0)
 
   plugins/action:
+    dependencies:
+      '@solana-program/compute-budget':
+        specifier: ^0.11.0
+        version: 0.11.0(@solana/kit@5.5.1(typescript@5.9.3))
     devDependencies:
+      '@kit-helpers/wallet':
+        specifier: workspace:*
+        version: link:../wallet
       '@solana/kit':
         specifier: ^5.5.1
         version: 5.5.1(typescript@5.9.3)
@@ -364,6 +371,9 @@ importers:
 
   plugins/program-system:
     devDependencies:
+      '@kit-helpers/wallet':
+        specifier: workspace:*
+        version: link:../wallet
       '@solana-program/system':
         specifier: ^0.10.0
         version: 0.10.0(@solana/kit@5.5.1(typescript@5.9.3))
@@ -394,6 +404,9 @@ importers:
 
   plugins/program-token:
     devDependencies:
+      '@kit-helpers/wallet':
+        specifier: workspace:*
+        version: link:../wallet
       '@solana-program/token':
         specifier: ^0.9.0
         version: 0.9.0(@solana/kit@5.5.1(typescript@5.9.3))
