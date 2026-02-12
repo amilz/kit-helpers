@@ -16,4 +16,4 @@ export type { ActionNamespace, ActionPluginOptions } from '@kit-helpers/action';
 export type { SystemProgramNamespace } from '@kit-helpers/program-system';
 export type { TokenProgramNamespace } from '@kit-helpers/program-token';
 export type { QueryDef, QueryNamespace } from '@kit-helpers/query';
-export type { WalletApi, WalletConnector } from '@kit-helpers/wallet';
+export type { UiWallet, UiWalletAccount, WalletApi } from '@kit-helpers/wallet';

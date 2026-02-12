@@ -2,7 +2,8 @@ import type { ActionNamespace, ActionPluginOptions } from '@kit-helpers/action';
 import type { SystemProgramNamespace } from '@kit-helpers/program-system';
 import type { TokenProgramNamespace } from '@kit-helpers/program-token';
 import type { QueryNamespace } from '@kit-helpers/query';
-import type { WalletApi, WalletConnector } from '@kit-helpers/wallet';
+import type { WalletApi } from '@kit-helpers/wallet';
+import type { UiWallet } from '@wallet-standard/ui';
 import type { ClusterUrl, TransactionSigner } from '@solana/kit';
 
 /** Shared config fields. */
@@ -26,7 +27,7 @@ export type PayerClientConfig = SolanaClientConfigBase & {
 export type WalletClientConfig = SolanaClientConfigBase & {
     payer?: never;
     /** Wallet configuration for browser usage. */
-    wallet: { connectors: WalletConnector[] };
+    wallet: { wallets: UiWallet[] };
 };
 
 /**

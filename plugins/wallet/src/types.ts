@@ -1,73 +1,29 @@
-import type { Address, SignatureBytes, TransactionSigner } from '@solana/kit';
+import type { Address, TransactionModifyingSigner } from '@solana/kit';
+import type { UiWallet, UiWalletAccount } from '@wallet-standard/ui';
 
 import type { WalletStorage } from './storage';
 
-/** Metadata describing a wallet connector. */
-export type WalletConnectorMetadata = {
-    /** Whether the wallet supports silent/auto-connect without user interaction. */
-    canAutoConnect: boolean;
-    /** Data URI of the wallet icon. */
-    icon: string;
-    /** Unique identifier for this connector. */
-    id: string;
-    /** The type of connector (e.g., 'wallet-standard', 'injected'). */
-    kind: string;
-    /** Human-readable name of the wallet. */
-    name: string;
-    /** Whether the wallet is currently available/installed. */
-    ready: boolean;
-};
-
-/** A wallet account with address and public key. */
-export type WalletAccount = {
-    /** The account's address. */
-    address: Address;
-    /** Optional human-readable label for the account. */
-    label?: string;
-    /** The account's public key as bytes. */
-    publicKey: Uint8Array;
-};
-
-/** An active wallet session with signing capabilities. */
+/** An active wallet session. */
 export type WalletSession = {
     /** The connected account. */
-    account: WalletAccount;
-    /** Metadata about the connected wallet. */
-    connector: WalletConnectorMetadata;
+    account: UiWalletAccount;
     /** Disconnect from the wallet. */
     disconnect: () => Promise<void>;
-    /** Subscribe to account changes. Returns unsubscribe function. */
-    onAccountsChanged?: (listener: (accounts: WalletAccount[]) => void) => () => void;
-    /** Sign an arbitrary message. */
-    signMessage: (message: Uint8Array) => Promise<SignatureBytes>;
-    /** A transaction signer compatible with @solana/kit. */
-    signer: TransactionSigner;
-};
-
-/** A wallet connector that can establish sessions. */
-export type WalletConnector = WalletConnectorMetadata & {
-    /**
-     * Connect to the wallet and establish a session.
-     * @param options.autoConnect - Attempt silent connection without user interaction.
-     */
-    connect: (options?: { autoConnect?: boolean }) => Promise<WalletSession>;
-    /** Disconnect from the wallet. */
-    disconnect: () => Promise<void>;
-    /** Check if the wallet is supported in the current environment. */
-    isSupported: () => boolean;
+    /** The wallet this session belongs to. */
+    wallet: UiWallet;
 };
 
 /** Wallet is connected with an active session. */
 export type WalletStatusConnected = {
-    connectorId: string;
     session: WalletSession;
     status: 'connected';
+    walletName: string;
 };
 
 /** Wallet is in the process of connecting. */
 export type WalletStatusConnecting = {
-    connectorId: string;
     status: 'connecting';
+    walletName: string;
 };
 
 /** Wallet is disconnected. */
@@ -77,9 +33,9 @@ export type WalletStatusDisconnected = {
 
 /** Wallet connection failed with an error. */
 export type WalletStatusError = {
-    connectorId: string;
     error: unknown;
     status: 'error';
+    walletName: string;
 };
 
 /** Discriminated union of all wallet states. */
@@ -93,10 +49,10 @@ export type WalletStatus =
 export type WalletPluginOptions = {
     /** Attempt to reconnect to the last wallet on init. Default: false. */
     autoConnect?: boolean;
-    /** Wallet connectors to use. Use autoDiscover() or specific connector factories. */
-    connectors: WalletConnector[];
     /** Persistence adapter. Default: auto-detected (localStorage in browser, noop in SSR). */
     storage?: WalletStorage;
+    /** Wallet instances to use. Use autoDiscover() to get all available wallets. */
+    wallets: UiWallet[];
 };
 
 /** Subscription callback for wallet state changes. */
@@ -107,17 +63,17 @@ export type WalletApi = {
     /** Current address (null if disconnected). */
     readonly address: Address | null;
     /**
-     * Connect to a wallet by connector ID.
-     * @param connectorId - The ID of the connector to use.
+     * Connect to a wallet by name.
+     * @param walletName - The name of the wallet to connect (case-insensitive).
      * @param options.autoConnect - Attempt silent connection without user interaction.
      */
-    connect: (connectorId: string, options?: { autoConnect?: boolean }) => Promise<WalletSession>;
+    connect: (walletName: string, options?: { autoConnect?: boolean }) => Promise<WalletSession>;
     /** Whether a wallet is connected. */
     readonly connected: boolean;
-    /** Available wallet connectors. */
-    readonly connectors: readonly WalletConnector[];
     /** Disconnect from the current wallet. */
     disconnect: () => Promise<void>;
+    /** Cached transaction signer from the connected wallet (null if disconnected or wallet can't sign). */
+    readonly signer: TransactionModifyingSigner | null;
     /** Current wallet state (state machine). */
     readonly state: WalletStatus;
     /**
@@ -125,4 +81,6 @@ export type WalletApi = {
      * @returns Unsubscribe function.
      */
     subscribe: (callback: WalletSubscribeCallback) => () => void;
+    /** Available wallets. */
+    readonly wallets: readonly UiWallet[];
 };

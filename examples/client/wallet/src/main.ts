@@ -1,5 +1,5 @@
 import { createSolanaClient } from '@kit-helpers/client';
-import { autoDiscover, onWalletRegistered, type WalletConnector, type WalletStatus } from '@kit-helpers/wallet';
+import { autoDiscover, onWalletRegistered, type UiWallet, type WalletStatus } from '@kit-helpers/wallet';
 import { generateKeyPair, getAddressFromPublicKey, type ClusterUrl } from '@solana/kit';
 
 // DOM elements
@@ -24,44 +24,44 @@ function log(msg: string) {
 }
 
 // Discover wallets
-const connectors = autoDiscover();
-log(`found ${connectors.length} connector(s)`);
+const wallets = autoDiscover();
+log(`found ${wallets.length} wallet(s)`);
 
 // Create client — wallet config gives us WalletSolanaClient (client.wallet is guaranteed)
 const client = createSolanaClient({
     url: 'http://localhost:8899' as ClusterUrl,
     wsUrl: 'ws://localhost:8900',
-    wallet: { connectors },
+    wallet: { wallets },
 });
 
-// Render a single connector button
-function renderConnectorButton(connector: WalletConnector) {
+// Render a single wallet button
+function renderWalletButton(wallet: UiWallet) {
     const btn = document.createElement('button');
     btn.className = 'connector-btn';
-    btn.dataset.connectorId = connector.id;
+    btn.dataset.walletName = wallet.name;
 
-    if (connector.icon) {
+    if (wallet.icon) {
         const img = document.createElement('img');
-        img.src = connector.icon;
-        img.alt = connector.name;
+        img.src = wallet.icon;
+        img.alt = wallet.name;
         btn.appendChild(img);
     }
 
-    btn.appendChild(document.createTextNode(connector.name));
+    btn.appendChild(document.createTextNode(wallet.name));
 
-    btn.addEventListener('click', () => handleConnect(connector.id));
+    btn.addEventListener('click', () => handleConnect(wallet.name));
     connectorsEl.appendChild(btn);
 }
 
-// Render all connector buttons
-function renderConnectors(list: readonly WalletConnector[]) {
+// Render all wallet buttons
+function renderWallets(list: readonly UiWallet[]) {
     connectorsEl.innerHTML = '';
     if (list.length === 0) {
         noWalletsEl.style.display = 'block';
     } else {
         noWalletsEl.style.display = 'none';
-        for (const connector of list) {
-            renderConnectorButton(connector);
+        for (const wallet of list) {
+            renderWalletButton(wallet);
         }
     }
 }
@@ -110,7 +110,7 @@ function updateUI(walletStatus: WalletStatus) {
             balanceField.classList.add('hidden');
             sendResultEl.textContent = '';
             connectorsEl.classList.remove('hidden');
-            renderConnectors(client.wallet.connectors);
+            renderWallets(client.wallet.wallets);
             break;
         }
         case 'error': {
@@ -134,19 +134,19 @@ client.wallet.subscribe((walletStatus: WalletStatus) => {
 });
 
 // Initial render
-renderConnectors(client.wallet.connectors);
+renderWallets(client.wallet.wallets);
 
 // Listen for late wallet registrations
-onWalletRegistered(connector => {
-    log(`new wallet registered: ${connector.name}`);
-    renderConnectorButton(connector);
+onWalletRegistered(wallet => {
+    log(`new wallet registered: ${wallet.name}`);
+    renderWalletButton(wallet);
     noWalletsEl.style.display = 'none';
 });
 
 // Connect handler
-async function handleConnect(connectorId: string) {
+async function handleConnect(walletName: string) {
     try {
-        await client.wallet.connect(connectorId);
+        await client.wallet.connect(walletName);
     } catch (e) {
         const msg = e instanceof Error ? e.message : String(e);
         log(`connect error: ${msg}`);

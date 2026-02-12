@@ -6,6 +6,8 @@ import {
     type SignatureBytes,
     type TransactionSigner,
 } from '@solana/kit';
+import type { Wallet, WalletAccount as StandardWalletAccount } from '@wallet-standard/base';
+import { getOrCreateUiWalletForStandardWallet_DO_NOT_USE_OR_YOU_WILL_BE_FIRED } from '@wallet-standard/ui-registry';
 import { describe, expect, it, vi } from 'vitest';
 
 import type { WalletApi } from '@kit-helpers/wallet';
@@ -75,15 +77,18 @@ function createMockInstruction(): Instruction {
 
 function createMockWallet(connected: boolean, signer?: TransactionSigner): WalletApi {
     if (!connected || !signer) {
-        return { connected: false, state: { status: 'disconnected' } } as unknown as WalletApi;
+        return { connected: false, signer: null, state: { status: 'disconnected' } } as unknown as WalletApi;
     }
     return {
         connected: true,
+        signer,
         state: {
             status: 'connected',
             session: {
-                signer,
-                signMessage: vi.fn().mockResolvedValue(new Uint8Array(64) as SignatureBytes),
+                account: {
+                    address: signer.address,
+                    features: ['solana:signTransaction', 'solana:signMessage'],
+                },
             },
         },
     } as unknown as WalletApi;
@@ -375,34 +380,70 @@ describe('action.sendSigned', () => {
 
 describe('action.signMessage', () => {
     it('delegates to wallet session signMessage', async () => {
-        const walletSigner = await generateKeyPairSigner();
-        const mockSignMessage = vi.fn().mockResolvedValue(new Uint8Array(64) as SignatureBytes);
+        const mockSignMessage = vi
+            .fn()
+            .mockResolvedValue([{ signature: new Uint8Array(64) as SignatureBytes }]);
         const rpc = createMockRpc();
-        const wallet = {
-            connected: true,
-            state: {
-                status: 'connected',
-                session: {
-                    signer: walletSigner,
+
+        // Create a real UiWallet via the registry so createSignMessageFromAccount works
+        const stdAccount: StandardWalletAccount = {
+            address: '7v91N7iZ9mNicL8WfG6cgSCKyRXydQjLh6UYBWwm6y1Q',
+            publicKey: new Uint8Array(32),
+            chains: ['solana:mainnet', 'solana:devnet'] as const,
+            features: ['solana:signTransaction', 'solana:signMessage'] as const,
+        } as StandardWalletAccount;
+
+        const stdWallet: Wallet = {
+            name: 'SignMsg Test Wallet',
+            icon: 'data:image/svg+xml,<svg></svg>' as `data:image/${string}`,
+            version: '1.0.0' as const,
+            chains: ['solana:mainnet', 'solana:devnet'] as const,
+            features: {
+                'standard:connect': {
+                    connect: vi.fn().mockResolvedValue({ accounts: [stdAccount] }),
+                },
+                'standard:events': { on: vi.fn().mockReturnValue(() => {}) },
+                'solana:signTransaction': {
+                    signTransaction: vi.fn(),
+                },
+                'solana:signMessage': {
                     signMessage: mockSignMessage,
                 },
             },
+            accounts: [stdAccount],
+        } as Wallet;
+
+        const uiWallet =
+            getOrCreateUiWalletForStandardWallet_DO_NOT_USE_OR_YOU_WILL_BE_FIRED(stdWallet);
+        const uiAccount = uiWallet.accounts[0];
+
+        const wallet = {
+            connected: true,
+            signer: null,
+            state: {
+                status: 'connected',
+                session: {
+                    account: uiAccount,
+                    wallet: uiWallet,
+                    disconnect: vi.fn(),
+                },
+            },
         } as unknown as WalletApi;
+
         const action = createActionNamespace({ rpc, wallet });
 
         const message = new Uint8Array([1, 2, 3]);
         const result = await action.signMessage(message);
 
-        expect(mockSignMessage).toHaveBeenCalledWith(message);
+        expect(mockSignMessage).toHaveBeenCalled();
         expect(result).toBeInstanceOf(Uint8Array);
     });
 
     it('throws when no signMessage capability', async () => {
         const payer = await generateKeyPairSigner();
         const rpc = createMockRpc();
-        // payer is a KeyPairSigner, which should have signMessages
 
-        // But if we create a minimal payer without signMessages:
+        // Create a minimal payer without signMessages:
         const minimalPayer = {
             address: payer.address,
             signTransactions: payer.signTransactions,

@@ -32,7 +32,7 @@ import type {
  * // Browser usage
  * const client = createSolanaClient({
  *   url: 'https://api.devnet.solana.com',
- *   wallet: { connectors: [phantom(), solflare()] },
+ *   wallet: { wallets: autoDiscover() },
  * });
  *
  * // Use the client

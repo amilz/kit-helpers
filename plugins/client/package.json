@@ -55,12 +55,15 @@
         "@kit-helpers/query": "workspace:*",
         "@kit-helpers/wallet": "workspace:*",
         "@solana/kit-plugin-payer": "^0.2.0",
-        "@solana/kit-plugin-rpc": "^0.2.0"
+        "@solana/kit-plugin-rpc": "^0.2.0",
+        "@wallet-standard/ui": "^1.0.0"
     },
     "devDependencies": {
         "@solana-program/system": "^0.10.0",
         "@solana-program/token": "^0.9.0",
         "@solana/kit": "^5.5.1",
+        "@wallet-standard/base": "^1.1.0",
+        "@wallet-standard/ui-registry": "^1.0.0",
         "@types/node": "^24.10.9",
         "agadoo": "^3.0.0",
         "browserslist-to-esbuild": "^2.1.1",

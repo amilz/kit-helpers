@@ -10,7 +10,7 @@ export type SignerSource = { payer?: TransactionSigner; wallet?: WalletApi };
  *
  * Priority:
  * 1. Explicit override (per-call signer option)
- * 2. Connected wallet signer (wallet.state.session.signer)
+ * 2. Connected wallet signer (wallet.signer)
  * 3. Client payer
  *
  * @param client - The client with wallet and/or payer.
@@ -24,9 +24,9 @@ export function resolveSigner(client: SignerSource, override?: TransactionSigner
         return override;
     }
 
-    // 2. Connected wallet
-    if (client.wallet && client.wallet.state.status === 'connected' && client.wallet.state.session?.signer) {
-        return client.wallet.state.session.signer;
+    // 2. Connected wallet signer
+    if (client.wallet?.signer) {
+        return client.wallet.signer;
     }
 
     // 3. Client payer

@@ -8,63 +8,105 @@ import {
 } from '@solana/kit';
 import type { SolanaSignMessageFeature, SolanaSignTransactionFeature } from '@solana/wallet-standard-features';
 import { SolanaSignMessage, SolanaSignTransaction } from '@solana/wallet-standard-features';
-import type { Wallet, WalletAccount as StandardWalletAccount } from '@wallet-standard/base';
-import type {
-    StandardConnectFeature,
-    StandardDisconnectFeature,
-    StandardEventsFeature,
-} from '@wallet-standard/features';
 import { StandardConnect, StandardDisconnect, StandardEvents } from '@wallet-standard/features';
+import type { UiWallet, UiWalletAccount } from '@wallet-standard/ui';
+import { getWalletAccountFeature, getWalletFeature } from '@wallet-standard/ui';
+import {
+    getOrCreateUiWalletAccountForStandardWalletAccount_DO_NOT_USE_OR_YOU_WILL_BE_FIRED,
+    getWalletAccountForUiWalletAccount_DO_NOT_USE_OR_YOU_WILL_BE_FIRED,
+    getWalletForHandle_DO_NOT_USE_OR_YOU_WILL_BE_FIRED,
+} from '@wallet-standard/ui-registry';
 
-import type { WalletAccount, WalletConnector, WalletConnectorMetadata, WalletSession } from './types';
-
-/** Features required for a wallet to be usable as a connector. */
-const REQUIRED_FEATURES = [StandardConnect, SolanaSignTransaction] as const;
-
-/** Check if a wallet has all required features. */
-export function isWalletStandardCompatible(wallet: Wallet): boolean {
-    return REQUIRED_FEATURES.every(feature => feature in wallet.features);
+/** Check if a wallet supports connecting (has StandardConnect). */
+export function isConnectable(wallet: UiWallet): boolean {
+    return wallet.features.includes(StandardConnect);
 }
 
-/** Convert a wallet-standard account to our WalletAccount type. */
-function toWalletAccount(account: StandardWalletAccount): WalletAccount {
-    return {
-        address: address(account.address),
-        label: account.label,
-        publicKey: new Uint8Array(account.publicKey),
-    };
+/** Check if a wallet supports signing transactions (has SolanaSignTransaction). */
+export function canSignTransactions(wallet: UiWallet): boolean {
+    return wallet.features.includes(SolanaSignTransaction);
+}
+
+/** Check if a wallet supports signing messages (has SolanaSignMessage). */
+export function canSignMessages(wallet: UiWallet): boolean {
+    return wallet.features.includes(SolanaSignMessage);
 }
 
 /**
- * Create a TransactionModifyingSigner from a wallet-standard wallet and account.
+ * Connect to a wallet via StandardConnect.
+ *
+ * @returns The connected accounts.
+ */
+export async function connectWallet(
+    wallet: UiWallet,
+    options?: { silent?: boolean },
+): Promise<UiWalletAccount[]> {
+    const connectFeature = getWalletFeature(wallet, StandardConnect) as
+        import('@wallet-standard/features').StandardConnectFeature[typeof StandardConnect];
+
+    const { accounts } = await connectFeature.connect(options ? { silent: options.silent } : undefined);
+
+    if (accounts.length === 0) {
+        throw new Error('No accounts returned from wallet');
+    }
+
+    // After connect, the wallet's accounts list should be updated.
+    // Use wallet.accounts if available (preferred — keeps UiWalletAccount identity).
+    if (wallet.accounts.length > 0) {
+        return [...wallet.accounts];
+    }
+
+    // Fallback: wrap raw accounts via the registry.
+    // This handles the case where UiWallet.accounts hasn't refreshed yet.
+    const rawWallet = getWalletForHandle_DO_NOT_USE_OR_YOU_WILL_BE_FIRED(wallet);
+    return accounts.map(account =>
+        getOrCreateUiWalletAccountForStandardWalletAccount_DO_NOT_USE_OR_YOU_WILL_BE_FIRED(rawWallet, account),
+    );
+}
+
+/** Disconnect from a wallet if it supports StandardDisconnect. */
+export async function disconnectWallet(wallet: UiWallet): Promise<void> {
+    if (!wallet.features.includes(StandardDisconnect)) {
+        return;
+    }
+
+    const disconnectFeature = getWalletFeature(wallet, StandardDisconnect) as
+        import('@wallet-standard/features').StandardDisconnectFeature[typeof StandardDisconnect];
+
+    await disconnectFeature.disconnect();
+}
+
+/**
+ * Create a TransactionModifyingSigner from a UiWalletAccount.
  *
  * Uses TransactionModifyingSigner because the app cannot control whether the
  * wallet will modify the transaction before signing (e.g. adding guard
  * instructions or a priority fee budget).
  */
-function createWalletStandardSigner(wallet: Wallet, account: StandardWalletAccount): TransactionModifyingSigner {
+export function createSignerFromAccount(account: UiWalletAccount): TransactionModifyingSigner {
+    if (!account.features.includes(SolanaSignTransaction)) {
+        throw new Error('Wallet account does not support signing transactions');
+    }
+
     const walletAddress = address(account.address);
     const transactionCodec = getTransactionCodec();
-
-    const signFeature = wallet.features[SolanaSignTransaction] as
-        | SolanaSignTransactionFeature[typeof SolanaSignTransaction]
-        | undefined;
-
     const compiledMessageDecoder = getCompiledTransactionMessageDecoder();
+
+    const signFeature = getWalletAccountFeature(account, SolanaSignTransaction) as
+        SolanaSignTransactionFeature[typeof SolanaSignTransaction];
+
+    // Get the raw WalletAccount for the sign call — sign features expect the raw type
+    const rawAccount = getWalletAccountForUiWalletAccount_DO_NOT_USE_OR_YOU_WILL_BE_FIRED(account);
 
     return {
         address: walletAddress,
         async modifyAndSignTransactions(transactions, config) {
             config?.abortSignal?.throwIfAborted();
 
-            if (!signFeature) {
-                throw new Error('Wallet does not support signing transactions');
-            }
-
             const results = [];
             for (const tx of transactions) {
                 const wireBytes = transactionCodec.encode(tx) as Uint8Array;
-                const [output] = await signFeature.signTransaction({ account, transaction: wireBytes });
+                const [output] = await signFeature.signTransaction({ account: rawAccount, transaction: wireBytes });
                 const decoded = transactionCodec.decode(output.signedTransaction);
 
                 assertIsTransactionWithinSizeLimit(decoded);
@@ -81,147 +123,50 @@ function createWalletStandardSigner(wallet: Wallet, account: StandardWalletAccou
     };
 }
 
-/** Options for creating a wallet-standard connector. */
-export type WalletStandardConnectorOptions = {
-    /** Override connector metadata. */
-    overrides?: Partial<WalletConnectorMetadata>;
-};
-
 /**
- * Create a WalletConnector from a wallet-standard Wallet.
+ * Create a signMessage function from a UiWalletAccount.
  *
- * @param wallet - The wallet-standard Wallet instance.
- * @param options - Optional configuration.
- * @returns A WalletConnector that wraps the wallet-standard wallet.
+ * @returns A function that signs arbitrary messages.
  */
-export function createWalletStandardConnector(
-    wallet: Wallet,
-    options?: WalletStandardConnectorOptions,
-): WalletConnector {
-    // Access features using the feature namespace strings with correct type casts
-    const connectFeature = wallet.features[StandardConnect] as
-        | StandardConnectFeature[typeof StandardConnect]
-        | undefined;
-    const disconnectFeature = wallet.features[StandardDisconnect] as
-        | StandardDisconnectFeature[typeof StandardDisconnect]
-        | undefined;
-    const eventsFeature = wallet.features[StandardEvents] as StandardEventsFeature[typeof StandardEvents] | undefined;
-
-    if (!connectFeature) {
-        throw new Error(`Wallet "${wallet.name}" does not support the connect feature`);
+export function createSignMessageFromAccount(
+    account: UiWalletAccount,
+): (message: Uint8Array) => Promise<SignatureBytes> {
+    if (!account.features.includes(SolanaSignMessage)) {
+        throw new Error('Wallet account does not support signing messages');
     }
 
-    const metadata: WalletConnectorMetadata = {
-        canAutoConnect: true, // Most wallet-standard wallets support auto-connect
-        icon: wallet.icon,
-        id: options?.overrides?.id ?? wallet.name.toLowerCase().replace(/\s+/g, '-'),
-        kind: 'wallet-standard',
-        name: options?.overrides?.name ?? wallet.name,
-        ready: true,
-        ...options?.overrides,
+    const signMessageFeature = getWalletAccountFeature(account, SolanaSignMessage) as
+        SolanaSignMessageFeature[typeof SolanaSignMessage];
+
+    // Get the raw WalletAccount for the sign call
+    const rawAccount = getWalletAccountForUiWalletAccount_DO_NOT_USE_OR_YOU_WILL_BE_FIRED(account);
+
+    return async (message: Uint8Array): Promise<SignatureBytes> => {
+        const [result] = await signMessageFeature.signMessage({ account: rawAccount, message });
+        return result.signature as SignatureBytes;
     };
+}
 
-    let activeSession: WalletSession | null = null;
-    let accountChangeUnsubscribe: (() => void) | null = null;
-    const accountChangeListeners = new Set<(accounts: WalletAccount[]) => void>();
+/**
+ * Subscribe to account changes on a wallet via StandardEvents.
+ *
+ * @returns Unsubscribe function, or undefined if the wallet doesn't support events.
+ */
+export function subscribeToWalletEvents(
+    wallet: UiWallet,
+    onAccountsChanged: (accounts: readonly UiWalletAccount[]) => void,
+): (() => void) | undefined {
+    if (!wallet.features.includes(StandardEvents)) {
+        return undefined;
+    }
 
-    const connector: WalletConnector = {
-        ...metadata,
+    const eventsFeature = getWalletFeature(wallet, StandardEvents) as
+        import('@wallet-standard/features').StandardEventsFeature[typeof StandardEvents];
 
-        async connect(connectOptions) {
-            const { autoConnect = false } = connectOptions ?? {};
-
-            try {
-                const { accounts } = await connectFeature.connect({
-                    silent: autoConnect,
-                });
-
-                if (accounts.length === 0) {
-                    throw new Error('No accounts returned from wallet');
-                }
-
-                const primaryAccount = accounts[0];
-                const walletAccount = toWalletAccount(primaryAccount);
-                const signer = createWalletStandardSigner(wallet, primaryAccount);
-
-                // Set up account change listener
-                if (eventsFeature) {
-                    accountChangeUnsubscribe = eventsFeature.on('change', ({ accounts: newAccounts }) => {
-                        if (newAccounts && activeSession) {
-                            const walletAccounts = (newAccounts as StandardWalletAccount[]).map(toWalletAccount);
-
-                            if (newAccounts.length > 0) {
-                                const newPrimaryAccount = newAccounts[0];
-                                activeSession = {
-                                    ...activeSession,
-                                    account: toWalletAccount(newPrimaryAccount),
-                                    signer: createWalletStandardSigner(wallet, newPrimaryAccount),
-                                };
-                            }
-
-                            for (const listener of accountChangeListeners) {
-                                listener(walletAccounts);
-                            }
-                        }
-                    });
-                }
-
-                const session: WalletSession = {
-                    account: walletAccount,
-                    connector: metadata,
-                    disconnect: async () => {
-                        await connector.disconnect();
-                    },
-                    onAccountsChanged: listener => {
-                        accountChangeListeners.add(listener);
-                        return () => {
-                            accountChangeListeners.delete(listener);
-                        };
-                    },
-                    signMessage: async (message: Uint8Array): Promise<SignatureBytes> => {
-                        const signMessageFeature = wallet.features[SolanaSignMessage] as
-                            | SolanaSignMessageFeature[typeof SolanaSignMessage]
-                            | undefined;
-                        if (!signMessageFeature) {
-                            throw new Error('Wallet does not support signing messages');
-                        }
-
-                        const [result] = await signMessageFeature.signMessage({
-                            account: primaryAccount,
-                            message,
-                        });
-
-                        return result.signature as SignatureBytes;
-                    },
-                    signer,
-                };
-
-                activeSession = session;
-                return session;
-            } catch (error) {
-                // If silent connect fails and autoConnect was requested, the caller can retry without autoConnect
-                throw error;
-            }
-        },
-
-        async disconnect() {
-            if (accountChangeUnsubscribe) {
-                accountChangeUnsubscribe();
-                accountChangeUnsubscribe = null;
-            }
-
-            accountChangeListeners.clear();
-            activeSession = null;
-
-            if (disconnectFeature) {
-                await disconnectFeature.disconnect();
-            }
-        },
-
-        isSupported() {
-            return isWalletStandardCompatible(wallet);
-        },
-    };
-
-    return connector;
+    return eventsFeature.on('change', ({ accounts }) => {
+        if (accounts) {
+            // After an account change event, wallet.accounts should reflect the update
+            onAccountsChanged(wallet.accounts);
+        }
+    });
 }

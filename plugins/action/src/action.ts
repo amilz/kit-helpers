@@ -18,6 +18,7 @@ import {
     type SignatureBytes,
     signTransactionMessageWithSigners,
 } from '@solana/kit';
+import { createSignMessageFromAccount } from '@kit-helpers/wallet';
 import { getSetComputeUnitLimitInstruction, getSetComputeUnitPriceInstruction } from '@solana-program/compute-budget';
 
 import { resolveSigner } from './resolve-signer';
@@ -242,13 +243,10 @@ export function createActionNamespace(
         },
 
         async signMessage(message: Uint8Array): Promise<SignatureBytes> {
-            // Try wallet session signMessage
-            if (
-                'wallet' in client &&
-                client.wallet.state.status === 'connected' &&
-                client.wallet.state.session.signMessage
-            ) {
-                return await client.wallet.state.session.signMessage(message);
+            // Try wallet session — create signMessage from account
+            if ('wallet' in client && client.wallet.state.status === 'connected') {
+                const signMsg = createSignMessageFromAccount(client.wallet.state.session.account);
+                return await signMsg(message);
             }
 
             // Try payer's signMessages (available on KeyPairSigner)

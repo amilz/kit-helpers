@@ -9,14 +9,12 @@ import { createSystemProgramNamespace, resolveSigner, systemProgramPlugin } from
 
 function createMockWallet(connected: boolean, signer?: TransactionSigner): WalletApi {
     if (!connected || !signer) {
-        return { connected: false, state: { status: 'disconnected' } } as unknown as WalletApi;
+        return { connected: false, signer: null, state: { status: 'disconnected' } } as unknown as WalletApi;
     }
     return {
         connected: true,
-        state: {
-            status: 'connected',
-            session: { signer },
-        },
+        signer,
+        state: { status: 'connected' },
     } as unknown as WalletApi;
 }
 

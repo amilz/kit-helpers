@@ -1,25 +1,33 @@
-import type { Address } from '@solana/kit';
+import type { Address, TransactionModifyingSigner } from '@solana/kit';
+import { address as toAddress } from '@solana/kit';
+import type { UiWallet, UiWalletAccount } from '@wallet-standard/ui';
 
 import { detectStorage } from './storage';
 import type {
     WalletApi,
-    WalletConnector,
     WalletPluginOptions,
     WalletSession,
     WalletStatus,
     WalletSubscribeCallback,
 } from './types';
+import {
+    canSignTransactions,
+    connectWallet,
+    createSignerFromAccount,
+    disconnectWallet,
+    subscribeToWalletEvents,
+} from './wallet-standard';
 
 /**
  * A plugin that adds wallet connection management to the client.
  *
  * Provides a framework-agnostic wallet API with:
  * - State machine for connection status (disconnected → connecting → connected | error)
- * - Connector abstraction over wallet-standard wallets
+ * - UiWallet-based abstraction over wallet-standard wallets
  * - Subscribe pattern for reactive updates (works with useSyncExternalStore)
  *
  * @param options - Plugin configuration.
- * @param options.connectors - Wallet connectors to use. Use autoDiscover() or specific factories.
+ * @param options.wallets - UiWallet instances. Use autoDiscover() to get all available wallets.
  *
  * @example
  * Basic setup with auto-discovered wallets.
@@ -28,7 +36,7 @@ import type {
  * import { walletPlugin, autoDiscover } from '@kit-helpers/wallet';
  *
  * const client = createEmptyClient()
- *   .use(walletPlugin({ connectors: autoDiscover() }));
+ *   .use(walletPlugin({ wallets: autoDiscover() }));
  *
  * // Connect to a wallet
  * await client.wallet.connect('phantom');
@@ -38,17 +46,6 @@ import type {
  * const unsubscribe = client.wallet.subscribe((status) => {
  *   console.log('Wallet status:', status);
  * });
- * ```
- *
- * @example
- * With specific wallet connectors.
- * ```ts
- * import { walletPlugin, phantom, solflare } from '@kit-helpers/wallet';
- *
- * const client = createEmptyClient()
- *   .use(walletPlugin({
- *     connectors: [...phantom(), ...solflare()],
- *   }));
  * ```
  *
  * @example
@@ -64,73 +61,98 @@ import type {
  * ```
  */
 export function walletPlugin(options: WalletPluginOptions) {
-    const { connectors } = options;
+    const { wallets } = options;
     const storage = options.storage ?? detectStorage();
-    const STORAGE_KEY = 'lastConnector';
+    const STORAGE_KEY = 'lastConnector'; // keep key for back-compat
 
     return <T>(client: T): T & { wallet: WalletApi } => {
         // Internal state
         let state: WalletStatus = { status: 'disconnected' };
-        let accountChangeUnsubscribe: (() => void) | null = null;
+        let eventsUnsubscribe: (() => void) | null = null;
+        let cachedSigner: TransactionModifyingSigner | null = null;
         const listeners = new Set<WalletSubscribeCallback>();
 
-        // Notify all subscribers of state changes
         const notify = () => {
             for (const listener of listeners) {
                 listener(state);
             }
         };
 
-        const wallet: WalletApi = {
+        /** Find a wallet by name (case-insensitive). */
+        function findWallet(walletName: string): UiWallet | undefined {
+            const lower = walletName.toLowerCase();
+            return wallets.find(w => w.name.toLowerCase() === lower);
+        }
+
+        /** Build and cache the signer from the current session. */
+        function updateSigner(account: UiWalletAccount | null, wallet: UiWallet | null): void {
+            if (account && wallet && canSignTransactions(wallet)) {
+                cachedSigner = createSignerFromAccount(account);
+            } else {
+                cachedSigner = null;
+            }
+        }
+
+        const walletApi: WalletApi = {
             get address(): Address | null {
                 if (state.status === 'connected') {
-                    return state.session.account.address;
+                    return toAddress(state.session.account.address);
                 }
                 return null;
             },
 
-            // Connect to a wallet
-            async connect(connectorId: string, connectOptions?): Promise<WalletSession> {
-                const connector = connectors.find(c => c.id === connectorId);
-                if (!connector) {
-                    const availableIds = connectors.map(c => c.id).join(', ');
+            async connect(walletName: string, connectOptions?): Promise<WalletSession> {
+                const target = findWallet(walletName);
+                if (!target) {
+                    const availableNames = wallets.map(w => w.name).join(', ');
                     throw new Error(
-                        `Unknown wallet connector: "${connectorId}". Available connectors: ${availableIds || 'none'}`,
+                        `Unknown wallet: "${walletName}". Available wallets: ${availableNames || 'none'}`,
                     );
                 }
 
-                // Update state to connecting
-                state = { connectorId, status: 'connecting' };
+                state = { walletName: target.name, status: 'connecting' };
                 notify();
 
                 try {
-                    const session = await connector.connect(connectOptions);
+                    const accounts = await connectWallet(target, {
+                        silent: connectOptions?.autoConnect,
+                    });
 
-                    // Update state to connected
-                    state = { connectorId, session, status: 'connected' };
+                    const primaryAccount = accounts[0];
+                    updateSigner(primaryAccount, target);
+
+                    // Subscribe to account changes
+                    eventsUnsubscribe = subscribeToWalletEvents(target, (newAccounts) => {
+                        if (newAccounts.length === 0) {
+                            void walletApi.disconnect();
+                        } else if (state.status === 'connected') {
+                            const newPrimary = newAccounts[0];
+                            updateSigner(newPrimary, target);
+                            state = {
+                                ...state,
+                                session: { ...state.session, account: newPrimary },
+                            };
+                            notify();
+                        }
+                    }) ?? null;
+
+                    const session: WalletSession = {
+                        account: primaryAccount,
+                        disconnect: async () => {
+                            await walletApi.disconnect();
+                        },
+                        wallet: target,
+                    };
+
+                    state = { walletName: target.name, session, status: 'connected' };
                     notify();
 
-                    storage.set(STORAGE_KEY, connectorId);
-
-                    // Subscribe to account changes if supported
-                    if (session.onAccountsChanged) {
-                        accountChangeUnsubscribe = session.onAccountsChanged(accounts => {
-                            if (accounts.length === 0) {
-                                void wallet.disconnect();
-                            } else if (state.status === 'connected') {
-                                // Update state with the new session (already updated by connector)
-                                state = { ...state, session: { ...state.session, account: accounts[0] } };
-                                notify();
-                            }
-                        });
-                    }
+                    storage.set(STORAGE_KEY, target.name);
 
                     return session;
                 } catch (error) {
-                    // Update state to error
-                    state = { connectorId, error, status: 'error' };
+                    state = { walletName: target.name, error, status: 'error' };
                     notify();
-
                     throw error;
                 }
             },
@@ -139,20 +161,17 @@ export function walletPlugin(options: WalletPluginOptions) {
                 return state.status === 'connected';
             },
 
-            get connectors(): readonly WalletConnector[] {
-                return connectors;
-            },
-
-            // Disconnect from the current wallet
             async disconnect(): Promise<void> {
-                if (accountChangeUnsubscribe) {
-                    accountChangeUnsubscribe();
-                    accountChangeUnsubscribe = null;
+                if (eventsUnsubscribe) {
+                    eventsUnsubscribe();
+                    eventsUnsubscribe = null;
                 }
+
+                cachedSigner = null;
 
                 if (state.status === 'connected') {
                     try {
-                        await state.session.disconnect();
+                        await disconnectWallet(state.session.wallet);
                     } catch {
                         // Ignore disconnect errors, just update state
                     }
@@ -163,28 +182,32 @@ export function walletPlugin(options: WalletPluginOptions) {
                 notify();
             },
 
-            // Getters for current state
+            get signer(): TransactionModifyingSigner | null {
+                return cachedSigner;
+            },
+
             get state() {
                 return state;
             },
 
-            // Subscribe to status changes
             subscribe(callback: WalletSubscribeCallback): () => void {
                 listeners.add(callback);
-
-                // Return unsubscribe function
                 return () => {
                     listeners.delete(callback);
                 };
             },
+
+            get wallets(): readonly UiWallet[] {
+                return wallets;
+            },
         };
 
         if (options.autoConnect) {
-            const lastConnectorId = storage.get(STORAGE_KEY);
-            if (lastConnectorId) {
-                const connector = connectors.find(c => c.id === lastConnectorId);
-                if (connector) {
-                    void wallet.connect(lastConnectorId, { autoConnect: true }).catch(() => {
+            const lastWalletName = storage.get(STORAGE_KEY);
+            if (lastWalletName) {
+                const target = findWallet(lastWalletName);
+                if (target) {
+                    void walletApi.connect(target.name, { autoConnect: true }).catch(() => {
                         storage.remove(STORAGE_KEY);
                     });
                 }
@@ -193,7 +216,7 @@ export function walletPlugin(options: WalletPluginOptions) {
 
         return {
             ...client,
-            wallet,
+            wallet: walletApi,
         };
     };
 }

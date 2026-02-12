@@ -1,17 +1,25 @@
 // Main plugin
 export { walletPlugin } from './wallet-plugin';
 
-// Connector factories
-export { autoDiscover, backpack, filterByNames, onWalletRegistered, phantom, solflare } from './connectors';
-export type { AutoDiscoverOptions } from './connectors';
+// Discovery
+export { autoDiscover, filterByNames, onWalletRegistered } from './discovery';
+export type { AutoDiscoverOptions } from './discovery';
 
 // Storage
 export { createLocalStorage, createNoopStorage, detectStorage } from './storage';
 export type { WalletStorage } from './storage';
 
 // Wallet-standard utilities
-export { createWalletStandardConnector, isWalletStandardCompatible } from './wallet-standard';
-export type { WalletStandardConnectorOptions } from './wallet-standard';
+export {
+    canSignMessages,
+    canSignTransactions,
+    connectWallet,
+    createSignerFromAccount,
+    createSignMessageFromAccount,
+    disconnectWallet,
+    isConnectable,
+    subscribeToWalletEvents,
+} from './wallet-standard';
 
 // Signer resolution
 export { resolveSigner } from './resolve-signer';
@@ -19,10 +27,7 @@ export type { SignerSource } from './resolve-signer';
 
 // Types
 export type {
-    WalletAccount,
     WalletApi,
-    WalletConnector,
-    WalletConnectorMetadata,
     WalletPluginOptions,
     WalletSession,
     WalletStatus,
@@ -32,3 +37,6 @@ export type {
     WalletStatusError,
     WalletSubscribeCallback,
 } from './types';
+
+// Re-export upstream types for convenience
+export type { UiWallet, UiWalletAccount } from '@wallet-standard/ui';
