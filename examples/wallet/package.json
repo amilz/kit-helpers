@@ -9,7 +9,7 @@
     },
     "dependencies": {
         "@kit-helpers/wallet": "workspace:*",
-        "@solana/kit": "^5.5.1"
+        "@solana/kit": "^6.0.1"
     },
     "devDependencies": {
         "typescript": "^5.9.3",

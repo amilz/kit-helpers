@@ -60,10 +60,15 @@ describe('createSolanaClient', () => {
         expect(client.query).toHaveProperty('tokenBalance');
         expect(client.query).toHaveProperty('account');
 
-        // Action namespace
-        expect(client.action).toHaveProperty('send');
-        expect(client.action).toHaveProperty('simulate');
-        expect(client.action).toHaveProperty('sign');
+        // sendTransaction / sendTransactions
+        expect(client).toHaveProperty('sendTransaction');
+        expect(client).toHaveProperty('sendTransactions');
+        expect(typeof client.sendTransaction).toBe('function');
+        expect(typeof client.sendTransactions).toBe('function');
+
+        // Transaction planner/executor
+        expect(client).toHaveProperty('transactionPlanner');
+        expect(client).toHaveProperty('transactionPlanExecutor');
 
         // Program namespaces
         expect(client.program).toHaveProperty('system');
@@ -98,7 +103,13 @@ describe('createSolanaClient', () => {
         expect(client.wallet).toHaveProperty('disconnect');
         expect(client.wallet).toHaveProperty('connected');
         expect(client.wallet).toHaveProperty('wallets');
-        expect(client).not.toHaveProperty('payer');
+
+        // Payer is null until wallet connects
+        expect(client.payer).toBeNull();
+
+        // sendTransaction available on wallet client too
+        expect(client).toHaveProperty('sendTransaction');
+        expect(client).toHaveProperty('sendTransactions');
     });
 
     it('rejects passing both payer and wallet at the type level', async () => {
@@ -113,14 +124,14 @@ describe('createSolanaClient', () => {
         });
     });
 
-    it('passes action options through', async () => {
+    it('accepts priorityFees config', async () => {
         const kp = await generateKeyPairSigner();
         const client = createSolanaClient({
-            action: { commitment: 'finalized' },
             payer: kp,
+            priorityFees: 1000n as import('@solana/kit').MicroLamports,
             url: URL,
         });
 
-        expect(client.action).toHaveProperty('send');
+        expect(client).toHaveProperty('sendTransaction');
     });
 });

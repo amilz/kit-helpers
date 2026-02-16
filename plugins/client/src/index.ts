@@ -5,6 +5,8 @@ export { createSolanaClient } from './client';
 export type {
     PayerClientConfig,
     PayerSolanaClient,
+    SendConfig,
+    SendInput,
     SolanaClient,
     SolanaClientConfig,
     WalletClientConfig,
@@ -12,7 +14,6 @@ export type {
 } from './types';
 
 // Re-export plugin types for convenience
-export type { ActionNamespace, ActionPluginOptions } from '@kit-helpers/action';
 export type { SystemProgramNamespace } from '@kit-helpers/program-system';
 export type { TokenProgramNamespace } from '@kit-helpers/program-token';
 export type { QueryDef, QueryNamespace } from '@kit-helpers/query';
