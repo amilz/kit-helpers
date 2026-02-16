@@ -1,3 +1,4 @@
+import type { ActionNamespace } from '@kit-helpers/action';
 import type { SystemProgramNamespace } from '@kit-helpers/program-system';
 import type { TokenProgramNamespace } from '@kit-helpers/program-token';
 import type { QueryNamespace } from '@kit-helpers/query';
@@ -76,8 +77,11 @@ export type SolanaClient = {
 /** Client with a guaranteed payer (server/script usage). */
 export type PayerSolanaClient = SolanaClient & { payer: TransactionSigner };
 
-/** Client with a guaranteed wallet (browser usage). */
-export type WalletSolanaClient = Omit<SolanaClient, 'payer'> & {
-    payer: TransactionSigner | null;
+/** Client with a guaranteed wallet (browser usage). Uses the action plugin for send/sign/simulate. */
+export type WalletSolanaClient = Omit<
+    SolanaClient,
+    'payer' | 'sendTransaction' | 'sendTransactions' | 'transactionPlanner' | 'transactionPlanExecutor'
+> & {
+    action: ActionNamespace;
     wallet: WalletApi;
 };

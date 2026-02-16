@@ -93,6 +93,14 @@ type WalletClientConfig = {
 
 Return types are narrowed per config — `PayerSolanaClient` guarantees `.payer`, `WalletSolanaClient` guarantees `.wallet`.
 
+## Why `@kit-helpers/action` instead of `@solana/kit-plugin-instruction-plan`?
+
+The payer flow uses kit's native `sendTransactions()` plugin from `@solana/kit-plugin-instruction-plan`, which provides `TransactionPlanner`/`TransactionPlanExecutor` for automatic instruction-to-transaction splitting.
+
+The wallet flow uses `@kit-helpers/action` instead because the native plugin eagerly spreads the client (`{ ...client }`) at composition time, which invokes property getters before a wallet is connected. Since the wallet signer isn't available until `connect()` is called, this causes the plugin to capture a `null` payer. The action plugin avoids this by resolving the signer lazily at call time.
+
+This is something we'd like to improve upstream in `@solana/kit-plugin-instruction-plan` — if the native plugin supported lazy signer resolution, both flows could share the same send path.
+
 ## Using Plugins Individually
 
 If you don't need everything, use plugins directly:

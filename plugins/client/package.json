@@ -49,6 +49,7 @@
         "@solana/kit": "^6.0.1"
     },
     "dependencies": {
+        "@kit-helpers/action": "workspace:*",
         "@kit-helpers/program-system": "workspace:*",
         "@kit-helpers/program-token": "workspace:*",
         "@kit-helpers/query": "workspace:*",

@@ -281,6 +281,9 @@ importers:
 
   plugins/client:
     dependencies:
+      '@kit-helpers/action':
+        specifier: workspace:*
+        version: link:../action
       '@kit-helpers/program-system':
         specifier: workspace:*
         version: link:../program-system

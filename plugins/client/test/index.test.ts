@@ -104,12 +104,12 @@ describe('createSolanaClient', () => {
         expect(client.wallet).toHaveProperty('connected');
         expect(client.wallet).toHaveProperty('wallets');
 
-        // Payer is null until wallet connects
-        expect(client.payer).toBeNull();
-
-        // sendTransaction available on wallet client too
-        expect(client).toHaveProperty('sendTransaction');
-        expect(client).toHaveProperty('sendTransactions');
+        // Action namespace for send/sign/simulate
+        expect(client).toHaveProperty('action');
+        expect(client.action).toHaveProperty('send');
+        expect(client.action).toHaveProperty('sign');
+        expect(client.action).toHaveProperty('simulate');
+        expect(client.action).toHaveProperty('signMessage');
     });
 
     it('rejects passing both payer and wallet at the type level', async () => {

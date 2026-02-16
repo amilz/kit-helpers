@@ -171,8 +171,7 @@ sendBtn.addEventListener('click', async () => {
         const amount = BigInt(amountInput.value);
 
         const ix = client.program.system.transfer({ destination, amount });
-        const result = await client.sendTransaction([ix]);
-        const sig = result.context.signature;
+        const sig = await client.action.send([ix]);
 
         sendResultEl.textContent = `Signature: ${sig}\nDestination: ${destination}`;
         log(`sent ${amount} lamports to ${destination}`);
