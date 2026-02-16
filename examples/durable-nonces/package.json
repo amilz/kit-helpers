@@ -9,10 +9,10 @@
     "dependencies": {
         "@kit-helpers/local-validator": "workspace:*",
         "@kit-helpers/transaction-builder": "workspace:*",
-        "@solana-program/memo": "^0.10.0",
-        "@solana-program/system": "^0.10.0",
-        "@solana/kit": "^5.4.0",
-        "@solana/kit-plugins": "^0.2.0"
+        "@solana-program/memo": "^0.11.0",
+        "@solana-program/system": "^0.11.0",
+        "@solana/kit": "^6.0.1",
+        "@solana/kit-plugins": "^0.3.0"
     },
     "devDependencies": {
         "@types/node": "^24.10.9",

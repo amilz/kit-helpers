@@ -8,9 +8,7 @@
         "forceConsistentCasingInFileNames": true,
         "inlineSources": false,
         "isolatedModules": true,
-        "lib": [
-            "ES2022"
-        ],
+        "lib": ["ES2022"],
         "moduleResolution": "node",
         "noFallthroughCasesInSwitch": true,
         "noUnusedLocals": true,

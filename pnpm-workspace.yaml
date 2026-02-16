@@ -1,3 +1,4 @@
 packages:
   - 'plugins/*'
   - 'examples/*'
+  - 'examples/client/*'

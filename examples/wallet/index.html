@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>@kit-helpers/wallet demo</title>
+        <style>
+            * {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+            }
+            body {
+                font-family:
+                    system-ui,
+                    -apple-system,
+                    sans-serif;
+                max-width: 640px;
+                margin: 40px auto;
+                padding: 0 20px;
+                color: #e0e0e0;
+                background: #1a1a2e;
+            }
+            h1 {
+                font-size: 1.25rem;
+                margin-bottom: 24px;
+                color: #fff;
+            }
+            .field {
+                margin-bottom: 8px;
+            }
+            .field label {
+                color: #888;
+                font-size: 0.85rem;
+            }
+            .field span {
+                font-family: monospace;
+            }
+            section {
+                margin-top: 24px;
+                padding-top: 16px;
+                border-top: 1px solid #333;
+            }
+            section h2 {
+                font-size: 0.9rem;
+                color: #888;
+                margin-bottom: 12px;
+            }
+            #connectors {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+            .connector-btn {
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                padding: 8px 16px;
+                border: 1px solid #444;
+                border-radius: 6px;
+                background: #2a2a3e;
+                color: #e0e0e0;
+                cursor: pointer;
+                font-size: 0.9rem;
+            }
+            .connector-btn:hover {
+                background: #3a3a5e;
+                border-color: #666;
+            }
+            .connector-btn img {
+                width: 20px;
+                height: 20px;
+                border-radius: 4px;
+            }
+            button {
+                padding: 6px 14px;
+                border: 1px solid #444;
+                border-radius: 6px;
+                background: #2a2a3e;
+                color: #e0e0e0;
+                cursor: pointer;
+                font-size: 0.85rem;
+            }
+            button:hover {
+                background: #3a3a5e;
+            }
+            button:disabled {
+                opacity: 0.4;
+                cursor: not-allowed;
+            }
+            .sign-row {
+                display: flex;
+                gap: 8px;
+                align-items: center;
+            }
+            .sign-row input {
+                flex: 1;
+                padding: 6px 10px;
+                border: 1px solid #444;
+                border-radius: 6px;
+                background: #2a2a3e;
+                color: #e0e0e0;
+                font-size: 0.85rem;
+            }
+            #signature {
+                word-break: break-all;
+                font-family: monospace;
+                font-size: 0.75rem;
+                color: #aaa;
+            }
+            #log {
+                font-family: monospace;
+                font-size: 0.8rem;
+                background: #111;
+                border-radius: 6px;
+                padding: 12px;
+                max-height: 240px;
+                overflow-y: auto;
+                color: #888;
+            }
+            #log div {
+                padding: 2px 0;
+            }
+            #no-wallets {
+                color: #666;
+                font-size: 0.85rem;
+                display: none;
+            }
+            .hidden {
+                display: none !important;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>@kit-helpers/wallet demo</h1>
+
+        <div class="field"><label>Status:</label> <span id="status">disconnected</span></div>
+        <div class="field">
+            <label>Address:</label>
+            <span id="address">&mdash;</span>
+        </div>
+
+        <section>
+            <h2>Available wallets</h2>
+            <div id="connectors"></div>
+            <p id="no-wallets">
+                No wallets found. Install a Wallet Standard wallet (Phantom, Solflare, Backpack, etc.) to test.
+            </p>
+        </section>
+
+        <section>
+            <button id="disconnect" class="hidden">Disconnect</button>
+        </section>
+
+        <section id="sign-section" class="hidden">
+            <h2>Sign Message</h2>
+            <div class="sign-row">
+                <input id="message-input" type="text" placeholder="Enter message..." value="Hello from kit-helpers!" />
+                <button id="sign-btn">Sign</button>
+            </div>
+            <div class="field" style="margin-top: 8px">
+                <label>Signature:</label>
+                <span id="signature">&mdash;</span>
+            </div>
+        </section>
+
+        <section>
+            <h2>Log</h2>
+            <div id="log"></div>
+        </section>
+
+        <script type="module" src="/src/main.ts"></script>
+    </body>
+</html>
