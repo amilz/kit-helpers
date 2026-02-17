@@ -145,12 +145,38 @@ const tipIx = getTransferSolInstruction({
 const bundleId = await client.jito.createBundle().add(encodedTxWithTip).send();
 ```
 
+## Sandwich Protection (DontFront)
+
+Protect transactions from sandwich attacks by adding a `jitodontfront` account.
+The block engine ensures your transaction must be at index 0 in any bundle.
+
+```ts
+import { getTransferSolInstruction } from '@solana-program/system';
+import { withDontFront } from '@kit-helpers/jito';
+
+// Wrap any instruction — the dontfront account is appended as read-only
+const protectedTransfer = withDontFront(
+    getTransferSolInstruction({
+        source: payer,
+        destination: recipient,
+        amount: 1_000_000n,
+    })
+);
+
+// Use a custom dontfront address for per-app tracking
+const protectedSwap = withDontFront(mySwapIx, address('jitodontfrontMyApp111111111111111111111'));
+```
+
+Works with `sendTransaction` and `sendBundle`. See [Jito docs](https://docs.jito.wtf/lowlatencytxnsend/#sandwich-mitigation) for bundle ordering rules.
+
 ## Helpers
 
 ```ts
 import {
     getRandomTipAccount, // Select random from array (crypto-secure)
     validateBundle, // Validate bundle size
+    withDontFront, // Add sandwich protection to any instruction
+    DEFAULT_DONT_FRONT_ACCOUNT, // Default jitodontfront pubkey
     MAX_BUNDLE_SIZE, // 5
     MIN_TIP_LAMPORTS, // 1000n
 } from '@kit-helpers/jito';

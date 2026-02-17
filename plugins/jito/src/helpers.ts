@@ -1,9 +1,64 @@
-import type { Address, Base64EncodedWireTransaction } from '@solana/kit';
+import { AccountRole, address, type Address, type Base64EncodedWireTransaction, type Instruction } from '@solana/kit';
 
 import type { Bundle, BundleBuilder, JitoApi, SimulateBundleOptions, SimulateBundleResult } from './types';
 
 /** Maximum number of transactions allowed in a Jito bundle. */
 export const MAX_BUNDLE_SIZE = 5;
+
+/**
+ * Default jitodontfront pubkey. Any valid pubkey starting with "jitodontfront"
+ * works — the account does not need to exist on-chain.
+ *
+ * @see https://docs.jito.wtf/lowlatencytxnsend/#sandwich-mitigation
+ */
+export const DEFAULT_DONT_FRONT_ACCOUNT: Address = address(
+    'jitodontfront111111111111111111111111111111',
+);
+
+/**
+ * Append a jitodontfront account as read-only to an instruction.
+ *
+ * The Jito block engine detects accounts with the "jitodontfront" prefix and
+ * enforces that any bundle containing this transaction must place it at index 0,
+ * preventing sandwich attacks.
+ *
+ * Works with any instruction — the extra read-only account is ignored by the
+ * target program but recognized by the block engine.
+ *
+ * @param instruction - The instruction to protect.
+ * @param dontFrontAccount - Optional custom dontfront pubkey (must start with "jitodontfront").
+ *   Defaults to `jitodontfront111111111111111111111111111111`.
+ * @returns A new instruction with the dontfront account appended.
+ *
+ * @example
+ * ```ts
+ * import { getTransferSolInstruction } from '@solana-program/system';
+ * import { withDontFront } from '@kit-helpers/jito';
+ *
+ * const protectedTransfer = withDontFront(
+ *     getTransferSolInstruction({
+ *         source: payer,
+ *         destination: recipient,
+ *         amount: lamports(1_000_000n),
+ *     })
+ * );
+ * ```
+ *
+ * @example
+ * With a custom dontfront address for per-app tracking:
+ * ```ts
+ * const protectedIx = withDontFront(myInstruction, address('jitodontfrontMyApp111111111111111111111'));
+ * ```
+ *
+ * @see https://docs.jito.wtf/lowlatencytxnsend/#sandwich-mitigation
+ */
+export function withDontFront(instruction: Instruction, dontFrontAccount?: Address): Instruction {
+    const account = dontFrontAccount ?? DEFAULT_DONT_FRONT_ACCOUNT;
+    return {
+        ...instruction,
+        accounts: [...(instruction.accounts ?? []), { address: account, role: AccountRole.READONLY }],
+    };
+}
 
 /** Minimum tip amount in lamports. */
 export const MIN_TIP_LAMPORTS = 1000n;

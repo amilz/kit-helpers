@@ -5,7 +5,15 @@ export { jitoPlugin } from './jito-plugin';
 export { createJitoClient } from './jito-client';
 
 // Helpers
-export { createBundleBuilder, getRandomTipAccount, MAX_BUNDLE_SIZE, MIN_TIP_LAMPORTS, validateBundle } from './helpers';
+export {
+    createBundleBuilder,
+    DEFAULT_DONT_FRONT_ACCOUNT,
+    getRandomTipAccount,
+    MAX_BUNDLE_SIZE,
+    MIN_TIP_LAMPORTS,
+    validateBundle,
+    withDontFront,
+} from './helpers';
 
 // Transport
 export { createJitoTransport, JitoRpcError } from './jito-transport';

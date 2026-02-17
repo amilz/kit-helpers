@@ -1,15 +1,17 @@
-import { address, type Base64EncodedWireTransaction, generateKeyPairSigner } from '@solana/kit';
+import { AccountRole, address, type Base64EncodedWireTransaction, generateKeyPairSigner } from '@solana/kit';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
     createBundleBuilder,
     createJitoClient,
     createJitoTransport,
+    DEFAULT_DONT_FRONT_ACCOUNT,
     getRandomTipAccount,
     jitoPlugin,
     JitoRpcError,
     MAX_BUNDLE_SIZE,
     validateBundle,
+    withDontFront,
 } from '../src';
 import type { JitoApi, JitoPluginConfig } from '../src/types';
 
@@ -397,6 +399,90 @@ describe('helpers', () => {
 
             expect(mockApi.simulateBundle).toHaveBeenCalledWith([tx('tx1')], undefined);
             expect(result.summary).toBe('succeeded');
+        });
+    });
+
+    describe('withDontFront', () => {
+        it('appends default dontfront account as read-only', () => {
+            const instruction = {
+                programAddress: address('11111111111111111111111111111111'),
+                accounts: [
+                    { address: address('96gYZGLnJYVFmbjzopPSU6QiEV5fGqZNyN9nmNhvrZU5'), role: AccountRole.WRITABLE_SIGNER },
+                    { address: address('HFqU5x63VTqvQss8hp11i4wVV8bD44PvwucfZ2bU7gRe'), role: AccountRole.WRITABLE },
+                ],
+                data: new Uint8Array([0]),
+            };
+
+            const protected_ = withDontFront(instruction);
+
+            expect(protected_.accounts).toHaveLength(3);
+            expect(protected_.accounts![2]).toEqual({
+                address: DEFAULT_DONT_FRONT_ACCOUNT,
+                role: AccountRole.READONLY,
+            });
+        });
+
+        it('uses custom dontfront account when provided', () => {
+            const customDontFront = address('jitodontfront11111111111111111111111111111a');
+            const instruction = {
+                programAddress: address('11111111111111111111111111111111'),
+                accounts: [
+                    { address: address('96gYZGLnJYVFmbjzopPSU6QiEV5fGqZNyN9nmNhvrZU5'), role: AccountRole.WRITABLE_SIGNER },
+                ],
+                data: new Uint8Array([0]),
+            };
+
+            const protected_ = withDontFront(instruction, customDontFront);
+
+            expect(protected_.accounts![1]).toEqual({
+                address: customDontFront,
+                role: AccountRole.READONLY,
+            });
+        });
+
+        it('does not mutate the original instruction', () => {
+            const original = {
+                programAddress: address('11111111111111111111111111111111'),
+                accounts: [
+                    { address: address('96gYZGLnJYVFmbjzopPSU6QiEV5fGqZNyN9nmNhvrZU5'), role: AccountRole.WRITABLE_SIGNER },
+                ],
+                data: new Uint8Array([0]),
+            };
+
+            const protected_ = withDontFront(original);
+
+            expect(original.accounts).toHaveLength(1);
+            expect(protected_.accounts).toHaveLength(2);
+        });
+
+        it('handles instruction with no accounts', () => {
+            const instruction = {
+                programAddress: address('11111111111111111111111111111111'),
+                data: new Uint8Array([0]),
+            };
+
+            const protected_ = withDontFront(instruction);
+
+            expect(protected_.accounts).toHaveLength(1);
+            expect(protected_.accounts![0]).toEqual({
+                address: DEFAULT_DONT_FRONT_ACCOUNT,
+                role: AccountRole.READONLY,
+            });
+        });
+
+        it('preserves all other instruction fields', () => {
+            const instruction = {
+                programAddress: address('11111111111111111111111111111111'),
+                accounts: [
+                    { address: address('96gYZGLnJYVFmbjzopPSU6QiEV5fGqZNyN9nmNhvrZU5'), role: AccountRole.WRITABLE_SIGNER },
+                ],
+                data: new Uint8Array([1, 2, 3]),
+            };
+
+            const protected_ = withDontFront(instruction);
+
+            expect(protected_.programAddress).toBe(instruction.programAddress);
+            expect(protected_.data).toBe(instruction.data);
         });
     });
 });
