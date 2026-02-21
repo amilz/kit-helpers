@@ -47,7 +47,7 @@
     },
     "peerDependencies": {
         "@kit-helpers/wallet": "workspace:*",
-        "@solana/kit": "^6.0.1"
+        "@solana/kit": "^6.1.0"
     },
     "dependencies": {
         "@kit-helpers/wallet": "workspace:*",
@@ -55,7 +55,7 @@
     },
     "devDependencies": {
         "@solana-program/compute-budget": "^0.13.0",
-        "@solana/kit": "^6.0.1",
+        "@solana/kit": "^6.1.0",
         "@wallet-standard/base": "^1.1.0",
         "@wallet-standard/ui": "^1.0.0",
         "@wallet-standard/ui-registry": "^1.0.0",

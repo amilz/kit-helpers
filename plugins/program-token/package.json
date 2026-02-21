@@ -47,14 +47,14 @@
     },
     "peerDependencies": {
         "@kit-helpers/wallet": "workspace:*",
-        "@solana-program/token": "^0.10.0",
-        "@solana/kit": "^6.0.1"
+        "@solana-program/token": "^0.11.0",
+        "@solana/kit": "^6.1.0"
     },
     "dependencies": {},
     "devDependencies": {
         "@kit-helpers/wallet": "workspace:*",
-        "@solana-program/token": "^0.10.0",
-        "@solana/kit": "^6.0.1",
+        "@solana-program/token": "^0.11.0",
+        "@solana/kit": "^6.1.0",
         "@types/node": "^24.10.9",
         "agadoo": "^3.0.0",
         "browserslist-to-esbuild": "^2.1.1",
