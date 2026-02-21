@@ -1,5 +1,5 @@
 {
-    "name": "@kit-helpers/renderer-docs",
+    "name": "@kit-helpers/renderer-js-docs",
     "version": "0.1.0",
     "description": "Markdown documentation renderer for Solana programs, generating usage-first docs from the Codama IDL",
     "exports": {
