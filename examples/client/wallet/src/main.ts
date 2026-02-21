@@ -170,7 +170,7 @@ sendBtn.addEventListener('click', async () => {
         const destination = await getAddressFromPublicKey(kp.publicKey);
         const amount = BigInt(amountInput.value);
 
-        const ix = client.program.system.transfer({ destination, amount });
+        const ix = client.program.system.instructions.transferSol({ destination, amount });
         const sig = await client.action.send([ix]);
 
         sendResultEl.textContent = `Signature: ${sig}\nDestination: ${destination}`;
