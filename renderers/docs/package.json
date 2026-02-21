@@ -62,10 +62,6 @@
         "vitest": "^4.0.18"
     },
     "license": "MIT",
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/codama-idl/renderers-js-docs"
-    },
     "browserslist": [
         "supports bigint and not dead",
         "maintained node versions"
@@ -73,6 +69,5 @@
     "engines": {
         "node": ">=20.18.0"
     },
-    "packageManager": "pnpm@10.15.1",
     "prettier": "@solana/prettier-config-solana"
 }

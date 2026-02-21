@@ -9,3 +9,6 @@
 'use client';
 
 export * from './counter';
+export * from './instructions';
+export * from './pdas';
+export * from './programs';

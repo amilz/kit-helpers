@@ -73,6 +73,7 @@ export function useCounterFromSeeds(seeds: CounterSeeds, config: useCounterFromS
     // Derive PDA address.
     useEffect(() => {
         let cancelled = false;
+        setStatus('loading');
         (async () => {
             try {
                 const [pda] = await findCounterPda(seeds, { programAddress: config.programAddress });
@@ -129,6 +130,8 @@ export function useCounters(addresses: Address[], config: useCountersConfig) {
     const [error, setError] = useState<Error | null>(null);
     const decoder = useMemo(() => getCounterDecoder(), []);
 
+    const addressesKey = addresses.join(',');
+
     useEffect(() => {
         if (addresses.length === 0) {
             setData([]);
@@ -161,7 +164,7 @@ export function useCounters(addresses: Address[], config: useCountersConfig) {
         return () => {
             cancelled = true;
         };
-    }, [addresses, config.rpc, decoder]);
+    }, [addressesKey, config.rpc, decoder]);
 
     return { data, error, status };
 }
