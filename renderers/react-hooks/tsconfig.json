@@ -1,0 +1,10 @@
+{
+    "extends": "../../tsconfig.base.json",
+    "compilerOptions": {
+        "jsx": "react-jsx",
+        "lib": []
+    },
+    "display": "@kit-helpers/renderer-react-hooks",
+    "include": ["src", "test", "tsup.config.ts"],
+    "exclude": ["node_modules", "test/e2e"]
+}
