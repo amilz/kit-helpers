@@ -1,0 +1,105 @@
+{
+    "kind": "rootNode",
+    "program": {
+        "kind": "programNode",
+        "pdas": [
+            {
+                "kind": "pdaNode",
+                "name": "counter",
+                "seeds": [
+                    {
+                        "kind": "variablePdaSeedNode",
+                        "name": "authority",
+                        "type": { "kind": "publicKeyTypeNode" },
+                        "docs": []
+                    }
+                ],
+                "docs": []
+            }
+        ],
+        "accounts": [
+            {
+                "kind": "accountNode",
+                "data": {
+                    "kind": "structTypeNode",
+                    "fields": [
+                        {
+                            "kind": "structFieldTypeNode",
+                            "name": "count",
+                            "type": {
+                                "kind": "numberTypeNode",
+                                "format": "u64",
+                                "endian": "le"
+                            },
+                            "docs": []
+                        },
+                        {
+                            "kind": "structFieldTypeNode",
+                            "name": "authority",
+                            "type": { "kind": "publicKeyTypeNode" },
+                            "docs": []
+                        }
+                    ]
+                },
+                "name": "counter",
+                "size": null,
+                "discriminators": [],
+                "pda": {
+                    "kind": "pdaLinkNode",
+                    "name": "counter"
+                },
+                "docs": []
+            }
+        ],
+        "instructions": [
+            {
+                "kind": "instructionNode",
+                "name": "increment",
+                "accounts": [
+                    {
+                        "kind": "instructionAccountNode",
+                        "name": "counter",
+                        "isWritable": true,
+                        "isSigner": false,
+                        "isOptional": false,
+                        "docs": [],
+                        "defaultValue": null
+                    },
+                    {
+                        "kind": "instructionAccountNode",
+                        "name": "authority",
+                        "isWritable": false,
+                        "isSigner": true,
+                        "isOptional": false,
+                        "docs": [],
+                        "defaultValue": null
+                    }
+                ],
+                "arguments": [],
+                "remainingAccounts": [],
+                "byteDeltas": [],
+                "discriminators": [],
+                "subInstructions": [],
+                "docs": []
+            }
+        ],
+        "definedTypes": [],
+        "errors": [
+            {
+                "kind": "errorNode",
+                "name": "invalidAuthority",
+                "code": 0,
+                "message": "Invalid authority",
+                "docs": []
+            }
+        ],
+        "name": "counter",
+        "publicKey": "Ctr1111111111111111111111111111111111111111",
+        "version": "0.1.0",
+        "origin": null,
+        "docs": []
+    },
+    "additionalPrograms": [],
+    "standard": "codama",
+    "version": "1.0.0"
+}
