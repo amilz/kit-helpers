@@ -1,0 +1,5 @@
+pnpm-lock.yaml
+NOTES.md
+plan.json
+test/e2e/output
+test/e2e/idl.json
