@@ -1,0 +1,26 @@
+import { deleteDirectory, joinPath, mapRenderMapContentAsync, writeRenderMap } from '@codama/renderers-core';
+import { rootNodeVisitor, visit } from '@codama/visitors-core';
+
+import { getCodeFormatter, ReactHooksRenderOptions } from '../utils';
+import { getRenderMapVisitor } from './getRenderMapVisitor';
+
+export function renderVisitor(packageFolder: string, options: ReactHooksRenderOptions = {}) {
+    return rootNodeVisitor(async root => {
+        const generatedFolder = joinPath(packageFolder, options.generatedFolder ?? 'src/generated');
+
+        // Delete existing generated folder.
+        if (options.deleteFolderBeforeRendering ?? true) {
+            deleteDirectory(generatedFolder);
+        }
+
+        // Render the new files.
+        let renderMap = visit(root, getRenderMapVisitor(options));
+
+        // Format the code, if requested.
+        const formatCode = await getCodeFormatter(packageFolder, options);
+        renderMap = await mapRenderMapContentAsync(renderMap, formatCode);
+
+        // Write the rendered files to the output directory.
+        writeRenderMap(renderMap, generatedFolder);
+    });
+}

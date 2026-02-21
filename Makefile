@@ -1,4 +1,4 @@
-.PHONY: install build test test-unit test-integration lint fix format format-check dev clean example-builder example-nonce example-token example-slot kill-validator clear-ledger all
+.PHONY: install build test test-unit test-integration test-plugins test-renderers lint fix format format-check dev clean example-builder example-nonce example-token example-slot kill-validator clear-ledger all
 
 # Install all dependencies
 install:
@@ -19,6 +19,14 @@ test-unit:
 # Run integration tests only (requires solana-test-validator)
 test-integration:
 	pnpm test:integration
+
+# Run tests for plugins only
+test-plugins:
+	pnpm --filter './plugins/**' test
+
+# Run tests for renderers only
+test-renderers:
+	pnpm --filter './renderers/**' test
 
 # Lint all packages
 lint:
