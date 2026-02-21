@@ -37,12 +37,11 @@ export function canSignMessages(wallet: UiWallet): boolean {
  *
  * @returns The connected accounts.
  */
-export async function connectWallet(
-    wallet: UiWallet,
-    options?: { silent?: boolean },
-): Promise<UiWalletAccount[]> {
-    const connectFeature = getWalletFeature(wallet, StandardConnect) as
-        import('@wallet-standard/features').StandardConnectFeature[typeof StandardConnect];
+export async function connectWallet(wallet: UiWallet, options?: { silent?: boolean }): Promise<UiWalletAccount[]> {
+    const connectFeature = getWalletFeature(
+        wallet,
+        StandardConnect,
+    ) as import('@wallet-standard/features').StandardConnectFeature[typeof StandardConnect];
 
     const { accounts } = await connectFeature.connect(options ? { silent: options.silent } : undefined);
 
@@ -70,8 +69,10 @@ export async function disconnectWallet(wallet: UiWallet): Promise<void> {
         return;
     }
 
-    const disconnectFeature = getWalletFeature(wallet, StandardDisconnect) as
-        import('@wallet-standard/features').StandardDisconnectFeature[typeof StandardDisconnect];
+    const disconnectFeature = getWalletFeature(
+        wallet,
+        StandardDisconnect,
+    ) as import('@wallet-standard/features').StandardDisconnectFeature[typeof StandardDisconnect];
 
     await disconnectFeature.disconnect();
 }
@@ -92,8 +93,10 @@ export function createSignerFromAccount(account: UiWalletAccount): TransactionMo
     const transactionCodec = getTransactionCodec();
     const compiledMessageDecoder = getCompiledTransactionMessageDecoder();
 
-    const signFeature = getWalletAccountFeature(account, SolanaSignTransaction) as
-        SolanaSignTransactionFeature[typeof SolanaSignTransaction];
+    const signFeature = getWalletAccountFeature(
+        account,
+        SolanaSignTransaction,
+    ) as SolanaSignTransactionFeature[typeof SolanaSignTransaction];
 
     // Get the raw WalletAccount for the sign call — sign features expect the raw type
     const rawAccount = getWalletAccountForUiWalletAccount_DO_NOT_USE_OR_YOU_WILL_BE_FIRED(account);
@@ -135,8 +138,10 @@ export function createSignMessageFromAccount(
         throw new Error('Wallet account does not support signing messages');
     }
 
-    const signMessageFeature = getWalletAccountFeature(account, SolanaSignMessage) as
-        SolanaSignMessageFeature[typeof SolanaSignMessage];
+    const signMessageFeature = getWalletAccountFeature(
+        account,
+        SolanaSignMessage,
+    ) as SolanaSignMessageFeature[typeof SolanaSignMessage];
 
     // Get the raw WalletAccount for the sign call
     const rawAccount = getWalletAccountForUiWalletAccount_DO_NOT_USE_OR_YOU_WILL_BE_FIRED(account);
@@ -160,8 +165,10 @@ export function subscribeToWalletEvents(
         return undefined;
     }
 
-    const eventsFeature = getWalletFeature(wallet, StandardEvents) as
-        import('@wallet-standard/features').StandardEventsFeature[typeof StandardEvents];
+    const eventsFeature = getWalletFeature(
+        wallet,
+        StandardEvents,
+    ) as import('@wallet-standard/features').StandardEventsFeature[typeof StandardEvents];
 
     return eventsFeature.on('change', ({ accounts }) => {
         if (accounts) {
