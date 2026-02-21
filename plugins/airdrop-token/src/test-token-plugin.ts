@@ -314,7 +314,7 @@ async function buildInstructions(params: {
             },
             { programAddress: programId },
         ),
-    ];
+    ] as Instruction[];
 
     return instructions;
 }

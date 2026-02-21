@@ -70,24 +70,32 @@ describe('createSolanaClient', () => {
         expect(client).toHaveProperty('transactionPlanner');
         expect(client).toHaveProperty('transactionPlanExecutor');
 
-        // Program namespaces
+        // Program namespace
+        expect(client).toHaveProperty('program');
+
+        // System program namespace (native plugin)
         expect(client.program).toHaveProperty('system');
+        expect(client.program.system).toHaveProperty('instructions');
+        expect(client.program.system).toHaveProperty('accounts');
+        expect(client.program.system.instructions).toHaveProperty('transferSol');
+        expect(client.program.system.instructions).toHaveProperty('createAccount');
+        expect(client.program.system.instructions).toHaveProperty('allocate');
+        expect(client.program.system.instructions).toHaveProperty('assign');
+        expect(client.program.system.accounts).toHaveProperty('nonce');
+
+        // Token program namespace (native plugin)
         expect(client.program).toHaveProperty('token');
-
-        // System program methods
-        expect(client.program.system).toHaveProperty('transfer');
-        expect(client.program.system).toHaveProperty('createAccount');
-        expect(client.program.system).toHaveProperty('allocate');
-        expect(client.program.system).toHaveProperty('assign');
-
-        // Token program methods
-        expect(client.program.token).toHaveProperty('transfer');
-        expect(client.program.token).toHaveProperty('transferChecked');
-        expect(client.program.token).toHaveProperty('createAta');
-        expect(client.program.token).toHaveProperty('createAtaAsync');
-        expect(client.program.token).toHaveProperty('mintTo');
-        expect(client.program.token).toHaveProperty('burn');
-        expect(client.program.token).toHaveProperty('initializeMint');
+        expect(client.program.token).toHaveProperty('instructions');
+        expect(client.program.token).toHaveProperty('accounts');
+        expect(client.program.token.instructions).toHaveProperty('transfer');
+        expect(client.program.token.instructions).toHaveProperty('transferChecked');
+        expect(client.program.token.instructions).toHaveProperty('mintTo');
+        expect(client.program.token.instructions).toHaveProperty('burn');
+        expect(client.program.token.instructions).toHaveProperty('createMint');
+        expect(client.program.token.instructions).toHaveProperty('mintToATA');
+        expect(client.program.token.instructions).toHaveProperty('transferToATA');
+        expect(client.program.token.accounts).toHaveProperty('mint');
+        expect(client.program.token.accounts).toHaveProperty('token');
     });
 
     it('creates client with wallet', () => {
@@ -110,6 +118,15 @@ describe('createSolanaClient', () => {
         expect(client.action).toHaveProperty('sign');
         expect(client.action).toHaveProperty('simulate');
         expect(client.action).toHaveProperty('signMessage');
+
+        // Program namespace available in wallet flow too
+        expect(client).toHaveProperty('program');
+        expect(client.program.system).toHaveProperty('instructions');
+        expect(client.program.system.instructions).toHaveProperty('transferSol');
+
+        expect(client.program).toHaveProperty('token');
+        expect(client.program.token).toHaveProperty('instructions');
+        expect(client.program.token.instructions).toHaveProperty('transfer');
     });
 
     it('rejects passing both payer and wallet at the type level', async () => {

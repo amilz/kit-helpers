@@ -1,6 +1,4 @@
 import type { ActionNamespace } from '@kit-helpers/action';
-import type { SystemProgramNamespace } from '@kit-helpers/program-system';
-import type { TokenProgramNamespace } from '@kit-helpers/program-token';
 import type { QueryNamespace } from '@kit-helpers/query';
 import type { WalletApi } from '@kit-helpers/wallet';
 import type {
@@ -10,6 +8,8 @@ import type {
     MicroLamports,
     TransactionSigner,
 } from '@solana/kit';
+import type { SystemPlugin } from '@solana-program/system';
+import type { TokenPlugin } from '@solana-program/token';
 import type { UiWallet } from '@wallet-standard/ui';
 
 /** Shared config fields. */
@@ -45,11 +45,8 @@ export type SolanaClientConfig = PayerClientConfig | WalletClientConfig;
 /** The fully composed client type returned by createSolanaClient(). */
 export type SolanaClient = ClientWithTransactionPlanning &
     ClientWithTransactionSending & {
-        payer?: TransactionSigner;
-        program: {
-            system: SystemProgramNamespace;
-            token: TokenProgramNamespace;
-        };
+        payer: TransactionSigner;
+        program: { system: SystemPlugin; token: TokenPlugin };
         query: QueryNamespace;
         rpc: ReturnType<typeof import('@solana/kit').createSolanaRpc>;
         rpcSubscriptions: ReturnType<typeof import('@solana/kit').createSolanaRpcSubscriptions>;
@@ -60,10 +57,7 @@ export type SolanaClient = ClientWithTransactionPlanning &
 export type PayerSolanaClient = SolanaClient & { payer: TransactionSigner };
 
 /** Client with a guaranteed wallet (browser usage). Uses the action plugin for send/sign/simulate. */
-export type WalletSolanaClient = Omit<
-    SolanaClient,
-    keyof ClientWithTransactionPlanning | keyof ClientWithTransactionSending | 'payer'
-> & {
+export type WalletSolanaClient = SolanaClient & {
     action: ActionNamespace;
     wallet: WalletApi;
 };

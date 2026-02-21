@@ -23,14 +23,15 @@ const client = createSolanaClient({
 // Query
 const balance = await client.query.balance(address).fn();
 
-// Build instructions
-const ix = client.program.system.transfer({
+// Build instructions (explicit signer required)
+const ix = client.program.system.instructions.transferSol({
+    source: myKeypair,
     destination: recipientAddress,
     amount: 1_000_000n,
 });
 
 // Send transaction
-await client.action.send([ix]);
+await client.sendTransaction([ix]);
 ```
 
 ### Browser
@@ -48,7 +49,7 @@ const client = createSolanaClient({
 await client.wallet.connect('phantom');
 
 // Everything else works the same
-const ix = client.program.token.transfer({
+const ix = client.program.token.instructions.transfer({
     source,
     destination,
     authority,
@@ -61,15 +62,15 @@ await client.action.send([ix]);
 
 `createSolanaClient` composes these plugins automatically:
 
-| Namespace                 | Plugin                        | Description                             |
-| ------------------------- | ----------------------------- | --------------------------------------- |
-| `client.rpc`              | `@solana/kit-plugins`         | RPC and subscriptions                   |
-| `client.payer`            | —                             | Transaction signer (server)             |
-| `client.wallet`           | `@kit-helpers/wallet`         | Wallet adapter (browser)                |
-| `client.query.*`          | `@kit-helpers/query`          | Balance, token balance, account queries |
-| `client.action.*`         | `@kit-helpers/action`         | Send, simulate, sign transactions       |
-| `client.program.system.*` | `@kit-helpers/program-system` | System program instructions             |
-| `client.program.token.*`  | `@kit-helpers/program-token`  | Token program instructions              |
+| Namespace                 | Plugin                   | Description                             |
+| ------------------------- | ------------------------ | --------------------------------------- |
+| `client.rpc`              | `@solana/kit-plugins`    | RPC and subscriptions                   |
+| `client.payer`            | —                        | Transaction signer (server)             |
+| `client.wallet`           | `@kit-helpers/wallet`    | Wallet adapter (browser)                |
+| `client.query.*`          | `@kit-helpers/query`     | Balance, token balance, account queries |
+| `client.action.*`         | `@kit-helpers/action`    | Send, simulate, sign transactions       |
+| `client.program.system.*` | `@solana-program/system` | System program instructions & accounts  |
+| `client.program.token.*`  | `@solana-program/token`  | Token program instructions & accounts   |
 
 ## Config
 
@@ -80,26 +81,24 @@ await client.action.send([ix]);
 type PayerClientConfig = {
     url: ClusterUrl;
     payer: TransactionSigner;
-    action?: ActionPluginOptions;
+    priorityFees?: MicroLamports;
 };
 
 // Browser
 type WalletClientConfig = {
     url: ClusterUrl;
-    wallet: { connectors: WalletConnector[] };
-    action?: ActionPluginOptions;
+    wallet: { wallets: UiWallet[] };
+    priorityFees?: MicroLamports;
 };
 ```
 
 Return types are narrowed per config — `PayerSolanaClient` guarantees `.payer`, `WalletSolanaClient` guarantees `.wallet`.
 
-## Why `@kit-helpers/action` instead of `@solana/kit-plugin-instruction-plan`?
+## How the Wallet Flow Works
 
-The payer flow uses kit's native `sendTransactions()` plugin from `@solana/kit-plugin-instruction-plan`, which provides `TransactionPlanner`/`TransactionPlanExecutor` for automatic instruction-to-transaction splitting.
+Native program plugins (`systemProgram()`, `tokenProgram()`) require a payer, transaction planner, and executor at install time. The payer flow satisfies these naturally.
 
-The wallet flow uses `@kit-helpers/action` instead because the native plugin eagerly spreads the client (`{ ...client }`) at composition time, which invokes property getters before a wallet is connected. Since the wallet signer isn't available until `connect()` is called, this causes the plugin to capture a `null` payer. The action plugin avoids this by resolving the signer lazily at call time.
-
-This is something we'd like to improve upstream in `@solana/kit-plugin-instruction-plan` — if the native plugin supported lazy signer resolution, both flows could share the same send path.
+For the wallet flow, we install a **noop signer** as a placeholder payer along with the planner/executor plugins. This allows native program plugins to be composed normally. The noop signer is never used for real signing — wallet users send transactions via `client.action.send([ix])`, which resolves the real wallet signer lazily at call time.
 
 ## Using Plugins Individually
 
@@ -109,10 +108,7 @@ If you don't need everything, use plugins directly:
 import { createEmptyClient } from '@solana/kit';
 import { rpc } from '@solana/kit-plugins';
 import { queryPlugin } from '@kit-helpers/query';
-import { systemProgramPlugin } from '@kit-helpers/program-system';
+import { systemProgram } from '@solana-program/system';
 
-const client = createEmptyClient()
-    .use(rpc('https://api.devnet.solana.com'))
-    .use(queryPlugin())
-    .use(systemProgramPlugin());
+const client = createEmptyClient().use(rpc('https://api.devnet.solana.com')).use(queryPlugin()).use(systemProgram());
 ```
