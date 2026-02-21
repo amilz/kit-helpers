@@ -104,14 +104,17 @@ export function getRenderMapVisitor(options: GetReactHooksRenderMapOptions = {})
                 },
 
                 visitProgram(node, { self }) {
+                    // Programs are in hooks/programs/ — one level deeper than hooks/.
+                    const subDirScope = { ...renderScope, clientPackage: `../${renderScope.clientPackage}` };
                     return mergeRenderMaps([
                         createRenderMap(
-                            `hooks/${camelCase(node.name)}.ts`,
+                            `hooks/programs/${camelCase(node.name)}.ts`,
                             asPage(
                                 getProgramHookFragment({
-                                    ...renderScope,
+                                    ...subDirScope,
                                     programNode: node,
                                 }),
+                                subDirScope,
                             ),
                         ),
                         ...node.pdas.map(p => visit(p, self)),
@@ -122,19 +125,24 @@ export function getRenderMapVisitor(options: GetReactHooksRenderMapOptions = {})
 
                 visitRoot(node, { self }) {
                     const accountsToExport = getAllAccounts(node);
-                    const programsToExport = getAllPrograms(node);
                     const instructionsToExport = getAllInstructionsWithSubs(node, { leavesOnly: true });
                     const pdasToExport = getAllPdas(node);
+                    const programsToExport = getAllPrograms(node);
+
+                    // Build the top-level hooks/index.ts: re-export account hooks + subdirectories.
+                    const topLevelExports: { name: string }[] = [...accountsToExport];
+                    if (instructionsToExport.length > 0) topLevelExports.push({ name: 'instructions' });
+                    if (pdasToExport.length > 0) topLevelExports.push({ name: 'pdas' });
+                    if (programsToExport.length > 0) topLevelExports.push({ name: 'programs' });
 
                     return mergeRenderMaps([
                         createRenderMap({
-                            ['hooks/index.ts']: asPage(
-                                getIndexPageFragment([...accountsToExport, ...programsToExport]),
-                            ),
+                            ['hooks/index.ts']: asPage(getIndexPageFragment(topLevelExports)),
                             ['hooks/instructions/index.ts']: asPage(getIndexPageFragment(instructionsToExport)),
                             ['hooks/pdas/index.ts']: asPage(getIndexPageFragment(pdasToExport)),
+                            ['hooks/programs/index.ts']: asPage(getIndexPageFragment(programsToExport)),
                         }),
-                        ...getAllPrograms(node).map(p => visit(p, self)),
+                        ...programsToExport.map(p => visit(p, self)),
                     ]);
                 },
             }),

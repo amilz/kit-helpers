@@ -1,0 +1,26 @@
+{
+    "name": "react-hooks-demo",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "generate": "node generate.cjs",
+        "dev": "vite",
+        "build": "pnpm generate && vite build",
+        "preview": "vite preview"
+    },
+    "dependencies": {
+        "@solana/kit": "^6.1.0",
+        "react": "^19.1.0",
+        "react-dom": "^19.1.0"
+    },
+    "devDependencies": {
+        "@codama/renderers-js": "^2.0.2",
+        "@codama/visitors-core": "^1.5.1",
+        "@kit-helpers/renderer-react-hooks": "workspace:*",
+        "@types/react": "^19.2.14",
+        "@types/react-dom": "^19.2.3",
+        "@vitejs/plugin-react": "^4.5.2",
+        "typescript": "^5.9.3",
+        "vite": "^6.0.0"
+    }
+}

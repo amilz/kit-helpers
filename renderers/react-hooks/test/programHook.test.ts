@@ -13,7 +13,7 @@ test('it generates a program hook with address', async () => {
 
     const renderMap = visit(node, getRenderMapVisitor());
 
-    await renderMapContains(renderMap, 'hooks/tokenProgram.ts', [
+    await renderMapContains(renderMap, 'hooks/programs/tokenProgram.ts', [
         'export function useProgramTokenProgram(',
         'TOKEN_PROGRAM_PROGRAM_ADDRESS',
         'return { programAddress',
@@ -32,7 +32,7 @@ test('it generates a program hook with error decoder when errors exist', async (
 
     const renderMap = visit(node, getRenderMapVisitor());
 
-    await renderMapContains(renderMap, 'hooks/myProgram.ts', [
+    await renderMapContains(renderMap, 'hooks/programs/myProgram.ts', [
         'decodeError',
         'isMyProgramError',
         'getMyProgramErrorMessage',
@@ -47,5 +47,5 @@ test('it generates a program hook without error decoder when no errors', async (
 
     const renderMap = visit(node, getRenderMapVisitor());
 
-    await renderMapContains(renderMap, 'hooks/simpleProgram.ts', ['return { programAddress }']);
+    await renderMapContains(renderMap, 'hooks/programs/simpleProgram.ts', ['return { programAddress }']);
 });

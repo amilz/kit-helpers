@@ -1,4 +1,4 @@
-.PHONY: install build test test-unit test-integration test-plugins test-renderers lint fix format format-check dev clean example-builder example-nonce example-token example-slot kill-validator clear-ledger all
+.PHONY: install build test test-unit test-integration test-plugins test-renderers lint fix format format-check dev clean example-builder example-nonce example-token example-slot example-hooks kill-validator clear-ledger all
 
 # Install all dependencies
 install:
@@ -94,6 +94,10 @@ example-token:
 # Run slots example (demonstrates slot warping via local-validator plugin)
 example-slot:
 	pnpm --filter slots-demo demo
+
+# Run react-hooks example (Vite dev server, no validator needed)
+example-hooks:
+	pnpm --filter react-hooks-demo dev
 
 # Kill local validator
 kill-validator:
