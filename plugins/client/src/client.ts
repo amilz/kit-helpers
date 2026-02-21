@@ -71,4 +71,3 @@ export function createSolanaClient(config: SolanaClientConfig): PayerSolanaClien
 
     throw new Error('createSolanaClient requires either a `payer` or `wallet` config.');
 }
-
