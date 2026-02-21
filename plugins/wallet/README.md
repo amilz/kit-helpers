@@ -85,24 +85,24 @@ const sig = await signMessage(new TextEncoder().encode('Hello'));
 
 ### `walletPlugin(options)`
 
-| Option        | Type          | Description                        |
-| ------------- | ------------- | ---------------------------------- |
-| `wallets`     | `UiWallet[]`  | Array of UiWallet instances        |
-| `autoConnect` | `boolean`     | Auto-reconnect on init (optional)  |
-| `storage`     | `WalletStorage` | Persistence adapter (optional)   |
+| Option        | Type            | Description                       |
+| ------------- | --------------- | --------------------------------- |
+| `wallets`     | `UiWallet[]`    | Array of UiWallet instances       |
+| `autoConnect` | `boolean`       | Auto-reconnect on init (optional) |
+| `storage`     | `WalletStorage` | Persistence adapter (optional)    |
 
 ### `client.wallet`
 
-| Property/Method        | Type                             | Description                            |
-| ---------------------- | -------------------------------- | -------------------------------------- |
-| `state`                | `WalletStatus`                   | Current connection state               |
-| `address`              | `Address \| null`                | Connected address or null              |
-| `connected`            | `boolean`                        | Whether a wallet is connected          |
-| `signer`               | `TransactionModifyingSigner \| null` | Cached signer or null             |
-| `wallets`              | `readonly UiWallet[]`            | Available wallets                      |
-| `connect(name, opts?)` | `Promise<WalletSession>`         | Connect to a wallet (case-insensitive) |
-| `disconnect()`         | `Promise<void>`                  | Disconnect current wallet              |
-| `subscribe(cb)`        | `() => void`                     | Subscribe to status changes            |
+| Property/Method        | Type                                 | Description                            |
+| ---------------------- | ------------------------------------ | -------------------------------------- |
+| `state`                | `WalletStatus`                       | Current connection state               |
+| `address`              | `Address \| null`                    | Connected address or null              |
+| `connected`            | `boolean`                            | Whether a wallet is connected          |
+| `signer`               | `TransactionModifyingSigner \| null` | Cached signer or null                  |
+| `wallets`              | `readonly UiWallet[]`                | Available wallets                      |
+| `connect(name, opts?)` | `Promise<WalletSession>`             | Connect to a wallet (case-insensitive) |
+| `disconnect()`         | `Promise<void>`                      | Disconnect current wallet              |
+| `subscribe(cb)`        | `() => void`                         | Subscribe to status changes            |
 
 ### Status Types
 
@@ -116,19 +116,19 @@ type WalletStatus =
 
 ### Utility Functions
 
-| Function                      | Description                                 |
-| ----------------------------- | ------------------------------------------- |
-| `autoDiscover(opts?)`         | Discover all connectable wallets            |
-| `filterByNames(...names)`     | Create filter for autoDiscover              |
-| `onWalletRegistered(cb)`      | Subscribe to newly registered wallets       |
-| `isConnectable(wallet)`       | Check if wallet supports connecting         |
-| `canSignTransactions(wallet)` | Check if wallet supports signing txns       |
-| `canSignMessages(wallet)`     | Check if wallet supports signing messages   |
-| `createSignerFromAccount(account)`       | Create a TransactionModifyingSigner |
-| `createSignMessageFromAccount(account)`  | Create a signMessage function       |
-| `connectWallet(wallet, opts?)`           | Low-level connect                   |
-| `disconnectWallet(wallet)`               | Low-level disconnect                |
-| `subscribeToWalletEvents(wallet, cb)`    | Subscribe to wallet account changes |
+| Function                                | Description                               |
+| --------------------------------------- | ----------------------------------------- |
+| `autoDiscover(opts?)`                   | Discover all connectable wallets          |
+| `filterByNames(...names)`               | Create filter for autoDiscover            |
+| `onWalletRegistered(cb)`                | Subscribe to newly registered wallets     |
+| `isConnectable(wallet)`                 | Check if wallet supports connecting       |
+| `canSignTransactions(wallet)`           | Check if wallet supports signing txns     |
+| `canSignMessages(wallet)`               | Check if wallet supports signing messages |
+| `createSignerFromAccount(account)`      | Create a TransactionModifyingSigner       |
+| `createSignMessageFromAccount(account)` | Create a signMessage function             |
+| `connectWallet(wallet, opts?)`          | Low-level connect                         |
+| `disconnectWallet(wallet)`              | Low-level disconnect                      |
+| `subscribeToWalletEvents(wallet, cb)`   | Subscribe to wallet account changes       |
 
 ## License
 
