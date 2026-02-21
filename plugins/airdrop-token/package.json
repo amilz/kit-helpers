@@ -47,15 +47,15 @@
         "test:unit": "vitest run"
     },
     "peerDependencies": {
-        "@solana/kit": "^6.0.1"
+        "@solana/kit": "^6.1.0"
     },
     "dependencies": {
-        "@solana-program/system": "^0.11.0",
-        "@solana-program/token": "^0.10.0",
+        "@solana-program/system": "^0.12.0",
+        "@solana-program/token": "^0.11.0",
         "@solana-program/token-2022": "^0.9.0"
     },
     "devDependencies": {
-        "@solana/kit": "^6.0.1",
+        "@solana/kit": "^6.1.0",
         "@types/node": "^24.10.9",
         "agadoo": "^3.0.0",
         "browserslist-to-esbuild": "^2.1.1",
