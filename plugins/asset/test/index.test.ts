@@ -2,11 +2,14 @@ import { address, createEmptyClient, type Address } from '@solana/kit';
 import { describe, expect, it } from 'vitest';
 
 import {
+    AssetCollisionError,
+    AssetReservedNameError,
     assetPlugin,
     createAssetNamespace,
     MAINNET_ASSETS,
     MAINNET_TOKEN_MINTS,
     PROGRAM_IDS,
+    UnknownAssetError,
 } from '../src';
 
 // ─── Tests ──────────────────────────────────────────────────────────────────
@@ -89,10 +92,58 @@ describe('resolve', () => {
         expect(ns.resolve('myToken')).toBe(myToken);
     });
 
-    it('throws for unknown asset', () => {
+    it('throws UnknownAssetError for unknown asset', () => {
         const ns = createAssetNamespace();
 
+        expect(() => ns.resolve('nonexistent')).toThrow(UnknownAssetError);
         expect(() => ns.resolve('nonexistent')).toThrow('Unknown asset: "nonexistent"');
+    });
+
+    it('includes available names in error message', () => {
+        const ns = createAssetNamespace();
+
+        try {
+            ns.resolve('nonexistent');
+            expect.unreachable('should have thrown');
+        } catch (error) {
+            expect(error).toBeInstanceOf(UnknownAssetError);
+            expect((error as Error).message).toContain('usdc');
+            expect((error as Error).message).toContain('systemProgram');
+        }
+    });
+});
+
+describe('collision detection', () => {
+    it('throws AssetCollisionError when custom key collides with built-in', () => {
+        const fakeUsdc = address('FakeUsdcAddress11111111111111111111111111111');
+
+        expect(() => createAssetNamespace({ custom: { usdc: fakeUsdc } })).toThrow(AssetCollisionError);
+        expect(() => createAssetNamespace({ custom: { usdc: fakeUsdc } })).toThrow('collide with built-in');
+    });
+
+    it('throws AssetReservedNameError when custom key uses reserved name "resolve"', () => {
+        const fakeAddr = address('FakeAddress111111111111111111111111111111111');
+
+        expect(() => createAssetNamespace({ custom: { resolve: fakeAddr } as any })).toThrow(AssetReservedNameError);
+        expect(() => createAssetNamespace({ custom: { resolve: fakeAddr } as any })).toThrow('reserved');
+    });
+
+    it('allows empty custom object', () => {
+        const ns = createAssetNamespace({ custom: {} as Record<string, never> });
+
+        expect(ns.usdc).toBe(MAINNET_TOKEN_MINTS.usdc);
+        expect(ns.resolve('usdc')).toBe(MAINNET_TOKEN_MINTS.usdc);
+    });
+});
+
+describe('namespace immutability', () => {
+    it('namespace is frozen', () => {
+        const ns = createAssetNamespace();
+
+        expect(Object.isFrozen(ns)).toBe(true);
+        expect(() => {
+            (ns as any).usdc = 'something';
+        }).toThrow();
     });
 });
 

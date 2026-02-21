@@ -2,6 +2,7 @@ import type { Address } from '@solana/kit';
 
 import { MAINNET_ASSETS } from './assets';
 import type { AssetNamespace } from './types';
+import { AssetCollisionError, AssetReservedNameError, UnknownAssetError } from './types';
 
 export type AssetPluginOptions<TCustom extends Record<string, Address> = Record<string, never>> = {
     custom?: TCustom;
@@ -19,17 +20,26 @@ export function assetPlugin<TCustom extends Record<string, Address> = Record<str
 export function createAssetNamespace<TCustom extends Record<string, Address> = Record<string, never>>(
     options?: AssetPluginOptions<TCustom>,
 ): AssetNamespace<TCustom> {
+    if (options?.custom) {
+        if ('resolve' in options.custom) {
+            throw new AssetReservedNameError('resolve');
+        }
+        const collisions = Object.keys(options.custom).filter(key => key in MAINNET_ASSETS);
+        if (collisions.length > 0) {
+            throw new AssetCollisionError(collisions);
+        }
+    }
+
     const allAssets: Record<string, Address> = { ...MAINNET_ASSETS, ...options?.custom };
 
-    return {
+    return Object.freeze({
         ...MAINNET_ASSETS,
         ...options?.custom,
         resolve(name: string): Address {
-            const addr = allAssets[name];
-            if (!addr) {
-                throw new Error(`Unknown asset: "${name}". Available: ${Object.keys(allAssets).join(', ')}`);
+            if (!(name in allAssets)) {
+                throw new UnknownAssetError(name, Object.keys(allAssets));
             }
-            return addr;
+            return allAssets[name];
         },
-    } as AssetNamespace<TCustom>;
+    } as AssetNamespace<TCustom>);
 }
