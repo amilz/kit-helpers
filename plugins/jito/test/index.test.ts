@@ -407,7 +407,10 @@ describe('helpers', () => {
             const instruction = {
                 programAddress: address('11111111111111111111111111111111'),
                 accounts: [
-                    { address: address('96gYZGLnJYVFmbjzopPSU6QiEV5fGqZNyN9nmNhvrZU5'), role: AccountRole.WRITABLE_SIGNER },
+                    {
+                        address: address('96gYZGLnJYVFmbjzopPSU6QiEV5fGqZNyN9nmNhvrZU5'),
+                        role: AccountRole.WRITABLE_SIGNER,
+                    },
                     { address: address('HFqU5x63VTqvQss8hp11i4wVV8bD44PvwucfZ2bU7gRe'), role: AccountRole.WRITABLE },
                 ],
                 data: new Uint8Array([0]),
@@ -427,7 +430,10 @@ describe('helpers', () => {
             const instruction = {
                 programAddress: address('11111111111111111111111111111111'),
                 accounts: [
-                    { address: address('96gYZGLnJYVFmbjzopPSU6QiEV5fGqZNyN9nmNhvrZU5'), role: AccountRole.WRITABLE_SIGNER },
+                    {
+                        address: address('96gYZGLnJYVFmbjzopPSU6QiEV5fGqZNyN9nmNhvrZU5'),
+                        role: AccountRole.WRITABLE_SIGNER,
+                    },
                 ],
                 data: new Uint8Array([0]),
             };
@@ -444,7 +450,10 @@ describe('helpers', () => {
             const original = {
                 programAddress: address('11111111111111111111111111111111'),
                 accounts: [
-                    { address: address('96gYZGLnJYVFmbjzopPSU6QiEV5fGqZNyN9nmNhvrZU5'), role: AccountRole.WRITABLE_SIGNER },
+                    {
+                        address: address('96gYZGLnJYVFmbjzopPSU6QiEV5fGqZNyN9nmNhvrZU5'),
+                        role: AccountRole.WRITABLE_SIGNER,
+                    },
                 ],
                 data: new Uint8Array([0]),
             };
@@ -474,7 +483,10 @@ describe('helpers', () => {
             const instruction = {
                 programAddress: address('11111111111111111111111111111111'),
                 accounts: [
-                    { address: address('96gYZGLnJYVFmbjzopPSU6QiEV5fGqZNyN9nmNhvrZU5'), role: AccountRole.WRITABLE_SIGNER },
+                    {
+                        address: address('96gYZGLnJYVFmbjzopPSU6QiEV5fGqZNyN9nmNhvrZU5'),
+                        role: AccountRole.WRITABLE_SIGNER,
+                    },
                 ],
                 data: new Uint8Array([1, 2, 3]),
             };

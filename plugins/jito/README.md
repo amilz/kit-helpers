@@ -160,7 +160,7 @@ const protectedTransfer = withDontFront(
         source: payer,
         destination: recipient,
         amount: 1_000_000n,
-    })
+    }),
 );
 
 // Use a custom dontfront address for per-app tracking

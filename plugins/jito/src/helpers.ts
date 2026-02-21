@@ -1,4 +1,4 @@
-import { AccountRole, address, type Address, type Base64EncodedWireTransaction, type Instruction } from '@solana/kit';
+import { AccountRole, type Address, type Base64EncodedWireTransaction, type Instruction } from '@solana/kit';
 
 import type { Bundle, BundleBuilder, JitoApi, SimulateBundleOptions, SimulateBundleResult } from './types';
 
@@ -11,9 +11,8 @@ export const MAX_BUNDLE_SIZE = 5;
  *
  * @see https://docs.jito.wtf/lowlatencytxnsend/#sandwich-mitigation
  */
-export const DEFAULT_DONT_FRONT_ACCOUNT: Address = address(
-    'jitodontfront111111111111111111111111111111',
-);
+export const DEFAULT_DONT_FRONT_ACCOUNT =
+    'jitodontfront111111111111111111111111111111' as Address<'jitodontfront111111111111111111111111111111'>;
 
 /**
  * Append a jitodontfront account as read-only to an instruction.
