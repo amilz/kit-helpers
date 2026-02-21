@@ -380,9 +380,7 @@ describe('action.sendSigned', () => {
 
 describe('action.signMessage', () => {
     it('delegates to wallet session signMessage', async () => {
-        const mockSignMessage = vi
-            .fn()
-            .mockResolvedValue([{ signature: new Uint8Array(64) as SignatureBytes }]);
+        const mockSignMessage = vi.fn().mockResolvedValue([{ signature: new Uint8Array(64) as SignatureBytes }]);
         const rpc = createMockRpc();
 
         // Create a real UiWallet via the registry so createSignMessageFromAccount works
@@ -413,8 +411,7 @@ describe('action.signMessage', () => {
             accounts: [stdAccount],
         } as Wallet;
 
-        const uiWallet =
-            getOrCreateUiWalletForStandardWallet_DO_NOT_USE_OR_YOU_WILL_BE_FIRED(stdWallet);
+        const uiWallet = getOrCreateUiWalletForStandardWallet_DO_NOT_USE_OR_YOU_WILL_BE_FIRED(stdWallet);
         const uiAccount = uiWallet.accounts[0];
 
         const wallet = {
