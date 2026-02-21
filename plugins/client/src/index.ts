@@ -5,8 +5,6 @@ export { createSolanaClient } from './client';
 export type {
     PayerClientConfig,
     PayerSolanaClient,
-    SendConfig,
-    SendInput,
     SolanaClient,
     SolanaClientConfig,
     WalletClientConfig,

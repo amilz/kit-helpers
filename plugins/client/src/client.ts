@@ -4,7 +4,7 @@ import { tokenProgramPlugin } from '@kit-helpers/program-token';
 import { queryPlugin } from '@kit-helpers/query';
 import { walletPlugin } from '@kit-helpers/wallet';
 import { createEmptyClient } from '@solana/kit';
-import { defaultTransactionPlannerAndExecutorFromRpc, sendTransactions } from '@solana/kit-plugin-instruction-plan';
+import { defaultTransactionPlannerAndExecutorFromRpc, planAndSendTransactions } from '@solana/kit-plugin-instruction-plan';
 import { payer } from '@solana/kit-plugin-payer';
 import { rpc } from '@solana/kit-plugin-rpc';
 
@@ -52,7 +52,7 @@ export function createSolanaClient(config: SolanaClientConfig): PayerSolanaClien
         return rpcClient
             .use(payer(config.payer))
             .use(defaultTransactionPlannerAndExecutorFromRpc({ priorityFees: config.priorityFees }))
-            .use(sendTransactions())
+            .use(planAndSendTransactions())
             .use(queryPlugin())
             .use(systemProgramPlugin())
             .use(tokenProgramPlugin());
