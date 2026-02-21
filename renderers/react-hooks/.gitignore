@@ -1,0 +1,5 @@
+node_modules/
+.solana-test-validator/
+dist/
+test/e2e/output/
+test/e2e/node_modules/

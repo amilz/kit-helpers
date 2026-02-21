@@ -33,8 +33,8 @@ export type AutoDiscoverOptions = {
 export function autoDiscover(options?: AutoDiscoverOptions): UiWallet[] {
     const { filter } = options ?? {};
 
-    const { get } = getWallets();
-    const rawWallets = get();
+    const walletStore = getWallets();
+    const rawWallets = walletStore.get();
 
     const result: UiWallet[] = [];
     for (const wallet of rawWallets) {
@@ -92,9 +92,9 @@ export function filterByNames(...names: string[]): (wallet: UiWallet) => boolean
  * ```
  */
 export function onWalletRegistered(callback: (wallet: UiWallet) => void): () => void {
-    const { on } = getWallets();
+    const walletStore = getWallets();
 
-    return on('register', (...wallets: Wallet[]) => {
+    return walletStore.on('register', (...wallets: Wallet[]) => {
         for (const wallet of wallets) {
             if (StandardConnect in wallet.features) {
                 const uiWallet = getOrCreateUiWalletForStandardWallet_DO_NOT_USE_OR_YOU_WILL_BE_FIRED(wallet);

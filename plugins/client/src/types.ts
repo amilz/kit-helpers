@@ -80,7 +80,7 @@ export type PayerSolanaClient = SolanaClient & { payer: TransactionSigner };
 /** Client with a guaranteed wallet (browser usage). Uses the action plugin for send/sign/simulate. */
 export type WalletSolanaClient = Omit<
     SolanaClient,
-    'payer' | 'sendTransaction' | 'sendTransactions' | 'transactionPlanner' | 'transactionPlanExecutor'
+    'payer' | 'sendTransaction' | 'sendTransactions' | 'transactionPlanExecutor' | 'transactionPlanner'
 > & {
     action: ActionNamespace;
     wallet: WalletApi;

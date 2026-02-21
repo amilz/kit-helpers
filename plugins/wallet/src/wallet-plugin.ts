@@ -3,13 +3,7 @@ import { address as toAddress } from '@solana/kit';
 import type { UiWallet, UiWalletAccount } from '@wallet-standard/ui';
 
 import { detectStorage } from './storage';
-import type {
-    WalletApi,
-    WalletPluginOptions,
-    WalletSession,
-    WalletStatus,
-    WalletSubscribeCallback,
-} from './types';
+import type { WalletApi, WalletPluginOptions, WalletSession, WalletStatus, WalletSubscribeCallback } from './types';
 import {
     canSignTransactions,
     connectWallet,
@@ -105,12 +99,10 @@ export function walletPlugin(options: WalletPluginOptions) {
                 const target = findWallet(walletName);
                 if (!target) {
                     const availableNames = wallets.map(w => w.name).join(', ');
-                    throw new Error(
-                        `Unknown wallet: "${walletName}". Available wallets: ${availableNames || 'none'}`,
-                    );
+                    throw new Error(`Unknown wallet: "${walletName}". Available wallets: ${availableNames || 'none'}`);
                 }
 
-                state = { walletName: target.name, status: 'connecting' };
+                state = { status: 'connecting', walletName: target.name };
                 notify();
 
                 try {
@@ -122,19 +114,20 @@ export function walletPlugin(options: WalletPluginOptions) {
                     updateSigner(primaryAccount, target);
 
                     // Subscribe to account changes
-                    eventsUnsubscribe = subscribeToWalletEvents(target, (newAccounts) => {
-                        if (newAccounts.length === 0) {
-                            void walletApi.disconnect();
-                        } else if (state.status === 'connected') {
-                            const newPrimary = newAccounts[0];
-                            updateSigner(newPrimary, target);
-                            state = {
-                                ...state,
-                                session: { ...state.session, account: newPrimary },
-                            };
-                            notify();
-                        }
-                    }) ?? null;
+                    eventsUnsubscribe =
+                        subscribeToWalletEvents(target, newAccounts => {
+                            if (newAccounts.length === 0) {
+                                void walletApi.disconnect();
+                            } else if (state.status === 'connected') {
+                                const newPrimary = newAccounts[0];
+                                updateSigner(newPrimary, target);
+                                state = {
+                                    ...state,
+                                    session: { ...state.session, account: newPrimary },
+                                };
+                                notify();
+                            }
+                        }) ?? null;
 
                     const session: WalletSession = {
                         account: primaryAccount,
@@ -144,14 +137,14 @@ export function walletPlugin(options: WalletPluginOptions) {
                         wallet: target,
                     };
 
-                    state = { walletName: target.name, session, status: 'connected' };
+                    state = { session, status: 'connected', walletName: target.name };
                     notify();
 
                     storage.set(STORAGE_KEY, target.name);
 
                     return session;
                 } catch (error) {
-                    state = { walletName: target.name, error, status: 'error' };
+                    state = { error, status: 'error', walletName: target.name };
                     notify();
                     throw error;
                 }

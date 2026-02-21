@@ -1,0 +1,13 @@
+{
+    "compilerOptions": {
+        "jsx": "react-jsx",
+        "lib": ["ES2022", "DOM"],
+        "module": "ES2022",
+        "moduleResolution": "bundler",
+        "noEmit": true,
+        "strict": true,
+        "target": "ES2022",
+        "types": ["node"]
+    },
+    "include": ["output/src/generated/**/*.ts"]
+}

@@ -4,14 +4,7 @@ import type { UiWallet } from '@wallet-standard/ui';
 import { getOrCreateUiWalletForStandardWallet_DO_NOT_USE_OR_YOU_WILL_BE_FIRED } from '@wallet-standard/ui-registry';
 import { describe, expect, it, vi } from 'vitest';
 
-import {
-    autoDiscover,
-    canSignMessages,
-    canSignTransactions,
-    filterByNames,
-    isConnectable,
-    walletPlugin,
-} from '../src';
+import { autoDiscover, canSignMessages, canSignTransactions, filterByNames, isConnectable, walletPlugin } from '../src';
 import type { WalletStatus } from '../src';
 
 describe('walletPlugin', () => {
@@ -322,9 +315,7 @@ describe('autoDiscover', () => {
 
 // ---- Helper functions ----
 
-function createMockStandardAccount(
-    overrides?: Partial<{ address: string; label: string }>,
-): StandardWalletAccount {
+function createMockStandardAccount(overrides?: Partial<{ address: string; label: string }>): StandardWalletAccount {
     return {
         address: overrides?.address ?? '7v91N7iZ9mNicL8WfG6cgSCKyRXydQjLh6UYBWwm6y1Q',
         publicKey: new Uint8Array(32),
