@@ -15,6 +15,7 @@ Helpers, plugins, and tools for [`@solana/kit`](https://github.com/anza-xyz/kit)
 | Package                                                      | Description                                          | Version |
 | ------------------------------------------------------------ | ---------------------------------------------------- | ------- |
 | [@kit-helpers/renderer-react-hooks](./renderers/react-hooks) | Codama renderer for generating React hooks from IDLs | 0.1.0   |
+| [@kit-helpers/renderer-js-docs](./renderers/js-docs)             | Codama renderer for generating docs from IDLs          | 0.1.0   |
 
 ## Development
 
