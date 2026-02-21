@@ -50,12 +50,12 @@ All generated files include `'use client'` and a barrel `index.ts`.
 
 ## Options
 
-| Name                          | Type                                       | Default                 | Description                                                     |
-| ----------------------------- | ------------------------------------------ | ----------------------- | --------------------------------------------------------------- |
-| `clientPackage`               | `string`                                   | `'../'`                 | Import path to the generated JS client from the hooks directory |
-| `deleteFolderBeforeRendering` | `boolean`                                  | `true`                  | Clean the output directory before generating                    |
-| `formatCode`                  | `boolean`                                  | `true`                  | Format generated code with Prettier                             |
-| `generatedFolder`             | `string`                                   | `'src/generated/hooks'` | Output directory relative to the package folder                 |
-| `kitImportStrategy`           | `'granular' \| 'preferRoot' \| 'rootOnly'` | `'preferRoot'`          | How to resolve `@solana/*` imports                              |
-| `nameTransformers`            | `Partial<NameTransformers>`                | `{}`                    | Override generated hook and client reference names              |
-| `prettierOptions`             | `PrettierOptions`                          | `{}`                    | Prettier configuration for code formatting                      |
+| Name                          | Type                                       | Default           | Description                                                     |
+| ----------------------------- | ------------------------------------------ | ----------------- | --------------------------------------------------------------- |
+| `clientPackage`               | `string`                                   | `'../'`           | Import path to the generated JS client from the hooks directory |
+| `deleteFolderBeforeRendering` | `boolean`                                  | `true`            | Clean the output directory before generating                    |
+| `formatCode`                  | `boolean`                                  | `true`            | Format generated code with Prettier                             |
+| `generatedFolder`             | `string`                                   | `'src/generated'` | Output directory relative to the package folder                 |
+| `kitImportStrategy`           | `'granular' \| 'preferRoot' \| 'rootOnly'` | `'preferRoot'`    | How to resolve `@solana/*` imports                              |
+| `nameTransformers`            | `Partial<NameTransformers>`                | `{}`              | Override generated hook and client reference names              |
+| `prettierOptions`             | `PrettierOptions`                          | `{}`              | Prettier configuration for code formatting                      |

@@ -41,6 +41,7 @@ export function ${hookName}(${seedsParam}config: ${hookName}Config) {
   // Derive PDA address.
   useEffect(() => {
     let cancelled = false;
+    setStatus('loading');
     (async () => {
       try {
         const [pda] = await ${findPdaFn}(${seedsArg}{ programAddress: config.programAddress });

@@ -22,6 +22,8 @@ export function ${hookName}(addresses: Address[], config: ${hookName}Config) {
   const [error, setError] = useState<Error | null>(null);
   const decoder = useMemo(() => ${decoderFn}(), []);
 
+  const addressesKey = addresses.join(',');
+
   useEffect(() => {
     if (addresses.length === 0) {
       setData([]);
@@ -54,7 +56,7 @@ export function ${hookName}(addresses: Address[], config: ${hookName}Config) {
     })();
 
     return () => { cancelled = true; };
-  }, [addresses, config.rpc, decoder]);
+  }, [addressesKey, config.rpc, decoder]);
 
   return { data, error, status };
 }`;

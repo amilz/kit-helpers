@@ -122,12 +122,15 @@ export function getRenderMapVisitor(options: GetReactHooksRenderMapOptions = {})
 
                 visitRoot(node, { self }) {
                     const accountsToExport = getAllAccounts(node);
+                    const programsToExport = getAllPrograms(node);
                     const instructionsToExport = getAllInstructionsWithSubs(node, { leavesOnly: true });
                     const pdasToExport = getAllPdas(node);
 
                     return mergeRenderMaps([
                         createRenderMap({
-                            ['hooks/index.ts']: asPage(getIndexPageFragment(accountsToExport)),
+                            ['hooks/index.ts']: asPage(
+                                getIndexPageFragment([...accountsToExport, ...programsToExport]),
+                            ),
                             ['hooks/instructions/index.ts']: asPage(getIndexPageFragment(instructionsToExport)),
                             ['hooks/pdas/index.ts']: asPage(getIndexPageFragment(pdasToExport)),
                         }),

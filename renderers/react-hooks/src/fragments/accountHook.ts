@@ -51,15 +51,15 @@ export function ${hookName}(address: Address, config: ${hookName}Config) {
   return { data, error, status };
 }`;
 
-    // Add react imports.
+    // React imports.
     f = addFragmentImports(f, 'react', ['useEffect', 'useMemo', 'useState']);
 
-    // Add Kit imports.
+    // Kit imports.
     f = addFragmentImports(f, 'solanaAddresses', ['type Address']);
     f = addFragmentImports(f, 'solanaRpc', ['type Rpc', 'type SolanaRpcApi']);
     f = addFragmentImports(f, 'solanaRpcSubscriptions', ['type RpcSubscriptions', 'type SolanaRpcSubscriptionsApi']);
 
-    // Add generated client imports.
+    // Generated client imports.
     f = addFragmentImports(f, 'generatedClient', [`type ${dataType}`, decoderFn]);
 
     return f;

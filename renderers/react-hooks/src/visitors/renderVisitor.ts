@@ -6,7 +6,7 @@ import { getRenderMapVisitor } from './getRenderMapVisitor';
 
 export function renderVisitor(packageFolder: string, options: ReactHooksRenderOptions = {}) {
     return rootNodeVisitor(async root => {
-        const generatedFolder = joinPath(packageFolder, options.generatedFolder ?? 'src/generated/hooks');
+        const generatedFolder = joinPath(packageFolder, options.generatedFolder ?? 'src/generated');
 
         // Delete existing generated folder.
         if (options.deleteFolderBeforeRendering ?? true) {

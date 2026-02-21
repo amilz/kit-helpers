@@ -137,6 +137,48 @@ test('it does not generate FromSeeds for accounts without PDA', async () => {
     await renderMapContains(renderMap, 'hooks/wallet.ts', ['export function useWallet(address: Address']);
 });
 
+test('it generates batch account hook with stable deps and empty guard', async () => {
+    // Given a program with an account.
+    const node = programNode({
+        accounts: [
+            accountNode({
+                data: structTypeNode([structFieldTypeNode({ name: 'value', type: numberTypeNode('u64') })]),
+                name: 'counter',
+            }),
+        ],
+        name: 'myProgram',
+        publicKey: '1111',
+    });
+
+    const renderMap = visit(node, getRenderMapVisitor());
+
+    // Then the batch hook should have proper content.
+    await renderMapContains(renderMap, 'hooks/counter.ts', [
+        'export function useCounters(addresses: Address[]',
+        'getMultipleAccounts',
+        'if (addresses.length === 0)',
+    ]);
+});
+
+test('it generates use client directive in pages', async () => {
+    // Given a program with an account.
+    const node = programNode({
+        accounts: [
+            accountNode({
+                data: structTypeNode([]),
+                name: 'token',
+            }),
+        ],
+        name: 'myProgram',
+        publicKey: '1111',
+    });
+
+    const renderMap = visit(node, getRenderMapVisitor());
+
+    // Then the generated page should include the use client directive.
+    await renderMapContains(renderMap, 'hooks/token.ts', ["'use client'"]);
+});
+
 test('it generates hooks/index.ts barrel export', async () => {
     // Given a root with a program with multiple accounts.
     const node = rootNode(

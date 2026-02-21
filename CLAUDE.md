@@ -11,6 +11,7 @@ Monorepo of helpers, plugins, and tools for `@solana/kit`. Uses pnpm workspaces.
 ```
 kit-helpers/
 ├── plugins/         # @solana/kit plugins
+├── renderers/       # Codama renderers
 └── examples/        # Demo apps, templates
 ```
 
@@ -34,9 +35,10 @@ pnpm dev             # Watch mode
 
 ## Package Naming
 
-| Directory  | Pattern               | Example                            |
-| ---------- | --------------------- | ---------------------------------- |
-| plugins/\* | `@kit-helpers/{name}` | `@kit-helpers/transaction-builder` |
+| Directory    | Pattern                        | Example                             |
+| ------------ | ------------------------------ | ----------------------------------- |
+| plugins/\*   | `@kit-helpers/{name}`          | `@kit-helpers/transaction-builder`  |
+| renderers/\* | `@kit-helpers/renderer-{name}` | `@kit-helpers/renderer-react-hooks` |
 
 ## Adding New Packages
 

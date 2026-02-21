@@ -66,16 +66,16 @@ export function ${hookName}(config: ${hookName}Config) {
     f = addFragmentImports(f, 'solanaRpc', ['type Rpc', 'type SolanaRpcApi']);
     f = addFragmentImports(f, 'solanaRpcSubscriptions', ['type RpcSubscriptions', 'type SolanaRpcSubscriptionsApi']);
     f = addFragmentImports(f, 'solanaSigners', ['type TransactionSigner', 'signTransactionMessageWithSigners']);
-    f = addFragmentImports(f, 'solanaTransactions', [
+    f = addFragmentImports(f, 'solanaFunctional', ['pipe']);
+    f = addFragmentImports(f, 'solanaKeys', ['type Signature']);
+    f = addFragmentImports(f, 'solanaTransactionMessages', [
         'appendTransactionMessageInstruction',
         'createTransactionMessage',
-        'getSignatureFromTransaction',
-        'pipe',
-        'sendAndConfirmTransactionFactory',
         'setTransactionMessageFeePayerSigner',
         'setTransactionMessageLifetimeUsingBlockhash',
-        'type Signature',
     ]);
+    f = addFragmentImports(f, 'solanaTransactions', ['getSignatureFromTransaction']);
+    f = addFragmentImports(f, 'solanaTransactionConfirmation', ['sendAndConfirmTransactionFactory']);
 
     // Generated client imports.
     f = addFragmentImports(f, 'generatedClient', [instructionFn, `type ${inputType}`]);

@@ -9,11 +9,15 @@ const DEFAULT_EXTERNAL_MODULE_MAP: Record<string, string> = {
     solanaAccounts: '@solana/kit',
     solanaAddresses: '@solana/kit',
     solanaCodecsCore: '@solana/kit',
+    solanaFunctional: '@solana/kit',
+    solanaKeys: '@solana/kit',
     solanaPrograms: '@solana/kit',
     solanaRpc: '@solana/kit',
     solanaRpcSubscriptions: '@solana/kit',
     solanaRpcTypes: '@solana/kit',
     solanaSigners: '@solana/kit',
+    solanaTransactionConfirmation: '@solana/kit',
+    solanaTransactionMessages: '@solana/kit',
     solanaTransactions: '@solana/kit',
 };
 
@@ -22,11 +26,15 @@ const DEFAULT_GRANULAR_EXTERNAL_MODULE_MAP: Record<string, string> = {
     solanaAccounts: '@solana/accounts',
     solanaAddresses: '@solana/addresses',
     solanaCodecsCore: '@solana/codecs',
+    solanaFunctional: '@solana/functional',
+    solanaKeys: '@solana/keys',
     solanaPrograms: '@solana/programs',
     solanaRpc: '@solana/rpc',
     solanaRpcSubscriptions: '@solana/rpc-subscriptions',
     solanaRpcTypes: '@solana/rpc-types',
     solanaSigners: '@solana/signers',
+    solanaTransactionConfirmation: '@solana/transaction-confirmation',
+    solanaTransactionMessages: '@solana/transaction-messages',
     solanaTransactions: '@solana/transactions',
 };
 
