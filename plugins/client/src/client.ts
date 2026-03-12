@@ -2,12 +2,9 @@ import { actionPlugin } from '@kit-helpers/action';
 import { queryPlugin } from '@kit-helpers/query';
 import { walletPlugin } from '@kit-helpers/wallet';
 import { address, createEmptyClient } from '@solana/kit';
-import {
-    defaultTransactionPlannerAndExecutorFromRpc,
-    planAndSendTransactions,
-} from '@solana/kit-plugin-instruction-plan';
+import { planAndSendTransactions } from '@solana/kit-plugin-instruction-plan';
 import { payer } from '@solana/kit-plugin-payer';
-import { rpc } from '@solana/kit-plugin-rpc';
+import { rpc, rpcTransactionPlanExecutor, rpcTransactionPlanner } from '@solana/kit-plugin-rpc';
 import { createNoopSigner } from '@solana/signers';
 import type { SystemPlugin } from '@solana-program/system';
 import { systemProgram } from '@solana-program/system';
@@ -65,7 +62,8 @@ export function createSolanaClient(config: SolanaClientConfig): PayerSolanaClien
     if ('payer' in config && config.payer) {
         return rpcClient
             .use(payer(config.payer))
-            .use(defaultTransactionPlannerAndExecutorFromRpc({ priorityFees: config.priorityFees }))
+            .use(rpcTransactionPlanner({ priorityFees: config.priorityFees }))
+            .use(rpcTransactionPlanExecutor())
             .use(planAndSendTransactions())
             .use(queryPlugin())
             .use(systemProgram())
@@ -80,7 +78,8 @@ export function createSolanaClient(config: SolanaClientConfig): PayerSolanaClien
         return rpcClient
             .use(walletPlugin(config.wallet))
             .use(payer(createNoopSigner(address('11111111111111111111111111111111'))))
-            .use(defaultTransactionPlannerAndExecutorFromRpc({ priorityFees: config.priorityFees }))
+            .use(rpcTransactionPlanner({ priorityFees: config.priorityFees }))
+            .use(rpcTransactionPlanExecutor())
             .use(planAndSendTransactions())
             .use(actionPlugin({ computeUnitPrice: config.priorityFees }))
             .use(queryPlugin())

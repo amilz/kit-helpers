@@ -17,10 +17,10 @@
     "devDependencies": {
         "@solana/eslint-config-solana": "^6.0.0",
         "@solana/prettier-config-solana": "0.0.6",
-        "eslint": "^9.0.0",
-        "prettier": "^3.0.0",
+        "eslint": "^9.39.1",
+        "prettier": "^3.8.1",
         "tsx": "^4.21.0",
-        "typescript": "^5.0.0"
+        "typescript": "^5.9.3"
     },
     "prettier": "@solana/prettier-config-solana"
 }
