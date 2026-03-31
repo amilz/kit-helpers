@@ -15,6 +15,7 @@ Helpers, plugins, and tools for [`@solana/kit`](https://github.com/anza-xyz/kit)
 | [@kit-helpers/jito](./plugins/jito)                               | Jito bundle plugin — bundle submission, tip accounts, and status polling | 0.1.0   |
 | [@kit-helpers/local-validator](./plugins/local-validator)         | Solana test validator lifecycle management                               | 0.1.0   |
 | [@kit-helpers/airdrop-token](./plugins/airdrop-token)             | Airdrop utility for creating token mints, ATAs, and minting tokens       | 0.1.0   |
+| [@kit-helpers/surfpool](./plugins/surfpool)                       | Surfpool/Surfnet cheatcodes — clock, accounts, programs, profiling       | 0.1.0   |
 
 > **Note:** The `@kit-helpers/program-system` and `@kit-helpers/program-token` packages have been removed. Their functionality is now provided by the native [`@solana-program/system`](https://www.npmjs.com/package/@solana-program/system) and [`@solana-program/token`](https://www.npmjs.com/package/@solana-program/token) plugins, composed automatically by `@kit-helpers/client` under `client.program.system` and `client.program.token`.
 
