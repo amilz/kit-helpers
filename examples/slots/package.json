@@ -8,8 +8,8 @@
     },
     "dependencies": {
         "@kit-helpers/local-validator": "workspace:*",
-        "@solana/kit": "^6.3.0",
-        "@solana/kit-plugins": "^0.7.0"
+        "@solana/kit": "^6.10.0",
+        "@solana/kit-plugins": "^0.12.1"
     },
     "devDependencies": {
         "@types/node": "^25.4.0",

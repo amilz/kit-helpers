@@ -46,7 +46,7 @@
         "test:unit": "vitest run"
     },
     "peerDependencies": {
-        "@solana/kit": "^6.3.0"
+        "@solana/kit": "^6.10.0"
     },
     "dependencies": {
         "@kit-helpers/action": "workspace:*",
@@ -54,14 +54,14 @@
         "@kit-helpers/wallet": "workspace:*",
         "@solana-program/system": "^0.12.0",
         "@solana-program/token": "^0.12.0",
-        "@solana/kit-plugin-instruction-plan": "^0.7.0",
-        "@solana/kit-plugin-payer": "^0.6.0",
-        "@solana/kit-plugin-rpc": "^0.7.0",
-        "@solana/signers": "^6.3.0",
+        "@solana/kit-plugin-instruction-plan": "^0.12.1",
+        "@solana/kit-plugin-payer": "^0.12.1",
+        "@solana/kit-plugin-rpc": "^0.12.1",
+        "@solana/signers": "^6.10.0",
         "@wallet-standard/ui": "^1.0.1"
     },
     "devDependencies": {
-        "@solana/kit": "^6.3.0",
+        "@solana/kit": "^6.10.0",
         "@wallet-standard/base": "^1.1.0",
         "@wallet-standard/ui-registry": "^1.0.1",
         "@types/node": "^25.4.0",
