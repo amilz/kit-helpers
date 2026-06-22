@@ -47,12 +47,12 @@
     },
     "peerDependencies": {
         "@solana-program/token": "^0.12.0",
-        "@solana/kit": "^6.3.0"
+        "@solana/kit": "^6.10.0"
     },
     "dependencies": {},
     "devDependencies": {
         "@solana-program/token": "^0.12.0",
-        "@solana/kit": "^6.3.0",
+        "@solana/kit": "^6.10.0",
         "@types/node": "^25.4.0",
         "agadoo": "^3.0.0",
         "browserslist-to-esbuild": "^2.1.1",

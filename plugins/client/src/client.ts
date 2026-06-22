@@ -62,7 +62,7 @@ export function createSolanaClient(config: SolanaClientConfig): PayerSolanaClien
     if ('payer' in config && config.payer) {
         return rpcClient
             .use(payer(config.payer))
-            .use(rpcTransactionPlanner({ priorityFees: config.priorityFees }))
+            .use(rpcTransactionPlanner({ microLamportsPerComputeUnit: config.priorityFees }))
             .use(rpcTransactionPlanExecutor())
             .use(planAndSendTransactions())
             .use(queryPlugin())
@@ -78,7 +78,7 @@ export function createSolanaClient(config: SolanaClientConfig): PayerSolanaClien
         return rpcClient
             .use(walletPlugin(config.wallet))
             .use(payer(createNoopSigner(address('11111111111111111111111111111111'))))
-            .use(rpcTransactionPlanner({ priorityFees: config.priorityFees }))
+            .use(rpcTransactionPlanner({ microLamportsPerComputeUnit: config.priorityFees }))
             .use(rpcTransactionPlanExecutor())
             .use(planAndSendTransactions())
             .use(actionPlugin({ computeUnitPrice: config.priorityFees }))

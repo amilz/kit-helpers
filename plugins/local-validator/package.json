@@ -36,10 +36,10 @@
         "test:types": "tsc --noEmit"
     },
     "peerDependencies": {
-        "@solana/kit": "^6.3.0"
+        "@solana/kit": "^6.10.0"
     },
     "devDependencies": {
-        "@solana/kit": "^6.3.0",
+        "@solana/kit": "^6.10.0",
         "@types/node": "^25.4.0",
         "rimraf": "^6.1.3",
         "tsup": "^8.5.1",
