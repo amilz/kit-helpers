@@ -9,6 +9,7 @@
 
 import { createEmptyClient, generateKeyPairSigner, lamports } from '@solana/kit';
 import { litesvm } from '@solana/kit-plugins';
+
 import { assertIsSuccessfulTransaction } from './utils/transaction.js';
 
 async function main() {

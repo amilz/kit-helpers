@@ -7,6 +7,7 @@
  * - Seamless integration with Kit transaction building
  */
 
+import { getTransferSolInstruction } from '@solana-program/system';
 import {
     address,
     appendTransactionMessageInstruction,
@@ -20,7 +21,7 @@ import {
     signTransactionMessageWithSigners,
 } from '@solana/kit';
 import { litesvm } from '@solana/kit-plugins';
-import { getTransferSolInstruction } from '@solana-program/system';
+
 import { assertIsSuccessfulTransaction } from './utils/transaction.js';
 
 async function main() {

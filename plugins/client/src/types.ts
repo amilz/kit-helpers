@@ -1,6 +1,8 @@
 import type { ActionNamespace } from '@kit-helpers/action';
 import type { QueryNamespace } from '@kit-helpers/query';
 import type { WalletApi } from '@kit-helpers/wallet';
+import type { SystemPlugin } from '@solana-program/system';
+import type { TokenPlugin } from '@solana-program/token';
 import type {
     ClientWithTransactionPlanning,
     ClientWithTransactionSending,
@@ -8,8 +10,6 @@ import type {
     MicroLamports,
     TransactionSigner,
 } from '@solana/kit';
-import type { SystemPlugin } from '@solana-program/system';
-import type { TokenPlugin } from '@solana-program/token';
 import type { UiWallet } from '@wallet-standard/ui';
 
 /** Shared config fields. */

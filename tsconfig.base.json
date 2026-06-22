@@ -9,7 +9,7 @@
         "inlineSources": false,
         "isolatedModules": true,
         "lib": ["ES2022"],
-        "moduleResolution": "node",
+        "moduleResolution": "bundler",
         "noFallthroughCasesInSwitch": true,
         "noUnusedLocals": true,
         "noUnusedParameters": true,

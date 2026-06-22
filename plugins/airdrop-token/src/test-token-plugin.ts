@@ -1,3 +1,12 @@
+import { getCreateAccountInstruction } from '@solana-program/system';
+import {
+    findAssociatedTokenPda,
+    getCreateAssociatedTokenIdempotentInstruction,
+    getInitializeMintInstruction,
+    getMintSize,
+    getMintToInstruction,
+    TOKEN_PROGRAM_ADDRESS,
+} from '@solana-program/token';
 import {
     Address,
     appendTransactionMessageInstructions,
@@ -20,15 +29,6 @@ import {
     SolanaRpcSubscriptionsApi,
     TransactionSigner,
 } from '@solana/kit';
-import { getCreateAccountInstruction } from '@solana-program/system';
-import {
-    findAssociatedTokenPda,
-    getCreateAssociatedTokenIdempotentInstruction,
-    getInitializeMintInstruction,
-    getMintSize,
-    getMintToInstruction,
-    TOKEN_PROGRAM_ADDRESS,
-} from '@solana-program/token';
 
 import type { AirdropTokenClientProperties, CreateTestTokenFunction, TestTokenConfig, TokenProgramId } from './types';
 

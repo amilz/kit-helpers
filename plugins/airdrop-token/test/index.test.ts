@@ -1,6 +1,6 @@
-import { createEmptyClient, generateKeyPairSigner } from '@solana/kit';
 import { TOKEN_PROGRAM_ADDRESS } from '@solana-program/token';
 import { TOKEN_2022_PROGRAM_ADDRESS } from '@solana-program/token-2022';
+import { createEmptyClient, generateKeyPairSigner } from '@solana/kit';
 import { describe, expect, it, vi } from 'vitest';
 
 import { testTokenPlugin } from '../src';

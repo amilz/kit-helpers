@@ -1,3 +1,4 @@
+import type { WalletApi } from '@kit-helpers/wallet';
 import {
     address,
     createEmptyClient,
@@ -9,8 +10,6 @@ import {
 import type { Wallet, WalletAccount as StandardWalletAccount } from '@wallet-standard/base';
 import { getOrCreateUiWalletForStandardWallet_DO_NOT_USE_OR_YOU_WILL_BE_FIRED } from '@wallet-standard/ui-registry';
 import { describe, expect, it, vi } from 'vitest';
-
-import type { WalletApi } from '@kit-helpers/wallet';
 
 import { actionPlugin, createActionNamespace, resolveSigner } from '../src';
 import type { ActionRpc } from '../src';

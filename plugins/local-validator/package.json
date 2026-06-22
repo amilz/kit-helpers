@@ -29,8 +29,6 @@
     "scripts": {
         "build": "rimraf dist && tsup && tsc -p ./tsconfig.declarations.json",
         "dev": "vitest --project node",
-        "lint": "eslint . && prettier --check .",
-        "lint:fix": "eslint --fix . && prettier --write .",
         "test": "pnpm test:types && pnpm test:integration",
         "test:integration": "vitest run",
         "test:types": "tsc --noEmit"

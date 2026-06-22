@@ -1,4 +1,3 @@
-import { createEmptyClient } from '@solana/kit';
 import {
     autoDiscover,
     createSignMessageFromAccount,
@@ -7,6 +6,7 @@ import {
     type UiWallet,
     type WalletStatus,
 } from '@kit-helpers/wallet';
+import { createEmptyClient } from '@solana/kit';
 
 // DOM elements
 const statusEl = document.getElementById('status')!;
