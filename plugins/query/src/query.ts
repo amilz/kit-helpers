@@ -1,5 +1,5 @@
-import { type Address, type Decoder, getBase64Encoder, type Lamports, type Signature } from '@solana/kit';
 import { findAssociatedTokenPda, TOKEN_PROGRAM_ADDRESS } from '@solana-program/token';
+import { type Address, type Decoder, getBase64Encoder, type Lamports, type Signature } from '@solana/kit';
 
 import type {
     AccountInfo,

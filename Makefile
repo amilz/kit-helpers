@@ -32,7 +32,7 @@ test-renderers:
 lint:
 	pnpm lint
 
-# Format code with prettier
+# Format code with oxfmt
 format:
 	pnpm format
 

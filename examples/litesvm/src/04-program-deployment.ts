@@ -9,10 +9,11 @@
  * Build your program with: cargo build-sbf
  */
 
-import { address, createEmptyClient, generateKeyPairSigner, lamports } from '@solana/kit';
-import { litesvm } from '@solana/kit-plugins';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
+
+import { address, createEmptyClient, generateKeyPairSigner, lamports } from '@solana/kit';
+import { litesvm } from '@solana/kit-plugins';
 
 async function main() {
     console.log('=== Program Deployment Example ===\n');

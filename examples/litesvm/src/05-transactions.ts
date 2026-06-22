@@ -8,6 +8,7 @@
  * - Transaction history configuration
  */
 
+import { getTransferSolInstruction } from '@solana-program/system';
 import {
     appendTransactionMessageInstruction,
     createEmptyClient,
@@ -20,7 +21,7 @@ import {
     signTransactionMessageWithSigners,
 } from '@solana/kit';
 import { litesvm } from '@solana/kit-plugins';
-import { getTransferSolInstruction } from '@solana-program/system';
+
 import { assertIsSuccessfulSimulation, assertIsSuccessfulTransaction } from './utils/transaction.js';
 
 async function main() {

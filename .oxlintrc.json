@@ -1,0 +1,13 @@
+{
+    "$schema": "./node_modules/oxlint/configuration_schema.json",
+    "extends": ["./node_modules/@solana-config/oxc/oxlint.json"],
+    "options": { "typeAware": true },
+    "ignorePatterns": [
+        "**/dist/**",
+        "**/test/**",
+        "**/examples/**",
+        "**/*.config.ts",
+        "**/*.config.mts",
+        "**/*.config.cts"
+    ]
+}

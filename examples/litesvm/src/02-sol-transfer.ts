@@ -7,6 +7,7 @@
  * - Verifying the transfer succeeded
  */
 
+import { getTransferSolInstruction } from '@solana-program/system';
 import {
     address,
     appendTransactionMessageInstruction,
@@ -21,7 +22,7 @@ import {
     getBase58Decoder,
 } from '@solana/kit';
 import { litesvm } from '@solana/kit-plugins';
-import { getTransferSolInstruction } from '@solana-program/system';
+
 import { assertIsSuccessfulTransaction } from './utils/transaction.js';
 
 async function main() {

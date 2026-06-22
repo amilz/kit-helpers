@@ -1,6 +1,6 @@
-import type { Address, KeyPairSigner, Signature, TransactionSigner } from '@solana/kit';
 import { TOKEN_PROGRAM_ADDRESS } from '@solana-program/token';
 import { TOKEN_2022_PROGRAM_ADDRESS } from '@solana-program/token-2022';
+import type { Address, KeyPairSigner, Signature, TransactionSigner } from '@solana/kit';
 
 /** Program ID type - Token or Token-2022 */
 export type TokenProgramId = typeof TOKEN_2022_PROGRAM_ADDRESS | typeof TOKEN_PROGRAM_ADDRESS;

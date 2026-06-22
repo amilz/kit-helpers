@@ -1,5 +1,5 @@
-import { createEmptyClient } from '@solana/kit';
 import { localValidatorPlugin } from '@kit-helpers/local-validator';
+import { createEmptyClient } from '@solana/kit';
 import { localhostRpc } from '@solana/kit-plugins';
 
 const TARGET_SLOT = 2026;

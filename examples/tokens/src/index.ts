@@ -1,14 +1,14 @@
-import { createEmptyClient, generateKeyPairSigner, lamports } from '@solana/kit';
-import { localValidatorPlugin } from '@kit-helpers/local-validator';
 import { airdropToken } from '@kit-helpers/airdrop-token';
+import { localValidatorPlugin } from '@kit-helpers/local-validator';
 import { transactionBuilderPlugin } from '@kit-helpers/transaction-builder';
-import { airdrop, generatedPayerWithSol, localhostRpc } from '@solana/kit-plugins';
 import {
     findAssociatedTokenPda,
     getCreateAssociatedTokenIdempotentInstruction,
     getTransferInstruction,
     TOKEN_PROGRAM_ADDRESS,
 } from '@solana-program/token';
+import { createEmptyClient, generateKeyPairSigner, lamports } from '@solana/kit';
+import { airdrop, generatedPayerWithSol, localhostRpc } from '@solana/kit-plugins';
 
 // Validator lifecycle client (separate from main client)
 const validatorClient = createEmptyClient().use(localValidatorPlugin());

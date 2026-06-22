@@ -1,4 +1,5 @@
 import { createSignMessageFromAccount } from '@kit-helpers/wallet';
+import { getSetComputeUnitLimitInstruction, getSetComputeUnitPriceInstruction } from '@solana-program/compute-budget';
 import {
     appendTransactionMessageInstructions,
     assertIsFullySignedTransaction,
@@ -19,7 +20,6 @@ import {
     type SignatureBytes,
     signTransactionMessageWithSigners,
 } from '@solana/kit';
-import { getSetComputeUnitLimitInstruction, getSetComputeUnitPriceInstruction } from '@solana-program/compute-budget';
 
 import { resolveSigner } from './resolve-signer';
 import type {
