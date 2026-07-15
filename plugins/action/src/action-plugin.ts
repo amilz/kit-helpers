@@ -18,13 +18,13 @@ import type { ActionClientRequirements, ActionNamespace, ActionPluginOptions } f
  * import { actionPlugin } from '@kit-helpers/action';
  *
  * // With a payer (scripting/testing)
- * const client = createEmptyClient()
+ * const client = createClient()
  *   .use(rpc('https://api.devnet.solana.com'))
  *   .use(payer(myKeypair))
  *   .use(actionPlugin());
  *
  * // With a wallet (browser)
- * const client = createEmptyClient()
+ * const client = createClient()
  *   .use(rpc('https://api.devnet.solana.com'))
  *   .use(walletPlugin({ connectors: autoDiscover() }))
  *   .use(actionPlugin());

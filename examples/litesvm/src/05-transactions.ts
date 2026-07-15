@@ -11,7 +11,7 @@
 import { getTransferSolInstruction } from '@solana-program/system';
 import {
     appendTransactionMessageInstruction,
-    createEmptyClient,
+    createClient,
     createTransactionMessage,
     generateKeyPairSigner,
     lamports,
@@ -28,7 +28,7 @@ async function main() {
     console.log('=== Transactions Example ===\n');
 
     // Enable transaction history to retrieve transactions later
-    const client = createEmptyClient().use(litesvm());
+    const client = createClient().use(litesvm());
 
     // Enable transaction history (stores last N transactions)
     client.svm.withTransactionHistory(100n);

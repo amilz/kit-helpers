@@ -1,10 +1,4 @@
-import {
-    address,
-    createEmptyClient,
-    generateKeyPairSigner,
-    sequentialInstructionPlan,
-    type Instruction,
-} from '@solana/kit';
+import { address, createClient, generateKeyPairSigner, sequentialInstructionPlan, type Instruction } from '@solana/kit';
 import { describe, expect, it, vi } from 'vitest';
 
 import { createTransactionBuilder, transactionBuilderPlugin } from '../src';
@@ -467,7 +461,7 @@ describe('transactionBuilderPlugin', () => {
         const payer = await generateKeyPairSigner();
         const rpc = createMockRpc();
 
-        const client = createEmptyClient()
+        const client = createClient()
             .use(() => ({ payer, rpc }))
             .use(transactionBuilderPlugin());
 
@@ -479,7 +473,7 @@ describe('transactionBuilderPlugin', () => {
         const payer = await generateKeyPairSigner();
         const rpc = createMockRpc();
 
-        const client = createEmptyClient()
+        const client = createClient()
             .use(() => ({ payer, rpc }))
             .use(transactionBuilderPlugin());
 
@@ -498,7 +492,7 @@ describe('transactionBuilderPlugin', () => {
         });
         const rpc = createMockRpc({ simulateTransaction });
 
-        const client = createEmptyClient()
+        const client = createClient()
             .use(() => ({ payer, rpc }))
             .use(transactionBuilderPlugin({ autoEstimateCus: false }));
 
@@ -519,7 +513,7 @@ describe('transactionBuilderPlugin', () => {
         const rpc = createMockRpc({ simulateTransaction });
 
         // Set 25% margin via plugin options
-        const client = createEmptyClient()
+        const client = createClient()
             .use(() => ({ payer, rpc }))
             .use(transactionBuilderPlugin({ estimateMargin: 0.25 }));
 
@@ -548,7 +542,7 @@ describe('transactionBuilderPlugin', () => {
         const rpc = createMockRpc({ simulateTransaction });
 
         // Plugin defaults: 25% margin
-        const client = createEmptyClient()
+        const client = createClient()
             .use(() => ({ payer, rpc }))
             .use(transactionBuilderPlugin({ estimateMargin: 0.25 }));
 
@@ -571,7 +565,7 @@ describe('transactionBuilderPlugin', () => {
         const rpc = createMockRpc();
 
         const minFee = 2_000_000n;
-        const client = createEmptyClient()
+        const client = createClient()
             .use(() => ({ payer, rpc }))
             .use(transactionBuilderPlugin({ minPriorityFee: minFee }));
 

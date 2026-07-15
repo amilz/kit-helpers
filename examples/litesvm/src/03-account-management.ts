@@ -8,13 +8,13 @@
  * - minimumBalanceForRentExemption: Calculate rent-exempt balance
  */
 
-import { address, createEmptyClient, generateKeyPairSigner, lamports } from '@solana/kit';
+import { address, createClient, generateKeyPairSigner, lamports } from '@solana/kit';
 import { litesvm } from '@solana/kit-plugins';
 
 async function main() {
     console.log('=== Account Management Example ===\n');
 
-    const client = createEmptyClient().use(litesvm());
+    const client = createClient().use(litesvm());
 
     // Generate a test account
     const testAccount = await generateKeyPairSigner();

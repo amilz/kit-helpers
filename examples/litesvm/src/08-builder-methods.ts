@@ -6,13 +6,13 @@
  * - Configure compute budget, signature verification, and more
  */
 
-import { createEmptyClient, generateKeyPairSigner, lamports } from '@solana/kit';
+import { createClient, generateKeyPairSigner, lamports } from '@solana/kit';
 import { litesvm } from '@solana/kit-plugins';
 
 async function main() {
     console.log('=== Builder Methods Example ===\n');
 
-    const client = createEmptyClient().use(litesvm());
+    const client = createClient().use(litesvm());
 
     console.log('--- Basic Configuration ---');
 

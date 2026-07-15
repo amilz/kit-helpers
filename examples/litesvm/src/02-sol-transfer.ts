@@ -11,7 +11,7 @@ import { getTransferSolInstruction } from '@solana-program/system';
 import {
     address,
     appendTransactionMessageInstruction,
-    createEmptyClient,
+    createClient,
     createTransactionMessage,
     generateKeyPairSigner,
     lamports,
@@ -28,7 +28,7 @@ import { assertIsSuccessfulTransaction } from './utils/transaction.js';
 async function main() {
     console.log('=== SOL Transfer Example ===\n');
 
-    const client = createEmptyClient().use(litesvm());
+    const client = createClient().use(litesvm());
 
     // Create two accounts: sender and recipient
     const sender = await generateKeyPairSigner();

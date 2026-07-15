@@ -1,4 +1,4 @@
-import { createEmptyClient } from '@solana/kit';
+import { createClient } from '@solana/kit';
 import type { Wallet, WalletAccount as StandardWalletAccount } from '@wallet-standard/base';
 import type { UiWallet } from '@wallet-standard/ui';
 import { getOrCreateUiWalletForStandardWallet_DO_NOT_USE_OR_YOU_WILL_BE_FIRED } from '@wallet-standard/ui-registry';
@@ -10,7 +10,7 @@ import type { WalletStatus } from '../src';
 describe('walletPlugin', () => {
     it('adds wallet property to client', () => {
         const wallets: UiWallet[] = [];
-        const client = createEmptyClient().use(walletPlugin({ wallets }));
+        const client = createClient().use(walletPlugin({ wallets }));
 
         expect(client).toHaveProperty('wallet');
         expect(client.wallet).toHaveProperty('state');
@@ -25,7 +25,7 @@ describe('walletPlugin', () => {
 
     it('starts in disconnected state', () => {
         const wallets: UiWallet[] = [];
-        const client = createEmptyClient().use(walletPlugin({ wallets }));
+        const client = createClient().use(walletPlugin({ wallets }));
 
         expect(client.wallet.state).toEqual({ status: 'disconnected' });
         expect(client.wallet.address).toBeNull();
@@ -38,7 +38,7 @@ describe('walletPlugin', () => {
         const wallet2 = createMockUiWallet({ name: 'Solflare' });
         const wallets = [wallet1, wallet2];
 
-        const client = createEmptyClient().use(walletPlugin({ wallets }));
+        const client = createClient().use(walletPlugin({ wallets }));
 
         expect(client.wallet.wallets).toHaveLength(2);
         expect(client.wallet.wallets[0].name).toBe('Phantom');
@@ -47,14 +47,14 @@ describe('walletPlugin', () => {
 
     it('connect() throws for unknown wallet', async () => {
         const wallets: UiWallet[] = [];
-        const client = createEmptyClient().use(walletPlugin({ wallets }));
+        const client = createClient().use(walletPlugin({ wallets }));
 
         await expect(client.wallet.connect('unknown')).rejects.toThrow('Unknown wallet: "unknown"');
     });
 
     it('connect() transitions to connecting then connected state', async () => {
         const wallet = createMockUiWallet({ name: 'Phantom' });
-        const client = createEmptyClient().use(walletPlugin({ wallets: [wallet] }));
+        const client = createClient().use(walletPlugin({ wallets: [wallet] }));
 
         const states: WalletStatus[] = [];
         client.wallet.subscribe(status => states.push({ ...status }));
@@ -69,7 +69,7 @@ describe('walletPlugin', () => {
 
     it('connect() returns the session', async () => {
         const wallet = createMockUiWallet({ name: 'Phantom' });
-        const client = createEmptyClient().use(walletPlugin({ wallets: [wallet] }));
+        const client = createClient().use(walletPlugin({ wallets: [wallet] }));
 
         const session = await client.wallet.connect('Phantom');
 
@@ -83,7 +83,7 @@ describe('walletPlugin', () => {
             name: 'Phantom',
             accountAddress: '7v91N7iZ9mNicL8WfG6cgSCKyRXydQjLh6UYBWwm6y1Q',
         });
-        const client = createEmptyClient().use(walletPlugin({ wallets: [wallet] }));
+        const client = createClient().use(walletPlugin({ wallets: [wallet] }));
 
         await client.wallet.connect('Phantom');
 
@@ -93,7 +93,7 @@ describe('walletPlugin', () => {
 
     it('connect() is case-insensitive', async () => {
         const wallet = createMockUiWallet({ name: 'Phantom' });
-        const client = createEmptyClient().use(walletPlugin({ wallets: [wallet] }));
+        const client = createClient().use(walletPlugin({ wallets: [wallet] }));
 
         const session = await client.wallet.connect('phantom');
 
@@ -111,7 +111,7 @@ describe('walletPlugin', () => {
                 'standard:connect': { connect: connectFn },
             },
         });
-        const client = createEmptyClient().use(walletPlugin({ wallets: [wallet] }));
+        const client = createClient().use(walletPlugin({ wallets: [wallet] }));
 
         await client.wallet.connect('Phantom', { autoConnect: true });
 
@@ -128,7 +128,7 @@ describe('walletPlugin', () => {
                 },
             },
         });
-        const client = createEmptyClient().use(walletPlugin({ wallets: [wallet] }));
+        const client = createClient().use(walletPlugin({ wallets: [wallet] }));
 
         const states: WalletStatus[] = [];
         client.wallet.subscribe(status => states.push({ ...status }));
@@ -145,7 +145,7 @@ describe('walletPlugin', () => {
 
     it('disconnect() transitions to disconnected state', async () => {
         const wallet = createMockUiWallet({ name: 'Phantom' });
-        const client = createEmptyClient().use(walletPlugin({ wallets: [wallet] }));
+        const client = createClient().use(walletPlugin({ wallets: [wallet] }));
 
         await client.wallet.connect('Phantom');
         expect(client.wallet.connected).toBe(true);
@@ -166,7 +166,7 @@ describe('walletPlugin', () => {
                 'standard:disconnect': { disconnect: disconnectFn },
             },
         });
-        const client = createEmptyClient().use(walletPlugin({ wallets: [wallet] }));
+        const client = createClient().use(walletPlugin({ wallets: [wallet] }));
 
         await client.wallet.connect('Phantom');
         await client.wallet.disconnect();
@@ -176,7 +176,7 @@ describe('walletPlugin', () => {
 
     it('disconnect() does nothing when already disconnected', async () => {
         const wallets: UiWallet[] = [];
-        const client = createEmptyClient().use(walletPlugin({ wallets }));
+        const client = createClient().use(walletPlugin({ wallets }));
 
         // Should not throw
         await client.wallet.disconnect();
@@ -186,7 +186,7 @@ describe('walletPlugin', () => {
 
     it('subscribe() returns unsubscribe function', () => {
         const wallets: UiWallet[] = [];
-        const client = createEmptyClient().use(walletPlugin({ wallets }));
+        const client = createClient().use(walletPlugin({ wallets }));
 
         const callback = vi.fn();
         const unsubscribe = client.wallet.subscribe(callback);
@@ -199,7 +199,7 @@ describe('walletPlugin', () => {
 
     it('unsubscribe() stops notifications', async () => {
         const wallet = createMockUiWallet({ name: 'Phantom' });
-        const client = createEmptyClient().use(walletPlugin({ wallets: [wallet] }));
+        const client = createClient().use(walletPlugin({ wallets: [wallet] }));
 
         const callback = vi.fn();
         const unsubscribe = client.wallet.subscribe(callback);
@@ -216,7 +216,7 @@ describe('walletPlugin', () => {
 
     it('multiple subscribers all receive updates', async () => {
         const wallet = createMockUiWallet({ name: 'Phantom' });
-        const client = createEmptyClient().use(walletPlugin({ wallets: [wallet] }));
+        const client = createClient().use(walletPlugin({ wallets: [wallet] }));
 
         const callback1 = vi.fn();
         const callback2 = vi.fn();
@@ -236,7 +236,7 @@ describe('walletPlugin', () => {
             name: 'ReadOnly',
             includeSignFeatures: false,
         });
-        const client = createEmptyClient().use(walletPlugin({ wallets: [wallet] }));
+        const client = createClient().use(walletPlugin({ wallets: [wallet] }));
 
         const session = await client.wallet.connect('ReadOnly');
 

@@ -8,13 +8,13 @@
  * - Slot hashes
  */
 
-import { createEmptyClient } from '@solana/kit';
+import { createClient } from '@solana/kit';
 import { litesvm } from '@solana/kit-plugins';
 
 async function main() {
     console.log('=== Sysvars Example ===\n');
 
-    const client = createEmptyClient().use(litesvm());
+    const client = createClient().use(litesvm());
 
     // Enable sysvars
     client.svm.withSysvars();

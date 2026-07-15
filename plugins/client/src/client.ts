@@ -5,10 +5,10 @@ import type { SystemPlugin } from '@solana-program/system';
 import { systemProgram } from '@solana-program/system';
 import type { TokenPlugin } from '@solana-program/token';
 import { tokenProgram } from '@solana-program/token';
-import { address, createEmptyClient } from '@solana/kit';
+import { address, createClient } from '@solana/kit';
 import { planAndSendTransactions } from '@solana/kit-plugin-instruction-plan';
 import { payer } from '@solana/kit-plugin-payer';
-import { rpc, rpcTransactionPlanExecutor, rpcTransactionPlanner } from '@solana/kit-plugin-rpc';
+import { rpc, rpcGetMinimumBalance, rpcTransactionPlanExecutor, rpcTransactionPlanner } from '@solana/kit-plugin-rpc';
 import { createNoopSigner } from '@solana/signers';
 
 import type {
@@ -56,7 +56,7 @@ function programPlugin() {
 export function createSolanaClient(config: PayerClientConfig): PayerSolanaClient;
 export function createSolanaClient(config: WalletClientConfig): WalletSolanaClient;
 export function createSolanaClient(config: SolanaClientConfig): PayerSolanaClient | WalletSolanaClient {
-    const rpcClient = createEmptyClient().use(rpc(config.url, config.wsUrl ? { url: config.wsUrl } : undefined));
+    const rpcClient = createClient().use(rpc(config.url, config.wsUrl ? { url: config.wsUrl } : undefined));
 
     // Payer flow — payer is available immediately.
     if ('payer' in config && config.payer) {
@@ -65,6 +65,7 @@ export function createSolanaClient(config: SolanaClientConfig): PayerSolanaClien
             .use(rpcTransactionPlanner({ microLamportsPerComputeUnit: config.priorityFees }))
             .use(rpcTransactionPlanExecutor())
             .use(planAndSendTransactions())
+            .use(rpcGetMinimumBalance())
             .use(queryPlugin())
             .use(systemProgram())
             .use(tokenProgram())
@@ -82,6 +83,7 @@ export function createSolanaClient(config: SolanaClientConfig): PayerSolanaClien
             .use(rpcTransactionPlanExecutor())
             .use(planAndSendTransactions())
             .use(actionPlugin({ computeUnitPrice: config.priorityFees }))
+            .use(rpcGetMinimumBalance())
             .use(queryPlugin())
             .use(systemProgram())
             .use(tokenProgram())

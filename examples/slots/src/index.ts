@@ -1,10 +1,10 @@
 import { localValidatorPlugin } from '@kit-helpers/local-validator';
-import { createEmptyClient } from '@solana/kit';
+import { createClient } from '@solana/kit';
 import { localhostRpc } from '@solana/kit-plugins';
 
 const TARGET_SLOT = 2026;
 
-const client = createEmptyClient().use(localValidatorPlugin({})).use(localhostRpc());
+const client = createClient().use(localValidatorPlugin({})).use(localhostRpc());
 
 async function main() {
     console.log('='.repeat(50));

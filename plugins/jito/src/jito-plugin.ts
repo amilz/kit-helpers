@@ -17,11 +17,11 @@ import type { JitoApi, JitoClientRequirements, JitoPluginConfig } from './types'
  * @example
  * Basic setup with mainnet Block Engine.
  * ```ts
- * import { createEmptyClient, lamports } from '@solana/kit';
+ * import { createClient, lamports } from '@solana/kit';
  * import { localhostRpc, generatedPayerWithSol } from '@solana/kit-plugins';
  * import { jitoPlugin } from '@kit-helpers/jito';
  *
- * const client = await createEmptyClient()
+ * const client = await createClient()
  *     .use(localhostRpc())
  *     .use(generatedPayerWithSol(lamports(1_000_000_000n)))
  *     .use(jitoPlugin({

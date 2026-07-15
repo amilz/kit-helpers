@@ -8,12 +8,12 @@ import {
     getNonceSize,
     SYSTEM_PROGRAM_ADDRESS,
 } from '@solana-program/system';
-import { createEmptyClient, generateKeyPairSigner, lamports, type Nonce } from '@solana/kit';
+import { createClient, generateKeyPairSigner, lamports, type Nonce } from '@solana/kit';
 import { generatedPayerWithSol, airdrop, localhostRpc } from '@solana/kit-plugins';
 
 const NUM_MEMO_TRANSACTIONS = 10;
 
-const validatorClient = createEmptyClient()
+const validatorClient = createClient()
     .use(localValidatorPlugin({ manageExternal: true }))
     .use(localhostRpc());
 

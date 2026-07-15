@@ -1,4 +1,4 @@
-import { address, createEmptyClient, type Address } from '@solana/kit';
+import { address, createClient, type Address } from '@solana/kit';
 import { describe, expect, it } from 'vitest';
 
 import {
@@ -16,7 +16,7 @@ import {
 
 describe('assetPlugin', () => {
     it('adds asset namespace to client', () => {
-        const client = createEmptyClient().use(assetPlugin());
+        const client = createClient().use(assetPlugin());
 
         expect(client).toHaveProperty('asset');
         expect(client.asset).toHaveProperty('usdc');
@@ -25,7 +25,7 @@ describe('assetPlugin', () => {
     });
 
     it('preserves existing client properties', () => {
-        const client = createEmptyClient()
+        const client = createClient()
             .use(() => ({ existingProp: 'test' }))
             .use(assetPlugin());
 
@@ -36,7 +36,7 @@ describe('assetPlugin', () => {
     it('includes custom assets', () => {
         const myToken = address('CuSTomTokenAddress1111111111111111111111111');
 
-        const client = createEmptyClient().use(
+        const client = createClient().use(
             assetPlugin({
                 custom: { myToken },
             }),

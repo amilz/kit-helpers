@@ -10,9 +10,9 @@
         "@kit-helpers/local-validator": "workspace:*",
         "@kit-helpers/airdrop-token": "workspace:*",
         "@kit-helpers/transaction-builder": "workspace:*",
-        "@solana-program/token": "^0.12.0",
-        "@solana/kit": "^6.10.0",
-        "@solana/kit-plugins": "^0.12.1"
+        "@solana-program/token": "^0.15.0",
+        "@solana/kit": "^7.0.0",
+        "@solana/kit-plugins": "^0.13.0"
     },
     "devDependencies": {
         "@types/node": "^25.4.0",

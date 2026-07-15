@@ -64,11 +64,11 @@ type LiteSVMClient = {
  * @example
  * RPC-based token creation.
  * ```ts
- * import { createEmptyClient, lamports } from '@solana/kit';
+ * import { createClient, lamports } from '@solana/kit';
  * import { localhostRpc, generatedPayerWithSol } from '@solana/kit-plugins';
  * import { testTokenPlugin } from '@kit-helpers/airdrop-token';
  *
- * const client = await createEmptyClient()
+ * const client = await createClient()
  *     .use(localhostRpc())
  *     .use(generatedPayerWithSol(lamports(1_000_000_000n)))
  *     .use(testTokenPlugin());
@@ -87,11 +87,11 @@ type LiteSVMClient = {
  * @example
  * LiteSVM-based token creation.
  * ```ts
- * import { createEmptyClient } from '@solana/kit';
+ * import { createClient } from '@solana/kit';
  * import { litesvm, generatedPayer } from '@solana/kit-plugins';
  * import { testTokenPlugin } from '@kit-helpers/airdrop-token';
  *
- * const client = createEmptyClient()
+ * const client = createClient()
  *     .use(litesvm())
  *     .use(generatedPayer())
  *     .use(testTokenPlugin());
@@ -177,11 +177,11 @@ export function testTokenPlugin() {
  *
  * @example
  * ```ts
- * import { createEmptyClient, lamports } from '@solana/kit';
+ * import { createClient, lamports } from '@solana/kit';
  * import { localhostRpc, generatedPayerWithSol } from '@solana/kit-plugins';
  * import { airdropToken } from '@kit-helpers/airdrop-token';
  *
- * const client = await createEmptyClient()
+ * const client = await createClient()
  *     .use(localhostRpc())
  *     .use(generatedPayerWithSol(lamports(1_000_000_000n)))
  *     .use(airdropToken({ decimals: 6, amount: 1_000_000_000_000n }));
