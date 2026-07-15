@@ -1,7 +1,7 @@
 import type { WalletApi } from '@kit-helpers/wallet';
 import {
     address,
-    createEmptyClient,
+    createClient,
     generateKeyPairSigner,
     type Instruction,
     type SignatureBytes,
@@ -100,7 +100,7 @@ describe('actionPlugin', () => {
         const payer = await generateKeyPairSigner();
         const rpc = createMockRpc();
 
-        const client = createEmptyClient()
+        const client = createClient()
             .use(() => ({ payer, rpc }))
             .use(actionPlugin());
 
@@ -116,7 +116,7 @@ describe('actionPlugin', () => {
         const payer = await generateKeyPairSigner();
         const rpc = createMockRpc();
 
-        const client = createEmptyClient()
+        const client = createClient()
             .use(() => ({ payer, rpc, existingProp: 'test' }))
             .use(actionPlugin());
 

@@ -9,13 +9,13 @@
  * Note: The RPC layer only supports base64 encoding
  */
 
-import { address, createEmptyClient, generateKeyPairSigner, lamports } from '@solana/kit';
+import { address, createClient, generateKeyPairSigner, lamports } from '@solana/kit';
 import { litesvm } from '@solana/kit-plugins';
 
 async function main() {
     console.log('=== RPC Compatibility Example ===\n');
 
-    const client = createEmptyClient().use(litesvm());
+    const client = createClient().use(litesvm());
 
     // The RPC layer provides a Kit-compatible subset:
     // - getAccountInfo

@@ -39,10 +39,10 @@ export type LocalValidatorMethods = {
  *
  * @example Basic usage
  * ```ts
- * import { createEmptyClient } from '@solana/kit';
+ * import { createClient } from '@solana/kit';
  * import { localValidatorPlugin } from '@kit-helpers/local-validator';
  *
- * const client = createEmptyClient()
+ * const client = createClient()
  *   .use(localValidatorPlugin());
  *
  * try {
@@ -60,7 +60,7 @@ export type LocalValidatorMethods = {
  *
  * @example Auto-start validator
  * ```ts
- * const client = await createEmptyClient()
+ * const client = await createClient()
  *   .use(localValidatorPlugin({ startValidator: true }));
  *
  * // Validator is already running!
@@ -71,7 +71,7 @@ export type LocalValidatorMethods = {
  *
  * @example Auto-start with options
  * ```ts
- * const client = await createEmptyClient()
+ * const client = await createClient()
  *   .use(localValidatorPlugin({
  *     startValidator: { stopIfRunning: true, reset: true },
  *     ledgerPath: './my-test-ledger',
@@ -80,7 +80,7 @@ export type LocalValidatorMethods = {
  *
  * @example With configuration
  * ```ts
- * const client = createEmptyClient()
+ * const client = createClient()
  *   .use(localValidatorPlugin({
  *     ledgerPath: './my-test-ledger',
  *     readyTimeoutMs: 60000,

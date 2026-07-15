@@ -26,10 +26,10 @@ import {
  * @example
  * Basic setup with auto-discovered wallets.
  * ```ts
- * import { createEmptyClient } from '@solana/kit';
+ * import { createClient } from '@solana/kit';
  * import { walletPlugin, autoDiscover } from '@kit-helpers/wallet';
  *
- * const client = createEmptyClient()
+ * const client = createClient()
  *   .use(walletPlugin({ wallets: autoDiscover() }));
  *
  * // Connect to a wallet

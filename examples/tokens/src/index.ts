@@ -7,11 +7,11 @@ import {
     getTransferInstruction,
     TOKEN_PROGRAM_ADDRESS,
 } from '@solana-program/token';
-import { createEmptyClient, generateKeyPairSigner, lamports } from '@solana/kit';
+import { createClient, generateKeyPairSigner, lamports } from '@solana/kit';
 import { airdrop, generatedPayerWithSol, localhostRpc } from '@solana/kit-plugins';
 
 // Validator lifecycle client (separate from main client)
-const validatorClient = createEmptyClient().use(localValidatorPlugin());
+const validatorClient = createClient().use(localValidatorPlugin());
 
 async function main() {
     // Start local validator
@@ -19,7 +19,7 @@ async function main() {
 
     // Create main client with all plugins
     // airdropToken() creates a token during .use() - similar to airdrop() but for tokens
-    const client = await createEmptyClient()
+    const client = await createClient()
         .use(localhostRpc())
         .use(airdrop())
         .use(generatedPayerWithSol(lamports(10_000_000_000n)))

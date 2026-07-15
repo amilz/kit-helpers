@@ -43,9 +43,9 @@
         "test:unit": "vitest run"
     },
     "dependencies": {
-        "@codama/nodes": "^1.8.0",
-        "@codama/renderers-core": "^1.3.9",
-        "@codama/visitors-core": "^1.8.0"
+        "@codama/nodes": "^1.9.0",
+        "@codama/renderers-core": "^1.3.10",
+        "@codama/visitors-core": "^1.9.0"
     },
     "devDependencies": {
         "@types/node": "^25.4.0",

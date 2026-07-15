@@ -1,15 +1,15 @@
 import { localValidatorPlugin } from '@kit-helpers/local-validator';
 import { transactionBuilderPlugin } from '@kit-helpers/transaction-builder';
 import { getAddMemoInstruction } from '@solana-program/memo';
-import { createEmptyClient, lamports } from '@solana/kit';
+import { createClient, lamports } from '@solana/kit';
 import { generatedPayerWithSol, airdrop, localhostRpc } from '@solana/kit-plugins';
 
-const validatorClient = createEmptyClient().use(localValidatorPlugin());
+const validatorClient = createClient().use(localValidatorPlugin());
 
 async function main() {
     await validatorClient.startValidator({ stopIfRunning: true, reset: true });
 
-    const client = await createEmptyClient()
+    const client = await createClient()
         .use(localhostRpc())
         .use(airdrop())
         .use(generatedPayerWithSol(lamports(10_000_000_000n)))

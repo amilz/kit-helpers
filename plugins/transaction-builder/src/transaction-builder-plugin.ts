@@ -29,11 +29,11 @@ type TransactionBuilderClient = {
  *
  * @example
  * ```ts
- * import { createEmptyClient, lamports } from '@solana/kit';
+ * import { createClient, lamports } from '@solana/kit';
  * import { localhostRpc, generatedPayerWithSol } from '@solana/kit-plugins';
  * import { transactionBuilderPlugin } from '@solana/transaction-builder';
  *
- * const client = await createEmptyClient()
+ * const client = await createClient()
  *   .use(localhostRpc())
  *   .use(generatedPayerWithSol(lamports(1_000_000_000n)))
  *   .use(transactionBuilderPlugin());
@@ -47,7 +47,7 @@ type TransactionBuilderClient = {
  *   .execute();
  *
  * // With custom defaults
- * const clientWithOptions = await createEmptyClient()
+ * const clientWithOptions = await createClient()
  *   .use(localhostRpc())
  *   .use(generatedPayerWithSol(lamports(1_000_000_000n)))
  *   .use(transactionBuilderPlugin({ autoEstimateCus: false, estimateMargin: 0.2 }));

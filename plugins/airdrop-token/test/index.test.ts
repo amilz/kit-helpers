@@ -1,6 +1,6 @@
 import { TOKEN_PROGRAM_ADDRESS } from '@solana-program/token';
 import { TOKEN_2022_PROGRAM_ADDRESS } from '@solana-program/token-2022';
-import { createEmptyClient, generateKeyPairSigner } from '@solana/kit';
+import { createClient, generateKeyPairSigner } from '@solana/kit';
 import { describe, expect, it, vi } from 'vitest';
 
 import { testTokenPlugin } from '../src';
@@ -20,7 +20,7 @@ describe('testTokenPlugin', () => {
         const rpc = createMockRpc();
         const rpcSubscriptions = createMockRpcSubscriptions();
 
-        const client = createEmptyClient()
+        const client = createClient()
             .use(() => ({ payer, rpc, rpcSubscriptions }))
             .use(testTokenPlugin());
 
@@ -33,7 +33,7 @@ describe('testTokenPlugin', () => {
         const rpc = createMockRpc();
         const rpcSubscriptions = createMockRpcSubscriptions();
 
-        const client = createEmptyClient()
+        const client = createClient()
             .use(() => ({ payer, rpc, rpcSubscriptions, customProp: 'test' }))
             .use(testTokenPlugin());
 
@@ -48,7 +48,7 @@ describe('LiteSVM support', () => {
         const payer = await generateKeyPairSigner();
         const svm = createMockSvm();
 
-        const client = createEmptyClient()
+        const client = createClient()
             .use(() => ({ payer, svm }))
             .use(testTokenPlugin());
 
@@ -65,7 +65,7 @@ describe('LiteSVM support', () => {
         const payer = await generateKeyPairSigner();
         const svm = createMockSvm();
 
-        const client = createEmptyClient()
+        const client = createClient()
             .use(() => ({ payer, svm }))
             .use(testTokenPlugin());
 
@@ -79,7 +79,7 @@ describe('LiteSVM support', () => {
         const customAuthority = await generateKeyPairSigner();
         const svm = createMockSvm();
 
-        const client = createEmptyClient()
+        const client = createClient()
             .use(() => ({ payer, svm }))
             .use(testTokenPlugin());
 
@@ -95,7 +95,7 @@ describe('LiteSVM support', () => {
         const customMint = await generateKeyPairSigner();
         const svm = createMockSvm();
 
-        const client = createEmptyClient()
+        const client = createClient()
             .use(() => ({ payer, svm }))
             .use(testTokenPlugin());
 
@@ -111,7 +111,7 @@ describe('LiteSVM support', () => {
         const minimumBalanceForRentExemption = vi.fn().mockReturnValue(1_461_600n);
         const svm = createMockSvm({ minimumBalanceForRentExemption });
 
-        const client = createEmptyClient()
+        const client = createClient()
             .use(() => ({ payer, svm }))
             .use(testTokenPlugin());
 
@@ -124,7 +124,7 @@ describe('LiteSVM support', () => {
         const payer = await generateKeyPairSigner();
         const svm = createMockSvm();
 
-        const client = createEmptyClient()
+        const client = createClient()
             .use(() => ({ payer, svm }))
             .use(testTokenPlugin());
 
@@ -139,7 +139,7 @@ describe('LiteSVM support', () => {
         const payer = await generateKeyPairSigner();
         const svm = createMockSvm();
 
-        const client = createEmptyClient()
+        const client = createClient()
             .use(() => ({ payer, svm }))
             .use(testTokenPlugin());
 
@@ -151,7 +151,7 @@ describe('LiteSVM support', () => {
         const payer = await generateKeyPairSigner();
         const svm = createMockSvm();
 
-        const client = createEmptyClient()
+        const client = createClient()
             .use(() => ({ payer, svm }))
             .use(testTokenPlugin());
 
@@ -163,7 +163,7 @@ describe('LiteSVM support', () => {
         const payer = await generateKeyPairSigner();
         const svm = createMockSvm();
 
-        const client = createEmptyClient()
+        const client = createClient()
             .use(() => ({ payer, svm }))
             .use(testTokenPlugin());
 
@@ -178,7 +178,7 @@ describe('LiteSVM support', () => {
         const freezeAuth = await generateKeyPairSigner();
         const svm = createMockSvm();
 
-        const client = createEmptyClient()
+        const client = createClient()
             .use(() => ({ payer, svm }))
             .use(testTokenPlugin());
 
@@ -195,7 +195,7 @@ describe('RPC support', () => {
         const rpc = createMockRpc();
         const rpcSubscriptions = createMockRpcSubscriptions();
 
-        const client = createEmptyClient()
+        const client = createClient()
             .use(() => ({ payer, rpc, rpcSubscriptions }))
             .use(testTokenPlugin());
 
@@ -214,7 +214,7 @@ describe('RPC support', () => {
         const rpc = createMockRpc();
         const rpcSubscriptions = createMockRpcSubscriptions();
 
-        const client = createEmptyClient()
+        const client = createClient()
             .use(() => ({ payer, rpc, rpcSubscriptions }))
             .use(testTokenPlugin());
 
@@ -228,7 +228,7 @@ describe('RPC support', () => {
         const rpc = createMockRpc();
         const rpcSubscriptions = createMockRpcSubscriptions();
 
-        const client = createEmptyClient()
+        const client = createClient()
             .use(() => ({ payer, rpc, rpcSubscriptions }))
             .use(testTokenPlugin());
 
@@ -241,7 +241,7 @@ describe('RPC support', () => {
         const rpc = createMockRpc();
         const rpcSubscriptions = createMockRpcSubscriptions();
 
-        const client = createEmptyClient()
+        const client = createClient()
             .use(() => ({ payer, rpc, rpcSubscriptions }))
             .use(testTokenPlugin());
 
@@ -257,7 +257,7 @@ describe('input validation', () => {
         const payer = await generateKeyPairSigner();
         const svm = createMockSvm();
 
-        const client = createEmptyClient()
+        const client = createClient()
             .use(() => ({ payer, svm }))
             .use(testTokenPlugin());
 
@@ -270,7 +270,7 @@ describe('input validation', () => {
         const payer = await generateKeyPairSigner();
         const svm = createMockSvm();
 
-        const client = createEmptyClient()
+        const client = createClient()
             .use(() => ({ payer, svm }))
             .use(testTokenPlugin());
 
@@ -283,7 +283,7 @@ describe('input validation', () => {
         const payer = await generateKeyPairSigner();
         const svm = createMockSvm();
 
-        const client = createEmptyClient()
+        const client = createClient()
             .use(() => ({ payer, svm }))
             .use(testTokenPlugin());
 
@@ -296,7 +296,7 @@ describe('input validation', () => {
         const payer = await generateKeyPairSigner();
         const svm = createMockSvm();
 
-        const client = createEmptyClient()
+        const client = createClient()
             .use(() => ({ payer, svm }))
             .use(testTokenPlugin());
 
@@ -309,7 +309,7 @@ describe('input validation', () => {
         const payer = await generateKeyPairSigner();
         const svm = createMockSvm();
 
-        const client = createEmptyClient()
+        const client = createClient()
             .use(() => ({ payer, svm }))
             .use(testTokenPlugin());
 
@@ -324,7 +324,7 @@ describe('input validation', () => {
         const payer = await generateKeyPairSigner();
         const svm = createMockSvm();
 
-        const client = createEmptyClient()
+        const client = createClient()
             .use(() => ({ payer, svm }))
             .use(testTokenPlugin());
 

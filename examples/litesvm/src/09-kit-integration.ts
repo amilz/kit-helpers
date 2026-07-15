@@ -11,7 +11,7 @@ import { getTransferSolInstruction } from '@solana-program/system';
 import {
     address,
     appendTransactionMessageInstruction,
-    createEmptyClient,
+    createClient,
     createTransactionMessage,
     generateKeyPairSigner,
     lamports,
@@ -30,7 +30,7 @@ async function main() {
     // The litesvm() plugin adds:
     //   - client.svm: Direct LiteSVM access
     //   - client.rpc: Kit-compatible RPC subset
-    const client = createEmptyClient().use(litesvm());
+    const client = createClient().use(litesvm());
 
     // Configure LiteSVM for testing
     client.svm.withSigverify(false).withBlockhashCheck(false).withSysvars();

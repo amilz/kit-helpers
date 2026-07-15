@@ -6,7 +6,7 @@ import {
     type UiWallet,
     type WalletStatus,
 } from '@kit-helpers/wallet';
-import { createEmptyClient } from '@solana/kit';
+import { createClient } from '@solana/kit';
 
 // DOM elements
 const statusEl = document.getElementById('status')!;
@@ -32,7 +32,7 @@ const wallets = autoDiscover();
 log(`found ${wallets.length} wallet(s)`);
 
 // Create client with wallet plugin
-const client = createEmptyClient().use(walletPlugin({ wallets }));
+const client = createClient().use(walletPlugin({ wallets }));
 
 // Render a single wallet button
 function renderWalletButton(wallet: UiWallet) {
