@@ -9,7 +9,9 @@ import {
     SYSTEM_PROGRAM_ADDRESS,
 } from '@solana-program/system';
 import { createClient, generateKeyPairSigner, lamports, type Nonce } from '@solana/kit';
-import { generatedPayerWithSol, airdrop, localhostRpc } from '@solana/kit-plugins';
+import { airdrop } from '@solana/kit-plugin-airdrop';
+import { generatedPayerWithSol } from '@solana/kit-plugin-payer';
+import { localhostRpc } from '@solana/kit-plugin-rpc';
 
 const NUM_MEMO_TRANSACTIONS = 10;
 

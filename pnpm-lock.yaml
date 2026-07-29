@@ -63,9 +63,15 @@ importers:
       '@solana/kit':
         specifier: ^7.0.0
         version: 7.0.0(typescript@5.9.3)
-      '@solana/kit-plugins':
+      '@solana/kit-plugin-airdrop':
         specifier: ^0.13.0
-        version: 0.13.0(@solana/kit@7.0.0(typescript@5.9.3))(typescript@5.9.3)
+        version: 0.13.0(@solana/kit@7.0.0(typescript@5.9.3))
+      '@solana/kit-plugin-payer':
+        specifier: ^0.13.0
+        version: 0.13.0(@solana/kit@7.0.0(typescript@5.9.3))
+      '@solana/kit-plugin-rpc':
+        specifier: ^0.15.0
+        version: 0.15.0(@solana/kit@7.0.0(typescript@5.9.3))
     devDependencies:
       '@types/node':
         specifier: ^25.4.0
@@ -89,8 +95,8 @@ importers:
         specifier: ^7.0.0
         version: 7.0.0(typescript@5.9.3)
       '@solana/kit-plugins':
-        specifier: ^0.13.0
-        version: 0.13.0(@solana/kit@7.0.0(typescript@5.9.3))(typescript@5.9.3)
+        specifier: ^0.15.0
+        version: 0.15.0(@solana/kit@7.0.0(typescript@5.9.3))(typescript@5.9.3)
     devDependencies:
       '@types/node':
         specifier: ^25.4.0
@@ -147,9 +153,9 @@ importers:
       '@solana/kit':
         specifier: ^7.0.0
         version: 7.0.0(typescript@5.9.3)
-      '@solana/kit-plugins':
-        specifier: ^0.13.0
-        version: 0.13.0(@solana/kit@7.0.0(typescript@5.9.3))(typescript@5.9.3)
+      '@solana/kit-plugin-rpc':
+        specifier: ^0.15.0
+        version: 0.15.0(@solana/kit@7.0.0(typescript@5.9.3))
     devDependencies:
       '@types/node':
         specifier: ^25.4.0
@@ -178,9 +184,15 @@ importers:
       '@solana/kit':
         specifier: ^7.0.0
         version: 7.0.0(typescript@5.9.3)
-      '@solana/kit-plugins':
+      '@solana/kit-plugin-airdrop':
         specifier: ^0.13.0
-        version: 0.13.0(@solana/kit@7.0.0(typescript@5.9.3))(typescript@5.9.3)
+        version: 0.13.0(@solana/kit@7.0.0(typescript@5.9.3))
+      '@solana/kit-plugin-payer':
+        specifier: ^0.13.0
+        version: 0.13.0(@solana/kit@7.0.0(typescript@5.9.3))
+      '@solana/kit-plugin-rpc':
+        specifier: ^0.15.0
+        version: 0.15.0(@solana/kit@7.0.0(typescript@5.9.3))
     devDependencies:
       '@types/node':
         specifier: ^25.4.0
@@ -206,9 +218,15 @@ importers:
       '@solana/kit':
         specifier: ^7.0.0
         version: 7.0.0(typescript@5.9.3)
-      '@solana/kit-plugins':
+      '@solana/kit-plugin-airdrop':
         specifier: ^0.13.0
-        version: 0.13.0(@solana/kit@7.0.0(typescript@5.9.3))(typescript@5.9.3)
+        version: 0.13.0(@solana/kit@7.0.0(typescript@5.9.3))
+      '@solana/kit-plugin-payer':
+        specifier: ^0.13.0
+        version: 0.13.0(@solana/kit@7.0.0(typescript@5.9.3))
+      '@solana/kit-plugin-rpc':
+        specifier: ^0.15.0
+        version: 0.15.0(@solana/kit@7.0.0(typescript@5.9.3))
     devDependencies:
       '@types/node':
         specifier: ^25.4.0
@@ -367,8 +385,8 @@ importers:
         specifier: ^0.13.0
         version: 0.13.0(@solana/kit@7.0.0(typescript@5.9.3))
       '@solana/kit-plugin-rpc':
-        specifier: ^0.13.0
-        version: 0.13.0(@solana/kit@7.0.0(typescript@5.9.3))
+        specifier: ^0.15.0
+        version: 0.15.0(@solana/kit@7.0.0(typescript@5.9.3))
       '@solana/signers':
         specifier: ^7.0.0
         version: 7.0.0(typescript@5.9.3)
@@ -1932,18 +1950,21 @@ packages:
       typescript:
         optional: true
 
-  '@solana/kit-client-litesvm@0.13.0':
-    resolution: {integrity: sha512-DqPJYfMhCANUJ+aAb9qcs68Hl1mBn4kHwS1FH53t5xVs0VSEm56ptPhD4Ux0OCVU9lYGr3/KpdgDg15vpB3z2g==}
+  '@solana/kit-client-litesvm@0.15.0':
+    resolution: {integrity: sha512-dIVDlaeqGoclTPA51qVgf87HmQGu5pyMrNQmNa/3y1TX3jg9g9svScBxZkP5YyAyNxj9fCKjzdI15TvofhB49Q==}
+    deprecated: 'Deprecated: use createClient from @solana/kit with payer() from @solana/kit-plugin-signer and litesvm() from @solana/kit-plugin-litesvm instead. See the README for migration.'
     peerDependencies:
       '@solana/kit': ^7.0.0
 
-  '@solana/kit-client-rpc@0.13.0':
-    resolution: {integrity: sha512-eo4zPHLxRvptFbJhWV0sJe+LPPpcLoZdVvltp7hteb7zPvfw/cfNG57l9UkKKzYLick5cldkmDkJaOebA8959w==}
+  '@solana/kit-client-rpc@0.15.0':
+    resolution: {integrity: sha512-dvXp3aSVvNnyu1C51uICg9Ck2toEf3iy0qyxgZjmmg8v9kYKNz67neYc7/cOb4zuEA7+PPRVaSJXcfDgfVIumA==}
+    deprecated: 'Deprecated: use createClient from @solana/kit with payer() from @solana/kit-plugin-signer and solanaRpc() from @solana/kit-plugin-rpc instead. See the README for migration.'
     peerDependencies:
       '@solana/kit': ^7.0.0
 
   '@solana/kit-plugin-airdrop@0.13.0':
     resolution: {integrity: sha512-yhFs3VK8/3yWm3ppk4IQ516hM0gij34/Kp4lh6GfaBSk9dgyzdEOoTq08NDBpNl9vUhAi8bRwMzsThEkVnT+tw==}
+    deprecated: 'Deprecated: use rpcAirdrop from @solana/kit-plugin-rpc or litesvmAirdrop from @solana/kit-plugin-litesvm instead.'
     peerDependencies:
       '@solana/kit': ^7.0.0
 
@@ -1952,8 +1973,8 @@ packages:
     peerDependencies:
       '@solana/kit': ^7.0.0
 
-  '@solana/kit-plugin-litesvm@0.13.0':
-    resolution: {integrity: sha512-LAprqugF68Gr9MaaGDSvy3JZIV1ia4D3jeUcNtuMmvgxQdqh2uxwJq6GvmaL9dFJJm31nS0QZarOqSZt0JaMZQ==}
+  '@solana/kit-plugin-litesvm@0.15.0':
+    resolution: {integrity: sha512-RXPjQ6A5BBhwtLFrsFQvOxtffZcIpe0Kh2qlcu+HVoZNoo+g6r4e1s8NPVINUJVd8OUwrDnH9TzwpBbVm6EieA==}
     peerDependencies:
       '@solana/kit': ^7.0.0
 
@@ -1962,13 +1983,14 @@ packages:
     peerDependencies:
       '@solana/kit': ^7.0.0
 
-  '@solana/kit-plugin-rpc@0.13.0':
-    resolution: {integrity: sha512-cYDbMjtp6vpU2FIuIQXN+EDSo2ljIA6m16B9BIi/ts/R0ETPt8rRvyXupi2dDS8wxUdRFUxXGXsPY78hRf4bfQ==}
+  '@solana/kit-plugin-rpc@0.15.0':
+    resolution: {integrity: sha512-Abymr7WLP9yQ6ixCCv+tKzjoWpAkxJ90JWzL+pfkTAFGTpVk9N0myhMcO2ohl6yztJRMOxsw1CXWjcVecxxUlg==}
     peerDependencies:
       '@solana/kit': ^7.0.0
 
-  '@solana/kit-plugins@0.13.0':
-    resolution: {integrity: sha512-llX1zbBSpq53fxYixYAXLzKtJGhTzv8G6idXtYkYdsnMZdfqqjXvspn8NH39ZyKeDHyOaxEuZBqu+MkSvKWbFw==}
+  '@solana/kit-plugins@0.15.0':
+    resolution: {integrity: sha512-JGUClUgL0TyzWy1JRaVHRfRzowJK8mvtwVMy0ijgMdiOsTUn1xcJUYj6oPgBuwUrqlxnwSNGHVnWB1W3C2QD7A==}
+    deprecated: 'Deprecated: install the individual @solana/kit-plugin-* packages directly (kit-plugin-rpc, kit-plugin-signer, kit-plugin-litesvm, kit-plugin-instruction-plan). See the README for the full import mapping.'
     peerDependencies:
       '@solana/kit': ^7.0.0
 
@@ -4521,11 +4543,11 @@ snapshots:
     transitivePeerDependencies:
       - fastestsmallesttextencoderdecoder
 
-  '@solana/kit-client-litesvm@0.13.0(@solana/kit@7.0.0(typescript@5.9.3))(typescript@5.9.3)':
+  '@solana/kit-client-litesvm@0.15.0(@solana/kit@7.0.0(typescript@5.9.3))(typescript@5.9.3)':
     dependencies:
       '@solana/kit': 7.0.0(typescript@5.9.3)
       '@solana/kit-plugin-instruction-plan': 0.13.0(@solana/kit@7.0.0(typescript@5.9.3))
-      '@solana/kit-plugin-litesvm': 0.13.0(@solana/kit@7.0.0(typescript@5.9.3))(typescript@5.9.3)
+      '@solana/kit-plugin-litesvm': 0.15.0(@solana/kit@7.0.0(typescript@5.9.3))(typescript@5.9.3)
       '@solana/kit-plugin-payer': 0.13.0(@solana/kit@7.0.0(typescript@5.9.3))
     transitivePeerDependencies:
       - bufferutil
@@ -4533,12 +4555,12 @@ snapshots:
       - typescript
       - utf-8-validate
 
-  '@solana/kit-client-rpc@0.13.0(@solana/kit@7.0.0(typescript@5.9.3))':
+  '@solana/kit-client-rpc@0.15.0(@solana/kit@7.0.0(typescript@5.9.3))':
     dependencies:
       '@solana/kit': 7.0.0(typescript@5.9.3)
       '@solana/kit-plugin-instruction-plan': 0.13.0(@solana/kit@7.0.0(typescript@5.9.3))
       '@solana/kit-plugin-payer': 0.13.0(@solana/kit@7.0.0(typescript@5.9.3))
-      '@solana/kit-plugin-rpc': 0.13.0(@solana/kit@7.0.0(typescript@5.9.3))
+      '@solana/kit-plugin-rpc': 0.15.0(@solana/kit@7.0.0(typescript@5.9.3))
 
   '@solana/kit-plugin-airdrop@0.13.0(@solana/kit@7.0.0(typescript@5.9.3))':
     dependencies:
@@ -4548,7 +4570,7 @@ snapshots:
     dependencies:
       '@solana/kit': 7.0.0(typescript@5.9.3)
 
-  '@solana/kit-plugin-litesvm@0.13.0(@solana/kit@7.0.0(typescript@5.9.3))(typescript@5.9.3)':
+  '@solana/kit-plugin-litesvm@0.15.0(@solana/kit@7.0.0(typescript@5.9.3))(typescript@5.9.3)':
     dependencies:
       '@solana/kit': 7.0.0(typescript@5.9.3)
       '@solana/kit-plugin-instruction-plan': 0.13.0(@solana/kit@7.0.0(typescript@5.9.3))
@@ -4563,21 +4585,21 @@ snapshots:
     dependencies:
       '@solana/kit': 7.0.0(typescript@5.9.3)
 
-  '@solana/kit-plugin-rpc@0.13.0(@solana/kit@7.0.0(typescript@5.9.3))':
+  '@solana/kit-plugin-rpc@0.15.0(@solana/kit@7.0.0(typescript@5.9.3))':
     dependencies:
       '@solana/kit': 7.0.0(typescript@5.9.3)
       '@solana/kit-plugin-instruction-plan': 0.13.0(@solana/kit@7.0.0(typescript@5.9.3))
 
-  '@solana/kit-plugins@0.13.0(@solana/kit@7.0.0(typescript@5.9.3))(typescript@5.9.3)':
+  '@solana/kit-plugins@0.15.0(@solana/kit@7.0.0(typescript@5.9.3))(typescript@5.9.3)':
     dependencies:
       '@solana/kit': 7.0.0(typescript@5.9.3)
-      '@solana/kit-client-litesvm': 0.13.0(@solana/kit@7.0.0(typescript@5.9.3))(typescript@5.9.3)
-      '@solana/kit-client-rpc': 0.13.0(@solana/kit@7.0.0(typescript@5.9.3))
+      '@solana/kit-client-litesvm': 0.15.0(@solana/kit@7.0.0(typescript@5.9.3))(typescript@5.9.3)
+      '@solana/kit-client-rpc': 0.15.0(@solana/kit@7.0.0(typescript@5.9.3))
       '@solana/kit-plugin-airdrop': 0.13.0(@solana/kit@7.0.0(typescript@5.9.3))
       '@solana/kit-plugin-instruction-plan': 0.13.0(@solana/kit@7.0.0(typescript@5.9.3))
-      '@solana/kit-plugin-litesvm': 0.13.0(@solana/kit@7.0.0(typescript@5.9.3))(typescript@5.9.3)
+      '@solana/kit-plugin-litesvm': 0.15.0(@solana/kit@7.0.0(typescript@5.9.3))(typescript@5.9.3)
       '@solana/kit-plugin-payer': 0.13.0(@solana/kit@7.0.0(typescript@5.9.3))
-      '@solana/kit-plugin-rpc': 0.13.0(@solana/kit@7.0.0(typescript@5.9.3))
+      '@solana/kit-plugin-rpc': 0.15.0(@solana/kit@7.0.0(typescript@5.9.3))
     transitivePeerDependencies:
       - bufferutil
       - fastestsmallesttextencoderdecoder

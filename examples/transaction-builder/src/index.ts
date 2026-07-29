@@ -2,7 +2,9 @@ import { localValidatorPlugin } from '@kit-helpers/local-validator';
 import { transactionBuilderPlugin } from '@kit-helpers/transaction-builder';
 import { getAddMemoInstruction } from '@solana-program/memo';
 import { createClient, lamports } from '@solana/kit';
-import { generatedPayerWithSol, airdrop, localhostRpc } from '@solana/kit-plugins';
+import { airdrop } from '@solana/kit-plugin-airdrop';
+import { generatedPayerWithSol } from '@solana/kit-plugin-payer';
+import { localhostRpc } from '@solana/kit-plugin-rpc';
 
 const validatorClient = createClient().use(localValidatorPlugin());
 

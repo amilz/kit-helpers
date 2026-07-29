@@ -8,7 +8,9 @@ import {
     TOKEN_PROGRAM_ADDRESS,
 } from '@solana-program/token';
 import { createClient, generateKeyPairSigner, lamports } from '@solana/kit';
-import { airdrop, generatedPayerWithSol, localhostRpc } from '@solana/kit-plugins';
+import { airdrop } from '@solana/kit-plugin-airdrop';
+import { generatedPayerWithSol } from '@solana/kit-plugin-payer';
+import { localhostRpc } from '@solana/kit-plugin-rpc';
 
 // Validator lifecycle client (separate from main client)
 const validatorClient = createClient().use(localValidatorPlugin());
