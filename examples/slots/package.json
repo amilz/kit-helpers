@@ -9,7 +9,7 @@
     "dependencies": {
         "@kit-helpers/local-validator": "workspace:*",
         "@solana/kit": "^7.0.0",
-        "@solana/kit-plugins": "^0.13.0"
+        "@solana/kit-plugins": "^0.15.0"
     },
     "devDependencies": {
         "@types/node": "^25.4.0",

@@ -54,7 +54,7 @@
         "@solana-program/token": "^0.15.0",
         "@solana/kit-plugin-instruction-plan": "^0.13.0",
         "@solana/kit-plugin-payer": "^0.13.0",
-        "@solana/kit-plugin-rpc": "^0.13.0",
+        "@solana/kit-plugin-rpc": "^0.15.0",
         "@solana/signers": "^7.0.0",
         "@wallet-standard/ui": "^1.0.1"
     },
