@@ -8,6 +8,7 @@ import { tokenProgram } from '@solana-program/token';
 import { address, createClient } from '@solana/kit';
 import { planAndSendTransactions } from '@solana/kit-plugin-instruction-plan';
 import { payer } from '@solana/kit-plugin-payer';
+import type { TransactionPlannerConfig } from '@solana/kit-plugin-rpc';
 import { rpc, rpcGetMinimumBalance, rpcTransactionPlanExecutor, rpcTransactionPlanner } from '@solana/kit-plugin-rpc';
 import { createNoopSigner } from '@solana/signers';
 
@@ -18,6 +19,29 @@ import type {
     WalletClientConfig,
     WalletSolanaClient,
 } from './types';
+
+/** Maps the client config onto the planner's per-version pricing options. */
+function plannerConfig(config: SolanaClientConfig): TransactionPlannerConfig {
+    const version = config.version ?? 1;
+
+    if (version === 1) {
+        if (config.priorityFees !== undefined) {
+            throw new Error(
+                'priorityFees prices priority per compute unit, which version 1 transactions do not ' +
+                    'do. Use priorityFeeLamports to state a total in lamports, or pass version: 0.',
+            );
+        }
+        return { priorityFeeLamports: config.priorityFeeLamports, version: 1 };
+    }
+
+    if (config.priorityFeeLamports !== undefined) {
+        throw new Error(
+            'priorityFeeLamports states a total priority fee, which only version 1 transactions ' +
+                'carry. Use priorityFees to state a price per compute unit, or pass version: 1.',
+        );
+    }
+    return { microLamportsPerComputeUnit: config.priorityFees, version: 0 };
+}
 
 /** Re-nests top-level `system` and `token` under a `program` namespace. */
 function programPlugin() {
@@ -62,7 +86,7 @@ export function createSolanaClient(config: SolanaClientConfig): PayerSolanaClien
     if ('payer' in config && config.payer) {
         return rpcClient
             .use(payer(config.payer))
-            .use(rpcTransactionPlanner({ microLamportsPerComputeUnit: config.priorityFees }))
+            .use(rpcTransactionPlanner(plannerConfig(config)))
             .use(rpcTransactionPlanExecutor())
             .use(planAndSendTransactions())
             .use(rpcGetMinimumBalance())
@@ -79,10 +103,16 @@ export function createSolanaClient(config: SolanaClientConfig): PayerSolanaClien
         return rpcClient
             .use(walletPlugin(config.wallet))
             .use(payer(createNoopSigner(address('11111111111111111111111111111111'))))
-            .use(rpcTransactionPlanner({ microLamportsPerComputeUnit: config.priorityFees }))
+            .use(rpcTransactionPlanner(plannerConfig(config)))
             .use(rpcTransactionPlanExecutor())
             .use(planAndSendTransactions())
-            .use(actionPlugin({ computeUnitPrice: config.priorityFees }))
+            .use(
+                actionPlugin({
+                    computeUnitPrice: config.priorityFees,
+                    priorityFeeLamports: config.priorityFeeLamports,
+                    version: config.version ?? 1,
+                }),
+            )
             .use(rpcGetMinimumBalance())
             .use(queryPlugin())
             .use(systemProgram())

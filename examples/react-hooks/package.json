@@ -1,26 +1,26 @@
 {
-    "name": "react-hooks-demo",
-    "private": true,
-    "type": "module",
-    "scripts": {
-        "generate": "node generate.cjs",
-        "dev": "vite",
-        "build": "pnpm generate && vite build",
-        "preview": "vite preview"
-    },
-    "dependencies": {
-        "@solana/kit": "^7.0.0",
-        "react": "^19.2.4",
-        "react-dom": "^19.2.4"
-    },
-    "devDependencies": {
-        "@codama/renderers-js": "^2.3.0",
-        "@codama/visitors-core": "^1.9.0",
-        "@kit-helpers/renderer-react-hooks": "workspace:*",
-        "@types/react": "^19.2.14",
-        "@types/react-dom": "^19.2.3",
-        "@vitejs/plugin-react": "^5.1.4",
-        "typescript": "^5.9.3",
-        "vite": "^7.3.1"
-    }
+  "name": "react-hooks-demo",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "generate": "node generate.cjs",
+    "dev": "vite",
+    "build": "pnpm generate && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@solana/kit": "^8.3.0",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0"
+  },
+  "devDependencies": {
+    "@codama/renderers-js": "^2.5.0",
+    "@codama/visitors-core": "^1.11.0",
+    "@kit-helpers/renderer-react-hooks": "workspace:*",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.1",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.0"
+  }
 }

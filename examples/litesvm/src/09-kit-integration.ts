@@ -20,7 +20,8 @@ import {
     setTransactionMessageLifetimeUsingBlockhash,
     signTransactionMessageWithSigners,
 } from '@solana/kit';
-import { litesvm } from '@solana/kit-plugins';
+import { litesvm } from '@solana/kit-plugin-litesvm';
+import { generatedPayer } from '@solana/kit-plugin-payer';
 
 import { assertIsSuccessfulTransaction } from './utils/transaction.js';
 
@@ -30,7 +31,7 @@ async function main() {
     // The litesvm() plugin adds:
     //   - client.svm: Direct LiteSVM access
     //   - client.rpc: Kit-compatible RPC subset
-    const client = createClient().use(litesvm());
+    const client = await createClient().use(generatedPayer()).use(litesvm());
 
     // Configure LiteSVM for testing
     client.svm.withSigverify(false).withBlockhashCheck(false).withSysvars();
@@ -71,7 +72,10 @@ async function main() {
         amount: lamports(1_000_000_000n),
     });
 
-    const blockhashLifetime = client.svm.latestBlockhashLifetime();
+    const blockhashLifetime = {
+        blockhash: client.svm.latestBlockhash(),
+        lastValidBlockHeight: 2n ** 64n - 1n,
+    };
 
     const transactionMessage = pipe(
         createTransactionMessage({ version: 0 }),

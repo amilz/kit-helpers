@@ -9,6 +9,7 @@ import {
     connectWallet,
     createSignerFromAccount,
     disconnectWallet,
+    getSupportedTransactionVersions,
     subscribeToWalletEvents,
 } from './wallet-standard';
 
@@ -188,6 +189,13 @@ export function walletPlugin(options: WalletPluginOptions) {
                 return () => {
                     listeners.delete(callback);
                 };
+            },
+
+            get supportedTransactionVersions() {
+                if (state.status === 'connected') {
+                    return getSupportedTransactionVersions(state.session.wallet);
+                }
+                return [];
             },
 
             get wallets(): readonly UiWallet[] {

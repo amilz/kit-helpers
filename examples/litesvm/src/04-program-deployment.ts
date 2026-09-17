@@ -13,12 +13,13 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 
 import { address, createClient, generateKeyPairSigner, lamports } from '@solana/kit';
-import { litesvm } from '@solana/kit-plugins';
+import { litesvm } from '@solana/kit-plugin-litesvm';
+import { generatedPayer } from '@solana/kit-plugin-payer';
 
 async function main() {
     console.log('=== Program Deployment Example ===\n');
 
-    const client = createClient().use(litesvm());
+    const client = await createClient().use(generatedPayer()).use(litesvm());
 
     // Method 1: Add program from bytes
     // This is useful when you have the program bytes in memory

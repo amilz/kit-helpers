@@ -17,8 +17,10 @@ export {
     createSignerFromAccount,
     createSignMessageFromAccount,
     disconnectWallet,
+    getSupportedTransactionVersions,
     isConnectable,
     subscribeToWalletEvents,
+    supportsTransactionVersion,
 } from './wallet-standard';
 
 // Signer resolution
@@ -39,4 +41,5 @@ export type {
 } from './types';
 
 // Re-export upstream types for convenience
+export type { SolanaTransactionVersion } from '@solana/wallet-standard-features';
 export type { UiWallet, UiWalletAccount } from '@wallet-standard/ui';

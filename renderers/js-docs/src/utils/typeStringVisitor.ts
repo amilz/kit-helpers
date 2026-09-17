@@ -54,9 +54,9 @@ export function getTypeStringVisitor(): Visitor<
 
                 visitEnumType(node, { self }) {
                     if (isScalarEnum(node)) {
-                        return node.variants.map(v => `'${v.name}'`).join(' | ');
+                        return (node.variants ?? []).map(v => `'${v.name}'`).join(' | ');
                     }
-                    return node.variants.map(v => visit(v, self)).join(' | ');
+                    return (node.variants ?? []).map(v => visit(v, self)).join(' | ');
                 },
 
                 visitFixedSizeType(node, { self }) {
@@ -130,13 +130,13 @@ export function getTypeStringVisitor(): Visitor<
                 },
 
                 visitStructType(node, { self }) {
-                    if (node.fields.length === 0) return '{}';
-                    const fields = node.fields.map(f => `${f.name}: ${visit(f, self)}`);
+                    if ((node.fields ?? []).length === 0) return '{}';
+                    const fields = (node.fields ?? []).map(f => `${f.name}: ${visit(f, self)}`);
                     return `{ ${fields.join('; ')} }`;
                 },
 
                 visitTupleType(node, { self }) {
-                    const items = node.items.map(item => visit(item, self));
+                    const items = (node.items ?? []).map(item => visit(item, self));
                     return `[${items.join(', ')}]`;
                 },
 

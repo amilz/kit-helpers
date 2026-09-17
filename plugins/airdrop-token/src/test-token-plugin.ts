@@ -14,19 +14,24 @@ import {
     Blockhash,
     createTransactionMessage,
     generateKeyPairSigner,
+    type GetEpochInfoApi,
+    type GetLatestBlockhashApi,
+    type GetMinimumBalanceForRentExemptionApi,
     getSignatureFromTransaction,
+    type GetSignatureStatusesApi,
     Instruction,
     KeyPairSigner,
     pipe,
     Rpc,
     RpcSubscriptions,
     sendAndConfirmTransactionFactory,
+    type SendTransactionApi,
     setTransactionMessageFeePayerSigner,
     setTransactionMessageLifetimeUsingBlockhash,
     Signature,
+    type SignatureNotificationsApi,
     signTransactionMessageWithSigners,
-    SolanaRpcApi,
-    SolanaRpcSubscriptionsApi,
+    type SlotNotificationsApi,
     TransactionSigner,
 } from '@solana/kit';
 
@@ -35,8 +40,14 @@ import type { AirdropTokenClientProperties, CreateTestTokenFunction, TestTokenCo
 /** Client requirements for RPC-based token creation */
 type RpcClient = {
     payer: TransactionSigner;
-    rpc: Rpc<SolanaRpcApi>;
-    rpcSubscriptions: RpcSubscriptions<SolanaRpcSubscriptionsApi>;
+    rpc: Rpc<
+        GetEpochInfoApi &
+            GetLatestBlockhashApi &
+            GetMinimumBalanceForRentExemptionApi &
+            GetSignatureStatusesApi &
+            SendTransactionApi
+    >;
+    rpcSubscriptions: RpcSubscriptions<SignatureNotificationsApi & SlotNotificationsApi>;
 };
 
 /** Signed transaction type from Kit */

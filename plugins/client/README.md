@@ -81,7 +81,9 @@ await client.action.send([ix]);
 type PayerClientConfig = {
     url: ClusterUrl;
     payer: TransactionSigner;
-    priorityFees?: MicroLamports;
+    priorityFees?: MicroLamports; // version 0: price per compute unit
+    priorityFeeLamports?: Lamports; // version 1: total fee
+    version?: 0 | 1; // default: 1
 };
 
 // Browser
@@ -89,8 +91,18 @@ type WalletClientConfig = {
     url: ClusterUrl;
     wallet: { wallets: UiWallet[] };
     priorityFees?: MicroLamports;
+    priorityFeeLamports?: Lamports;
+    version?: 0 | 1;
 };
 ```
+
+The client builds **version 1 transactions by default**. Version 1 requires the
+`txv1` feature gate and cannot use address lookup tables; pass `version: 0` when
+either matters. In the browser flow, a wallet that does not advertise version 1
+gets a version 0 transaction instead.
+
+`priorityFees` (per-CU price) is version 0 only and `priorityFeeLamports` (total)
+is version 1 only. Passing the wrong one throws.
 
 Return types are narrowed per config — `PayerSolanaClient` guarantees `.payer`, `WalletSolanaClient` guarantees `.wallet`.
 

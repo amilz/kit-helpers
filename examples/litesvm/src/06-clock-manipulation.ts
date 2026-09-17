@@ -8,12 +8,13 @@
  */
 
 import { createClient } from '@solana/kit';
-import { litesvm } from '@solana/kit-plugins';
+import { litesvm } from '@solana/kit-plugin-litesvm';
+import { generatedPayer } from '@solana/kit-plugin-payer';
 
 async function main() {
     console.log('=== Clock Manipulation Example ===\n');
 
-    const client = createClient().use(litesvm());
+    const client = await createClient().use(generatedPayer()).use(litesvm());
 
     // Enable sysvars for clock access
     client.svm.withSysvars();

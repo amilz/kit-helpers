@@ -1,5 +1,6 @@
-import { address } from '@solana/kit';
+import { address, SOLANA_ERROR__INSTRUCTION_ERROR__CUSTOM, SolanaError } from '@solana/kit';
 
+import { COUNTER_ERROR__INVALID_AUTHORITY } from './generated';
 import { useCounter, useCounterFromSeeds, useCounters } from './generated/hooks/counter';
 import { useIncrement } from './generated/hooks/instructions/increment';
 import { useCounterAddress } from './generated/hooks/pdas/counter';
@@ -24,16 +25,25 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 function ProgramDemo() {
     const { programAddress, decodeError } = useProgramCounter();
+
+    const transactionMessage = { instructions: { 0: { programAddress } } };
+    const customProgramError = new SolanaError(SOLANA_ERROR__INSTRUCTION_ERROR__CUSTOM, {
+        code: COUNTER_ERROR__INVALID_AUTHORITY,
+        index: 0,
+    });
+
     return (
         <Section title="useProgramCounter">
             <p>
                 <strong>Program address:</strong> <code>{programAddress}</code>
             </p>
             <p>
-                <strong>decodeError(0):</strong> <code>{decodeError(0) ?? 'undefined'}</code>
+                <strong>decodeError(programError):</strong>{' '}
+                <code>{decodeError(customProgramError, transactionMessage) ?? 'undefined'}</code>
             </p>
             <p>
-                <strong>decodeError(999):</strong> <code>{decodeError(999) ?? 'undefined'}</code>
+                <strong>decodeError(otherError):</strong>{' '}
+                <code>{decodeError(new Error('not a program error'), transactionMessage) ?? 'undefined'}</code>
             </p>
         </Section>
     );

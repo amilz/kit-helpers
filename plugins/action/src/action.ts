@@ -1,5 +1,9 @@
-import { createSignMessageFromAccount } from '@kit-helpers/wallet';
-import { getSetComputeUnitLimitInstruction, getSetComputeUnitPriceInstruction } from '@solana-program/compute-budget';
+import { createSignMessageFromAccount, supportsTransactionVersion } from '@kit-helpers/wallet';
+import {
+    getSetComputeUnitLimitInstruction,
+    getSetComputeUnitPriceInstruction,
+    MAX_COMPUTE_UNIT_LIMIT,
+} from '@solana-program/compute-budget';
 import {
     appendTransactionMessageInstructions,
     assertIsFullySignedTransaction,
@@ -7,6 +11,9 @@ import {
     assertIsTransactionWithBlockhashLifetime,
     compileTransaction,
     createTransactionMessage,
+    estimateAndSetResourceLimitsFactory,
+    estimateResourceLimitsFactory,
+    fillTransactionMessageProvisoryResourceLimits,
     getBase64EncodedWireTransaction,
     getSignatureFromTransaction,
     type Instruction,
@@ -14,8 +21,11 @@ import {
     type MicroLamports,
     pipe,
     sendAndConfirmTransactionFactory,
+    setTransactionMessageComputeUnitLimit,
     setTransactionMessageFeePayerSigner,
     setTransactionMessageLifetimeUsingBlockhash,
+    setTransactionMessageLoadedAccountsDataSizeLimit,
+    setTransactionMessagePriorityFeeLamports,
     type Signature,
     type SignatureBytes,
     signTransactionMessageWithSigners,
@@ -30,9 +40,13 @@ import type {
     ActionSendSignedOptions,
     ActionSignOptions,
     ActionSimulateOptions,
+    ActionTransactionVersion,
     SignedTransaction,
     SimulateResult,
 } from './types';
+
+/** The largest loaded accounts data size limit the runtime accepts, in bytes. */
+const MAX_LOADED_ACCOUNTS_DATA_SIZE_LIMIT = 64 * 1024 * 1024;
 
 /**
  * Rethrows SolanaErrors unchanged, wraps other errors with context.
@@ -49,6 +63,8 @@ function rethrowWithContext(error: unknown, context: string): never {
 /**
  * Build a transaction message from instructions.
  * Fetches latest blockhash, sets fee payer, and appends instructions.
+ * On version 1, resource limits left unset are estimated via simulation, or
+ * filled with the maximums when `estimateResourceLimits` is false.
  */
 async function buildTransactionMessage(
     client: ActionClientRequirements,
@@ -57,10 +73,15 @@ async function buildTransactionMessage(
         abortSignal?: AbortSignal;
         computeUnitLimit?: number;
         computeUnitPrice?: bigint;
+        estimateResourceLimits?: boolean;
+        loadedAccountsDataSizeLimit?: number;
+        priorityFeeLamports?: bigint;
         signer?: import('@solana/kit').TransactionSigner;
+        version?: ActionTransactionVersion;
     },
 ) {
     const signer = resolveSigner(client, options?.signer);
+    const version = resolveVersion(client, options?.version);
 
     options?.abortSignal?.throwIfAborted();
 
@@ -73,6 +94,67 @@ async function buildTransactionMessage(
     }
 
     options?.abortSignal?.throwIfAborted();
+
+    if (version === 1 && options?.computeUnitPrice !== undefined) {
+        throw new Error(
+            'computeUnitPrice prices priority per compute unit, which version 1 transactions do not ' +
+                'do. Use priorityFeeLamports to state a total in lamports, or build as version 0.',
+        );
+    }
+    if (version === 0 && options?.priorityFeeLamports !== undefined) {
+        throw new Error(
+            'priorityFeeLamports states a total priority fee, which only version 1 transactions ' +
+                'carry. Use computeUnitPrice to state a price per compute unit, or build as version 1.',
+        );
+    }
+
+    if (version === 1) {
+        const message = pipe(
+            createTransactionMessage({ version: 1 }),
+            tx => setTransactionMessageFeePayerSigner(signer, tx),
+            tx => setTransactionMessageLifetimeUsingBlockhash(latestBlockhash, tx),
+            tx => appendTransactionMessageInstructions(instructions, tx),
+            tx => setTransactionMessageComputeUnitLimit(options?.computeUnitLimit, tx),
+            tx => setTransactionMessageLoadedAccountsDataSizeLimit(options?.loadedAccountsDataSizeLimit, tx),
+            tx => setTransactionMessagePriorityFeeLamports(options?.priorityFeeLamports, tx),
+        );
+
+        if (options?.computeUnitLimit !== undefined && options?.loadedAccountsDataSizeLimit !== undefined) {
+            return { message, signer };
+        }
+
+        if (options?.estimateResourceLimits === false) {
+            return {
+                message: pipe(
+                    message,
+                    tx =>
+                        setTransactionMessageComputeUnitLimit(options?.computeUnitLimit ?? MAX_COMPUTE_UNIT_LIMIT, tx),
+                    tx =>
+                        setTransactionMessageLoadedAccountsDataSizeLimit(
+                            options?.loadedAccountsDataSizeLimit ?? MAX_LOADED_ACCOUNTS_DATA_SIZE_LIMIT,
+                            tx,
+                        ),
+                ),
+                signer,
+            };
+        }
+
+        const estimateAndSetResourceLimits = estimateAndSetResourceLimitsFactory(
+            estimateResourceLimitsFactory({ rpc: client.rpc }),
+        );
+        try {
+            const estimated = await estimateAndSetResourceLimits(
+                fillTransactionMessageProvisoryResourceLimits(message),
+                {
+                    ...(options?.abortSignal && { abortSignal: options.abortSignal }),
+                    commitment: 'confirmed',
+                },
+            );
+            return { message: estimated, signer };
+        } catch (error) {
+            rethrowWithContext(error, 'Failed to estimate resource limits');
+        }
+    }
 
     const allInstructions: Instruction[] = [];
     if (options?.computeUnitLimit !== undefined) {
@@ -93,6 +175,36 @@ async function buildTransactionMessage(
     );
 
     return { message, signer };
+}
+
+/**
+ * Decides which transaction version to build. An explicit version the connected
+ * wallet cannot sign throws; the default falls back to version 0 for such a wallet.
+ */
+function resolveVersion(
+    client: ActionClientRequirements,
+    requested: ActionTransactionVersion | undefined,
+): ActionTransactionVersion {
+    const version = requested ?? 1;
+
+    if (version === 0 || !('wallet' in client) || client.wallet.state.status !== 'connected') {
+        return version;
+    }
+
+    const { wallet } = client.wallet.state.session;
+    if (supportsTransactionVersion(wallet, version)) {
+        return version;
+    }
+
+    if (requested === undefined) {
+        return 0;
+    }
+
+    const advertised = client.wallet.supportedTransactionVersions;
+    throw new Error(
+        `Wallet "${wallet.name}" does not sign version ${version} transactions. ` +
+            `It advertises support for: ${advertised.length > 0 ? advertised.join(', ') : 'no versions'}.`,
+    );
 }
 
 /**
@@ -117,7 +229,11 @@ export function createActionNamespace(
                 abortSignal: options?.abortSignal,
                 computeUnitLimit: options?.computeUnitLimit ?? pluginOptions?.computeUnitLimit,
                 computeUnitPrice: options?.computeUnitPrice ?? pluginOptions?.computeUnitPrice,
+                loadedAccountsDataSizeLimit:
+                    options?.loadedAccountsDataSizeLimit ?? pluginOptions?.loadedAccountsDataSizeLimit,
+                priorityFeeLamports: options?.priorityFeeLamports ?? pluginOptions?.priorityFeeLamports,
                 signer: options?.signer,
+                version: options?.version ?? pluginOptions?.version,
             });
 
             options?.abortSignal?.throwIfAborted();
@@ -227,7 +343,11 @@ export function createActionNamespace(
                 abortSignal: options?.abortSignal,
                 computeUnitLimit: options?.computeUnitLimit ?? pluginOptions?.computeUnitLimit,
                 computeUnitPrice: options?.computeUnitPrice ?? pluginOptions?.computeUnitPrice,
+                loadedAccountsDataSizeLimit:
+                    options?.loadedAccountsDataSizeLimit ?? pluginOptions?.loadedAccountsDataSizeLimit,
+                priorityFeeLamports: options?.priorityFeeLamports ?? pluginOptions?.priorityFeeLamports,
                 signer: options?.signer,
+                version: options?.version ?? pluginOptions?.version,
             });
 
             options?.abortSignal?.throwIfAborted();
@@ -282,7 +402,12 @@ export function createActionNamespace(
                 abortSignal: options?.abortSignal,
                 computeUnitLimit: options?.computeUnitLimit ?? pluginOptions?.computeUnitLimit,
                 computeUnitPrice: options?.computeUnitPrice ?? pluginOptions?.computeUnitPrice,
+                estimateResourceLimits: false,
+                loadedAccountsDataSizeLimit:
+                    options?.loadedAccountsDataSizeLimit ?? pluginOptions?.loadedAccountsDataSizeLimit,
+                priorityFeeLamports: options?.priorityFeeLamports ?? pluginOptions?.priorityFeeLamports,
                 signer: options?.signer,
+                version: options?.version ?? pluginOptions?.version,
             });
 
             options?.abortSignal?.throwIfAborted();

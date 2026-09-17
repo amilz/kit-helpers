@@ -20,7 +20,8 @@ import {
     setTransactionMessageLifetimeUsingBlockhash,
     signTransactionMessageWithSigners,
 } from '@solana/kit';
-import { litesvm } from '@solana/kit-plugins';
+import { litesvm } from '@solana/kit-plugin-litesvm';
+import { generatedPayer } from '@solana/kit-plugin-payer';
 
 import { assertIsSuccessfulSimulation, assertIsSuccessfulTransaction } from './utils/transaction.js';
 
@@ -28,7 +29,7 @@ async function main() {
     console.log('=== Transactions Example ===\n');
 
     // Enable transaction history to retrieve transactions later
-    const client = createClient().use(litesvm());
+    const client = await createClient().use(generatedPayer()).use(litesvm());
 
     // Enable transaction history (stores last N transactions)
     client.svm.withTransactionHistory(100n);
@@ -43,7 +44,10 @@ async function main() {
 
     // Build a transfer transaction
     const transferAmount = lamports(500_000_000n); // 0.5 SOL
-    const blockhashLifetime = client.svm.latestBlockhashLifetime();
+    const blockhashLifetime = {
+        blockhash: client.svm.latestBlockhash(),
+        lastValidBlockHeight: 2n ** 64n - 1n,
+    };
 
     const transferIx = getTransferSolInstruction({
         source: sender,

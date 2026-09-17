@@ -43,7 +43,13 @@ function createMockRpc(
             overrides.simulateTransaction ??
             vi.fn().mockReturnValue({
                 send: vi.fn().mockResolvedValue({
-                    value: { err: null, logs: [], returnData: null, unitsConsumed: 0n },
+                    value: {
+                        err: null,
+                        loadedAccountsDataSize: 40_000,
+                        logs: [],
+                        returnData: null,
+                        unitsConsumed: 50_000n,
+                    },
                 }),
             }),
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -503,6 +509,156 @@ describe('Error handling', () => {
 });
 
 // Helper type for tests where both payer and wallet exist
+describe('version 1 transactions', () => {
+    /** Builds a UiWallet that advertises the given signing versions. */
+    function createVersionedUiWallet(
+        name: string,
+        supportedTransactionVersions: readonly (0 | 1 | 'legacy')[],
+        signer: TransactionSigner,
+    ) {
+        const stdAccount: StandardWalletAccount = {
+            address: '7v91N7iZ9mNicL8WfG6cgSCKyRXydQjLh6UYBWwm6y1Q',
+            chains: ['solana:devnet'] as const,
+            features: ['solana:signTransaction'] as const,
+            publicKey: new Uint8Array(32),
+        } as StandardWalletAccount;
+
+        const stdWallet: Wallet = {
+            accounts: [stdAccount],
+            chains: ['solana:devnet'] as const,
+            features: {
+                'solana:signTransaction': { signTransaction: vi.fn(), supportedTransactionVersions },
+                'standard:connect': { connect: vi.fn().mockResolvedValue({ accounts: [stdAccount] }) },
+                'standard:events': { on: vi.fn().mockReturnValue(() => {}) },
+            },
+            icon: 'data:image/svg+xml,<svg></svg>' as `data:image/${string}`,
+            name,
+            version: '1.0.0' as const,
+        } as Wallet;
+
+        const uiWallet = getOrCreateUiWalletForStandardWallet_DO_NOT_USE_OR_YOU_WILL_BE_FIRED(stdWallet);
+        return {
+            connected: true,
+            signer,
+            state: {
+                session: { account: uiWallet.accounts[0], disconnect: vi.fn(), wallet: uiWallet },
+                status: 'connected',
+            },
+            supportedTransactionVersions,
+        } as unknown as WalletApi;
+    }
+
+    it('puts the resource limits and priority fee in the message config', async () => {
+        const payer = await generateKeyPairSigner();
+        const rpc = createMockRpc();
+        const action = createActionNamespace({ payer, rpc }, { version: 1 });
+
+        const signed = await action.sign([createMockInstruction()], {
+            computeUnitLimit: 100_000,
+            loadedAccountsDataSizeLimit: 65_536,
+            priorityFeeLamports: 5_000n,
+        });
+
+        expect(signed).toHaveProperty('messageBytes');
+        expect(signed).toHaveProperty('signatures');
+    });
+
+    it('refuses to build for a wallet that does not advertise version 1', async () => {
+        const rpc = createMockRpc();
+        const wallet = createVersionedUiWallet('Legacy Only Wallet', ['legacy', 0], await generateKeyPairSigner());
+        const action = createActionNamespace({ rpc, wallet }, { version: 1 });
+
+        await expect(action.sign([createMockInstruction()])).rejects.toThrow('does not sign version 1 transactions');
+    });
+
+    it('builds for a wallet that advertises version 1', async () => {
+        const rpc = createMockRpc();
+        const wallet = createVersionedUiWallet('V1 Wallet', ['legacy', 0, 1], await generateKeyPairSigner());
+        const action = createActionNamespace({ rpc, wallet }, { version: 1 });
+
+        const signed = await action.sign([createMockInstruction()]);
+
+        expect(signed).toHaveProperty('messageBytes');
+    });
+
+    it('falls back to version 0 when no version was asked for and the wallet cannot sign version 1', async () => {
+        const rpc = createMockRpc();
+        const wallet = createVersionedUiWallet('Default Fallback Wallet', ['legacy', 0], await generateKeyPairSigner());
+        const action = createActionNamespace({ rpc, wallet });
+
+        const signed = await action.sign([createMockInstruction()]);
+
+        expect(signed).toHaveProperty('messageBytes');
+    });
+
+    it('estimates unset resource limits on version 1', async () => {
+        const payer = await generateKeyPairSigner();
+        const rpc = createMockRpc();
+        const action = createActionNamespace({ payer, rpc });
+
+        const signed = await action.sign([createMockInstruction()]);
+
+        expect(rpc.simulateTransaction).toHaveBeenCalledTimes(1);
+        expect(signed).toHaveProperty('messageBytes');
+    });
+
+    it('does not estimate when both limits are set on version 1', async () => {
+        const payer = await generateKeyPairSigner();
+        const rpc = createMockRpc();
+        const action = createActionNamespace({ payer, rpc });
+
+        await action.sign([createMockInstruction()], {
+            computeUnitLimit: 100_000,
+            loadedAccountsDataSizeLimit: 65_536,
+        });
+
+        expect(rpc.simulateTransaction).not.toHaveBeenCalled();
+    });
+
+    it('builds version 1 by default', async () => {
+        const payer = await generateKeyPairSigner();
+        const rpc = createMockRpc();
+        const action = createActionNamespace({ payer, rpc });
+
+        const signed = await action.sign([createMockInstruction()], {
+            computeUnitLimit: 100_000,
+            loadedAccountsDataSizeLimit: 65_536,
+        });
+
+        expect(signed).toHaveProperty('messageBytes');
+    });
+
+    it('rejects a per-compute-unit priority fee on version 1', async () => {
+        const payer = await generateKeyPairSigner();
+        const rpc = createMockRpc();
+        const action = createActionNamespace({ payer, rpc });
+
+        await expect(action.sign([createMockInstruction()], { computeUnitPrice: 1_000n })).rejects.toThrow(
+            'priorityFeeLamports',
+        );
+    });
+
+    it('rejects a total priority fee on version 0', async () => {
+        const payer = await generateKeyPairSigner();
+        const rpc = createMockRpc();
+        const action = createActionNamespace({ payer, rpc });
+
+        await expect(
+            action.sign([createMockInstruction()], { priorityFeeLamports: 5_000n, version: 0 }),
+        ).rejects.toThrow('computeUnitPrice');
+    });
+
+    it('lets a per-call version override the plugin default', async () => {
+        const rpc = createMockRpc();
+        const wallet = createVersionedUiWallet('Legacy Only Wallet 2', ['legacy', 0], await generateKeyPairSigner());
+        const action = createActionNamespace({ rpc, wallet }, { version: 1 });
+
+        const signed = await action.sign([createMockInstruction()], { version: 0 });
+
+        expect(signed).toHaveProperty('messageBytes');
+    });
+});
+
 type ActionClientRequirementsWithBoth = {
     rpc: ActionRpc;
     payer: TransactionSigner;

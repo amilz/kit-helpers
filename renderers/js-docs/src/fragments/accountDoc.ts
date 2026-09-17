@@ -27,7 +27,7 @@ export function getAccountDocFragment(input: { accountNode: AccountNode; scope: 
 
     // Fields table.
     const fieldsFragment = mergeFragments(
-        [fragment`${mdHeading('Fields', 2)}`, getFieldsTableFragment(structType.fields, typeStringVisitor)],
+        [fragment`${mdHeading('Fields', 2)}`, getFieldsTableFragment(structType.fields ?? [], typeStringVisitor)],
         cs => cs.join('\n\n'),
     );
 

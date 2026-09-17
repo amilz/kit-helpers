@@ -5,12 +5,12 @@
  * following the same patterns as @solana/kit (e.g., assertIsAddress).
  */
 
-import type { FailedTransactionMetadata, TransactionMetadata } from '@loris-sandbox/litesvm-kit';
-import { SimulatedTransactionInfo } from '@loris-sandbox/litesvm-kit';
+import type { FailedTransactionMetadata, TransactionMetadata } from 'litesvm';
+import { SimulatedTransactionInfo } from 'litesvm';
 
 // Re-export types for convenience
-export type { FailedTransactionMetadata, TransactionMetadata } from '@loris-sandbox/litesvm-kit';
-export { SimulatedTransactionInfo } from '@loris-sandbox/litesvm-kit';
+export type { FailedTransactionMetadata, TransactionMetadata } from 'litesvm';
+export { SimulatedTransactionInfo } from 'litesvm';
 
 // ============================================================================
 // Transaction Result Types

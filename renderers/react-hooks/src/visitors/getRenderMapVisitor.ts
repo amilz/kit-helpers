@@ -117,8 +117,8 @@ export function getRenderMapVisitor(options: GetReactHooksRenderMapOptions = {})
                                 subDirScope,
                             ),
                         ),
-                        ...node.pdas.map(p => visit(p, self)),
-                        ...node.accounts.map(a => visit(a, self)),
+                        ...(node.pdas ?? []).map(p => visit(p, self)),
+                        ...(node.accounts ?? []).map(a => visit(a, self)),
                         ...getAllInstructionsWithSubs(node, { leavesOnly: true }).map(i => visit(i, self)),
                     ]);
                 },

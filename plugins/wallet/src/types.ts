@@ -1,4 +1,5 @@
 import type { Address, TransactionModifyingSigner } from '@solana/kit';
+import type { SolanaTransactionVersion } from '@solana/wallet-standard-features';
 import type { UiWallet, UiWalletAccount } from '@wallet-standard/ui';
 
 import type { WalletStorage } from './storage';
@@ -76,6 +77,8 @@ export type WalletApi = {
     readonly signer: TransactionModifyingSigner | null;
     /** Current wallet state (state machine). */
     readonly state: WalletStatus;
+    /** Transaction versions the connected wallet advertises that it can sign (empty if disconnected). */
+    readonly supportedTransactionVersions: readonly SolanaTransactionVersion[];
     /**
      * Subscribe to wallet status changes.
      * @returns Unsubscribe function.

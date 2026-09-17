@@ -94,9 +94,9 @@ export function getRenderMapVisitor(options: GetDocsRenderMapOptions = {}) {
                     return mergeRenderMaps([
                         overviewMap,
                         errorMap,
-                        ...node.pdas.map(p => visit(p, self)),
-                        ...node.accounts.map(a => visit(a, self)),
-                        ...node.definedTypes.map(t => visit(t, self)),
+                        ...(node.pdas ?? []).map(p => visit(p, self)),
+                        ...(node.accounts ?? []).map(a => visit(a, self)),
+                        ...(node.definedTypes ?? []).map(t => visit(t, self)),
                         ...getAllInstructionsWithSubs(node, { leavesOnly: true }).map(i => visit(i, self)),
                     ]);
                 },

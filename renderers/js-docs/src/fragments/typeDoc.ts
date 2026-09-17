@@ -41,7 +41,7 @@ export function getTypeDocFragment(input: { definedTypeNode: DefinedTypeNode; sc
 
     if (isNode(typeNode, 'structTypeNode')) {
         bodyFragment = mergeFragments(
-            [fragment`${mdHeading('Fields', 2)}`, getFieldsTableFragment(typeNode.fields, typeStringVisitor)],
+            [fragment`${mdHeading('Fields', 2)}`, getFieldsTableFragment(typeNode.fields ?? [], typeStringVisitor)],
             cs => cs.join('\n\n'),
         );
     } else if (isNode(typeNode, 'enumTypeNode')) {
@@ -75,7 +75,7 @@ function getEnumBodyFragment(
     const isScalar = isScalarEnum(enumType);
 
     if (isScalar) {
-        const rows = enumType.variants.map((v, i) => [`\`${v.name}\``, `${i}`]);
+        const rows = (enumType.variants ?? []).map((v, i) => [`\`${v.name}\``, `${i}`]);
         return mergeFragments(
             [fragment`${mdHeading('Variants', 2)}`, fragment`${mdTable(['Variant', 'Discriminator'], rows)}`],
             cs => cs.join('\n\n'),
@@ -83,7 +83,7 @@ function getEnumBodyFragment(
     }
 
     // Non-scalar enum — variants may have data.
-    const items = enumType.variants.map(v => {
+    const items = (enumType.variants ?? []).map(v => {
         if (isNode(v, 'enumEmptyVariantTypeNode')) {
             return `\`${v.name}\``;
         }
@@ -93,7 +93,7 @@ function getEnumBodyFragment(
         }
         if (isNode(v, 'enumStructVariantTypeNode')) {
             const structNode = resolveNestedTypeNode(v.struct);
-            const fields = structNode.fields
+            const fields = (structNode.fields ?? [])
                 .map(f => {
                     const ft: string = visit(f.type, typeStringVisitor);
                     return `\`${f.name}: ${ft}\``;

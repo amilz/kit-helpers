@@ -42,7 +42,7 @@ const { data } = useSWR(balanceQuery.key, balanceQuery.fn); // SWR
 
 ## Key Decisions
 
-- Requires `rpc` on client (peer dep: @solana/kit ^5.2.0)
+- Requires `rpc` on client (peer dep: @solana/kit ^8.3.0)
 - Simple `Decoder<T>` type (just `decode` method) vs full Codec
 - base64 decoding handled internally for account data
 - Multi-platform: node/browser/react-native builds + tests

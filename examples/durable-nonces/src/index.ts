@@ -26,7 +26,7 @@ async function main() {
     const client = await validatorClient
         .use(airdrop())
         .use(generatedPayerWithSol(lamports(10_000_000_000n)))
-        .use(transactionBuilderPlugin({ estimateMargin: 0, minPriorityFee: lamports(10n) }));
+        .use(transactionBuilderPlugin({ estimateMargin: 0, minPriorityFeeLamports: lamports(10n) }));
 
     console.log(`Payer: ${client.payer.address}`);
 

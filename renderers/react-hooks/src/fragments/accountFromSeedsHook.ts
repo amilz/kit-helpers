@@ -18,7 +18,7 @@ export function getAccountFromSeedsHookFragment(scope: {
     const decoderFn = nameApi.decoderFunction(accountNode.name);
     const pdaSeedsType = nameApi.pdaSeedsType(pdaNode.name);
     const findPdaFn = nameApi.pdaFindFunction(pdaNode.name);
-    const hasVariableSeeds = pdaNode.seeds.filter(isNodeFilter('variablePdaSeedNode')).length > 0;
+    const hasVariableSeeds = (pdaNode.seeds ?? []).filter(isNodeFilter('variablePdaSeedNode')).length > 0;
 
     const seedsParam = hasVariableSeeds ? `seeds: ${pdaSeedsType}, ` : '';
     const seedsArg = hasVariableSeeds ? 'seeds, ' : '';

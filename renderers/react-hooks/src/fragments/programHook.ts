@@ -7,7 +7,7 @@ export function getProgramHookFragment(scope: { nameApi: NameApi; programNode: P
 
     const hookName = nameApi.programHook(programNode.name);
     const addressConstant = nameApi.programAddressConstant(programNode.name);
-    const hasErrors = programNode.errors.length > 0;
+    const hasErrors = (programNode.errors ?? []).length > 0;
 
     const errorImports: string[] = [];
     let errorHelper = '';
@@ -16,10 +16,15 @@ export function getProgramHookFragment(scope: { nameApi: NameApi; programNode: P
         const getErrorMessageFn = nameApi.programGetErrorMessageFunction(programNode.name);
         const errorUnion = nameApi.programErrorUnion(programNode.name);
         errorImports.push(isErrorFn, getErrorMessageFn, `type ${errorUnion}`);
+        // The error guard needs the transaction message the error came from, so
+        // that it can match the failing instruction against this program.
         errorHelper = `
-  const decodeError = useCallback((errorCode: number): string | undefined => {
-    if (${isErrorFn}(errorCode)) {
-      return ${getErrorMessageFn}(errorCode as ${errorUnion});
+  const decodeError = useCallback((
+    error: unknown,
+    transactionMessage: { instructions: Record<number, { programAddress: Address }> },
+  ): string | undefined => {
+    if (${isErrorFn}<${errorUnion}>(error, transactionMessage)) {
+      return ${getErrorMessageFn}(error.context.code);
     }
     return undefined;
   }, []);`;

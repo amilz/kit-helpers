@@ -14,6 +14,9 @@ import {
     type Commitment,
     compileTransaction,
     createTransactionMessage,
+    estimateAndSetResourceLimitsFactory,
+    estimateResourceLimitsFactory,
+    fillTransactionMessageProvisoryResourceLimits,
     getBase64EncodedWireTransaction,
     getSignatureFromTransaction,
     type Instruction,
@@ -23,9 +26,12 @@ import {
     pipe,
     sendAndConfirmDurableNonceTransactionFactory,
     sendAndConfirmTransactionFactory,
+    setTransactionMessageComputeUnitLimit,
     setTransactionMessageFeePayerSigner,
     setTransactionMessageLifetimeUsingBlockhash,
     setTransactionMessageLifetimeUsingDurableNonce,
+    setTransactionMessageLoadedAccountsDataSizeLimit,
+    setTransactionMessagePriorityFeeLamports,
     type Signature,
     signTransactionMessageWithSigners,
     SOLANA_ERROR__INVALID_NONCE,
@@ -44,6 +50,12 @@ import type {
     TransactionBuilderPrepared,
     TransactionBuilderSigned,
 } from './types';
+
+/** The largest loaded accounts data size limit the runtime accepts, in bytes. */
+const MAX_LOADED_ACCOUNTS_DATA_SIZE_LIMIT = 64 * 1024 * 1024;
+
+/** The granularity in bytes at which the runtime charges for loaded account data. */
+const LOADED_ACCOUNTS_DATA_PAGE_SIZE = 32 * 1024;
 
 /**
  * Rethrows SolanaErrors unchanged, wraps other errors with context.
@@ -112,6 +124,96 @@ async function verifySignatureConfirmed(
     return false;
 }
 
+/** Applies either a blockhash or a durable nonce lifetime to a transaction message. */
+type LifetimeSetter = <T extends Parameters<typeof setTransactionMessageFeePayerSigner>[1]>(
+    tx: T,
+) =>
+    | ReturnType<typeof setTransactionMessageLifetimeUsingBlockhash<T>>
+    | ReturnType<typeof setTransactionMessageLifetimeUsingDurableNonce<T>>;
+
+/**
+ * Builds a version 1 transaction message, estimating whichever resource limits were not set.
+ *
+ * Version 1 carries the compute unit limit, the loaded accounts data size limit
+ * and the priority fee in the message config, so no ComputeBudget instructions
+ * are appended. Both limits default to zero when unset.
+ */
+async function prepareV1Message(
+    state: BuilderState,
+    setLifetime: LifetimeSetter,
+    abortSignal?: AbortSignal,
+): Promise<SignableTransactionMessage> {
+    const message = pipe(
+        createTransactionMessage({ version: 1 }),
+        tx => setTransactionMessageFeePayerSigner(state.client.payer, tx),
+        tx => setLifetime(tx),
+        tx => appendTransactionMessageInstructions(state.instructions, tx),
+        tx => setTransactionMessageComputeUnitLimit(state.computeUnitLimit, tx),
+        tx => setTransactionMessageLoadedAccountsDataSizeLimit(state.loadedAccountsDataSizeLimit, tx),
+        tx => setTransactionMessagePriorityFeeLamports(state.priorityFeeLamports, tx),
+    );
+
+    if (state.computeUnitLimit !== undefined && state.loadedAccountsDataSizeLimit !== undefined) {
+        return message;
+    }
+
+    if (!state.autoEstimateCus) {
+        throw new Error(
+            'Version 1 transactions must declare both a compute unit limit and a loaded accounts ' +
+                'data size limit, because each defaults to zero rather than to a runtime default. ' +
+                'Call setComputeLimit() and setLoadedAccountsDataSizeLimit(), or enable ' +
+                'auto-estimation to have both measured by simulation.',
+        );
+    }
+
+    const estimateAndSetResourceLimits = estimateAndSetResourceLimitsFactory(
+        withResourceLimitMargin(estimateResourceLimitsFactory({ rpc: state.client.rpc }), state.estimateMargin),
+    );
+
+    try {
+        return await estimateAndSetResourceLimits(fillTransactionMessageProvisoryResourceLimits(message), {
+            ...(abortSignal && { abortSignal }),
+            commitment: 'confirmed',
+        });
+    } catch (error) {
+        if (isSolanaError(error)) {
+            throw error;
+        }
+        const reason = error instanceof Error ? error.message : String(error);
+        throw new Error(
+            `Failed to estimate resource limits: ${reason}. ` +
+                'Consider using setComputeLimit() and setLoadedAccountsDataSizeLimit() to set ' +
+                'manual limits, or autoEstimateCus(false) to disable estimation.',
+            { cause: error },
+        );
+    }
+}
+
+/**
+ * Adds headroom to a simulated estimate: `margin` on the compute unit limit,
+ * and a round-up to a whole page on the loaded accounts data size limit.
+ */
+function withResourceLimitMargin(
+    estimateResourceLimits: ReturnType<typeof estimateResourceLimitsFactory>,
+    margin: number,
+): ReturnType<typeof estimateResourceLimitsFactory> {
+    return (async (message, config) => {
+        const estimate = await estimateResourceLimits(message, config);
+        const withMargin: { computeUnitLimit: number; loadedAccountsDataSizeLimit?: number } = {
+            ...estimate,
+            computeUnitLimit: Math.min(Math.ceil(estimate.computeUnitLimit * (1 + margin)), MAX_COMPUTE_UNIT_LIMIT),
+        };
+        if (estimate.loadedAccountsDataSizeLimit !== undefined) {
+            withMargin.loadedAccountsDataSizeLimit = Math.min(
+                Math.ceil(estimate.loadedAccountsDataSizeLimit / LOADED_ACCOUNTS_DATA_PAGE_SIZE) *
+                    LOADED_ACCOUNTS_DATA_PAGE_SIZE,
+                MAX_LOADED_ACCOUNTS_DATA_SIZE_LIMIT,
+            );
+        }
+        return withMargin;
+    }) as ReturnType<typeof estimateResourceLimitsFactory>;
+}
+
 /**
  * Creates a new transaction builder for the given client.
  *
@@ -124,23 +226,50 @@ async function verifySignatureConfirmed(
  * const signature = await createTransactionBuilder(client)
  *   .add(transferInstruction)
  *   .setComputeLimit(200_000)
- *   .setPriorityFee(1_000_000n)
+ *   .setPriorityFeeLamports(5_000n)
  *   .prepare()
  *   .then(b => b.sign())
  *   .then(b => b.sendAndConfirm({ commitment: 'confirmed' }));
+ * ```
+ *
+ * @example
+ * Building a version 0 transaction.
+ * ```ts
+ * const signature = await createTransactionBuilder(client, { version: 0 })
+ *   .add(transferInstruction)
+ *   .setPriorityFee(1_000_000n)
+ *   .execute();
  * ```
  */
 export function createTransactionBuilder(
     client: TransactionBuilderClientRequirements,
     options?: TransactionBuilderOptions,
 ): TransactionBuilderBuilding {
+    const version = options?.version ?? 1;
     const minFee = options?.minPriorityFee;
+    const minFeeLamports = options?.minPriorityFeeLamports;
+
+    if (version === 1 && minFee !== undefined) {
+        throw new Error(
+            'minPriorityFee prices priority per compute unit, which version 1 transactions do not ' +
+                'do. Use minPriorityFeeLamports to state a total in lamports, or pass version: 0.',
+        );
+    }
+    if (version === 0 && minFeeLamports !== undefined) {
+        throw new Error(
+            'minPriorityFeeLamports states a total priority fee, which only version 1 transactions ' +
+                'carry. Use minPriorityFee to state a price per compute unit, or pass version: 1.',
+        );
+    }
+
     const state: BuilderState = Object.freeze({
         autoEstimateCus: options?.autoEstimateCus ?? true,
         client,
         computeUnitPrice: minFee && minFee > 0n ? minFee : undefined,
         estimateMargin: options?.estimateMargin ?? 0.1,
         instructions: [],
+        priorityFeeLamports: minFeeLamports && minFeeLamports > 0n ? minFeeLamports : undefined,
+        version,
     });
     return createBuildingBuilder(state);
 }
@@ -207,13 +336,6 @@ function createBuildingBuilder(state: BuilderState): TransactionBuilderBuilding 
             }
             baseInstructions.push(...state.instructions);
 
-            // Helper to set lifetime (blockhash or durable nonce)
-            type LifetimeSetter = <T extends Parameters<typeof setTransactionMessageFeePayerSigner>[1]>(
-                tx: T,
-            ) =>
-                | ReturnType<typeof setTransactionMessageLifetimeUsingBlockhash<T>>
-                | ReturnType<typeof setTransactionMessageLifetimeUsingDurableNonce<T>>;
-
             let setLifetime: LifetimeSetter;
 
             if (state.nonceConfig) {
@@ -234,6 +356,11 @@ function createBuildingBuilder(state: BuilderState): TransactionBuilderBuilding 
             }
 
             config?.abortSignal?.throwIfAborted();
+
+            if (state.version === 1) {
+                const message = await prepareV1Message(state, setLifetime, config?.abortSignal);
+                return createPreparedBuilder(state.client, message, state.nonceConfig);
+            }
 
             // Helper to build the transaction message with given instructions
             const buildMessage = (instructions: Instruction[]): SignableTransactionMessage =>
@@ -320,13 +447,58 @@ function createBuildingBuilder(state: BuilderState): TransactionBuilderBuilding 
             return createBuildingBuilder(newState);
         },
 
+        setLoadedAccountsDataSizeLimit(bytes: number): TransactionBuilderBuilding {
+            if (state.version === 0) {
+                throw new Error(
+                    'setLoadedAccountsDataSizeLimit() sets a limit that only version 1 transactions ' +
+                        'carry in the message. Build the transaction as version 1 to set it.',
+                );
+            }
+            if (!Number.isInteger(bytes) || bytes <= 0 || bytes > MAX_LOADED_ACCOUNTS_DATA_SIZE_LIMIT) {
+                throw new Error(
+                    `Invalid loaded accounts data size limit: ${bytes}. ` +
+                        `Must be a positive integer <= ${MAX_LOADED_ACCOUNTS_DATA_SIZE_LIMIT.toLocaleString()}.`,
+                );
+            }
+            const newState: BuilderState = Object.freeze({
+                ...state,
+                loadedAccountsDataSizeLimit: bytes,
+            });
+            return createBuildingBuilder(newState);
+        },
+
         setPriorityFee(microLamports: bigint): TransactionBuilderBuilding {
+            if (state.version === 1) {
+                throw new Error(
+                    'setPriorityFee() prices priority per compute unit, which version 1 transactions ' +
+                        'do not do. Use setPriorityFeeLamports() to state a total in lamports, or ' +
+                        'build the transaction as version 0.',
+                );
+            }
             if (microLamports < 0n) {
                 throw new Error(`Invalid priority fee: ${microLamports}. Must be >= 0.`);
             }
             const newState: BuilderState = Object.freeze({
                 ...state,
                 computeUnitPrice: microLamports,
+            });
+            return createBuildingBuilder(newState);
+        },
+
+        setPriorityFeeLamports(lamports: bigint): TransactionBuilderBuilding {
+            if (state.version === 0) {
+                throw new Error(
+                    'setPriorityFeeLamports() states a total priority fee, which only version 1 ' +
+                        'transactions carry. Use setPriorityFee() to state a price per compute unit, ' +
+                        'or build the transaction as version 1.',
+                );
+            }
+            if (lamports < 0n) {
+                throw new Error(`Invalid priority fee: ${lamports}. Must be >= 0.`);
+            }
+            const newState: BuilderState = Object.freeze({
+                ...state,
+                priorityFeeLamports: lamports,
             });
             return createBuildingBuilder(newState);
         },

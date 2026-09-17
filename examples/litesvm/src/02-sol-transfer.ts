@@ -21,14 +21,15 @@ import {
     signTransactionMessageWithSigners,
     getBase58Decoder,
 } from '@solana/kit';
-import { litesvm } from '@solana/kit-plugins';
+import { litesvm } from '@solana/kit-plugin-litesvm';
+import { generatedPayer } from '@solana/kit-plugin-payer';
 
 import { assertIsSuccessfulTransaction } from './utils/transaction.js';
 
 async function main() {
     console.log('=== SOL Transfer Example ===\n');
 
-    const client = createClient().use(litesvm());
+    const client = await createClient().use(generatedPayer()).use(litesvm());
 
     // Create two accounts: sender and recipient
     const sender = await generateKeyPairSigner();
@@ -50,7 +51,10 @@ async function main() {
 
     // Build the transfer transaction
     const transferAmount = lamports(1_000_000_000n); // 1 SOL
-    const blockhashLifetime = client.svm.latestBlockhashLifetime();
+    const blockhashLifetime = {
+        blockhash: client.svm.latestBlockhash(),
+        lastValidBlockHeight: 2n ** 64n - 1n,
+    };
 
     const transferIx = getTransferSolInstruction({
         source: sender,

@@ -8,7 +8,8 @@
  */
 
 import { createClient, generateKeyPairSigner, lamports } from '@solana/kit';
-import { litesvm } from '@solana/kit-plugins';
+import { litesvm } from '@solana/kit-plugin-litesvm';
+import { generatedPayer } from '@solana/kit-plugin-payer';
 
 import { assertIsSuccessfulTransaction } from './utils/transaction.js';
 
@@ -17,7 +18,7 @@ async function main() {
 
     // Create a client with the litesvm plugin
     // This gives you client.svm (LiteSVM instance) and client.rpc (RPC compatibility layer)
-    const client = createClient().use(litesvm());
+    const client = await createClient().use(generatedPayer()).use(litesvm());
 
     console.log('LiteSVM client created');
     console.log('  - client.svm: LiteSVM instance for direct operations');

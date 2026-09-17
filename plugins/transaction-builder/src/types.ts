@@ -24,6 +24,7 @@ import type {
     TransactionMessageWithFeePayerSigner,
     TransactionMessageWithSigners,
     TransactionSigner,
+    TransactionVersion,
     TransactionWithLifetime,
 } from '@solana/kit';
 
@@ -61,6 +62,15 @@ export type TransactionBuilderRpcSubscriptions = RpcSubscriptions<
     AccountNotificationsApi & SignatureNotificationsApi & SlotNotificationsApi
 >;
 
+/**
+ * The transaction versions the builder can produce. Default: 1.
+ *
+ * Version 1 carries its resource limits and priority fee in the message config
+ * and allows up to 4096 bytes, but requires the `txv1` feature gate and cannot
+ * use address lookup tables.
+ */
+export type BuilderTransactionVersion = Extract<TransactionVersion, 0 | 1>;
+
 /** Options for customizing transaction builder defaults. */
 export type TransactionBuilderOptions = {
     /**
@@ -79,8 +89,21 @@ export type TransactionBuilderOptions = {
      * Minimum priority fee in microLamports per compute unit.
      * Applied when no explicit setPriorityFee() is called.
      * Default: 0n (no priority fee).
+     * Version 0 only.
      */
     minPriorityFee?: bigint;
+    /**
+     * Minimum total priority fee in lamports.
+     * Applied when no explicit setPriorityFeeLamports() is called.
+     * Default: 0n (no priority fee).
+     * Version 1 only.
+     */
+    minPriorityFeeLamports?: bigint;
+    /**
+     * The transaction version to build.
+     * Default: 1.
+     */
+    version?: BuilderTransactionVersion;
 };
 
 /** Client requirements for the transaction builder. */
@@ -168,6 +191,13 @@ export type TransactionBuilderBuilding = {
     setComputeLimit(units: number): TransactionBuilderBuilding;
 
     /**
+     * Set the maximum size in bytes of account data the transaction may load.
+     * Version 1 only. Estimated via simulation when unset and auto-estimation is on.
+     * @param bytes - The loaded accounts data size limit in bytes.
+     */
+    setLoadedAccountsDataSizeLimit(bytes: number): TransactionBuilderBuilding;
+
+    /**
      * Set the safety margin for CU estimation.
      * The estimated CUs are multiplied by (1 + margin).
      * Default: 0.1 (10% buffer).
@@ -177,9 +207,17 @@ export type TransactionBuilderBuilding = {
 
     /**
      * Set the priority fee for the transaction in microLamports per compute unit.
+     * Version 0 only; use setPriorityFeeLamports() on version 1.
      * @param microLamports - The priority fee in microLamports.
      */
     setPriorityFee(microLamports: bigint): TransactionBuilderBuilding;
+
+    /**
+     * Set the total priority fee for the transaction in lamports.
+     * Version 1 only; use setPriorityFee() on version 0.
+     * @param lamports - The total priority fee in lamports.
+     */
+    setPriorityFeeLamports(lamports: bigint): TransactionBuilderBuilding;
 
     /**
      * Use a durable nonce for transaction lifetime instead of a recent blockhash.
@@ -240,5 +278,8 @@ export type BuilderState = {
     computeUnitPrice?: bigint;
     estimateMargin: number;
     instructions: Instruction[];
+    loadedAccountsDataSizeLimit?: number;
     nonceConfig?: NonceConfig;
+    priorityFeeLamports?: bigint;
+    version: BuilderTransactionVersion;
 };

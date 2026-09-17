@@ -2,7 +2,7 @@
     "extends": "../../tsconfig.base.json",
     "compilerOptions": {
         "jsx": "react-jsx",
-        "lib": []
+        "types": ["node"]
     },
     "display": "@kit-helpers/renderer-react-hooks",
     "include": ["src", "test", "tsup.config.ts"],

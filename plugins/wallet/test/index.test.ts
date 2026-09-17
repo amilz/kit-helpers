@@ -4,7 +4,16 @@ import type { UiWallet } from '@wallet-standard/ui';
 import { getOrCreateUiWalletForStandardWallet_DO_NOT_USE_OR_YOU_WILL_BE_FIRED } from '@wallet-standard/ui-registry';
 import { describe, expect, it, vi } from 'vitest';
 
-import { autoDiscover, canSignMessages, canSignTransactions, filterByNames, isConnectable, walletPlugin } from '../src';
+import {
+    autoDiscover,
+    canSignMessages,
+    canSignTransactions,
+    filterByNames,
+    getSupportedTransactionVersions,
+    isConnectable,
+    supportsTransactionVersion,
+    walletPlugin,
+} from '../src';
 import type { WalletStatus } from '../src';
 
 describe('walletPlugin', () => {
@@ -275,6 +284,43 @@ describe('canSignMessages', () => {
     it('returns false for wallet without SolanaSignMessage', () => {
         const wallet = createMockUiWallet({ name: 'Test', includeSignFeatures: false });
         expect(canSignMessages(wallet)).toBe(false);
+    });
+});
+
+describe('getSupportedTransactionVersions', () => {
+    it('reports the versions the signing feature advertises', () => {
+        const wallet = createMockUiWallet({
+            features: {
+                'solana:signTransaction': { signTransaction: vi.fn(), supportedTransactionVersions: ['legacy', 0, 1] },
+            },
+            name: 'V1 Wallet',
+        });
+
+        expect(getSupportedTransactionVersions(wallet)).toStrictEqual(['legacy', 0, 1]);
+        expect(supportsTransactionVersion(wallet, 1)).toBe(true);
+    });
+
+    it('reports only the versions every signing feature shares', () => {
+        const wallet = createMockUiWallet({
+            features: {
+                'solana:signAndSendTransaction': {
+                    signAndSendTransaction: vi.fn(),
+                    supportedTransactionVersions: ['legacy', 0],
+                },
+                'solana:signTransaction': { signTransaction: vi.fn(), supportedTransactionVersions: ['legacy', 0, 1] },
+            },
+            name: 'Partial V1 Wallet',
+        });
+
+        expect(getSupportedTransactionVersions(wallet)).toStrictEqual(['legacy', 0]);
+        expect(supportsTransactionVersion(wallet, 1)).toBe(false);
+    });
+
+    it('reports no versions for a wallet that cannot sign', () => {
+        const wallet = createMockUiWallet({ includeSignFeatures: false, name: 'ReadOnly Wallet' });
+
+        expect(getSupportedTransactionVersions(wallet)).toStrictEqual([]);
+        expect(supportsTransactionVersion(wallet, 1)).toBe(false);
     });
 });
 

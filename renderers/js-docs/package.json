@@ -1,6 +1,6 @@
 {
     "name": "@kit-helpers/renderer-js-docs",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "description": "Markdown documentation renderer for Solana programs, generating usage-first docs from the Codama IDL",
     "exports": {
         "types": "./dist/types/index.d.ts",
@@ -43,17 +43,17 @@
         "test:unit": "vitest run"
     },
     "dependencies": {
-        "@codama/nodes": "^1.9.0",
-        "@codama/renderers-core": "^1.3.10",
-        "@codama/visitors-core": "^1.9.0"
+        "@codama/nodes": "^1.11.0",
+        "@codama/renderers-core": "^1.4.1",
+        "@codama/visitors-core": "^1.11.0"
     },
     "devDependencies": {
-        "@types/node": "^25.4.0",
-        "happy-dom": "^20.8.3",
+        "@types/node": "^26.6.1",
+        "happy-dom": "^20.14.5",
         "rimraf": "^6.1.3",
         "tsup": "^8.5.1",
-        "typescript": "^5.9.3",
-        "vitest": "^4.0.18"
+        "typescript": "^7.0.2",
+        "vitest": "^5.0.1"
     },
     "license": "MIT",
     "browserslist": [

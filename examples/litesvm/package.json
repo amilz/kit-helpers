@@ -17,14 +17,15 @@
         "demo:10": "tsx src/10-rpc-compatibility.ts"
     },
     "dependencies": {
-        "@loris-sandbox/litesvm-kit": "^0.5.0",
-        "@solana/kit": "^7.0.0",
-        "@solana/kit-plugins": "^0.15.0",
-        "@solana-program/system": "^0.13.0"
+        "@solana/kit": "^8.3.0",
+        "litesvm": "^1.4.1",
+        "@solana/kit-plugin-litesvm": "^0.19.0",
+        "@solana/kit-plugin-payer": "^0.15.1",
+        "@solana-program/system": "^0.14.1"
     },
     "devDependencies": {
-        "@types/node": "^25.4.0",
-        "tsx": "^4.21.0",
-        "typescript": "^5.9.3"
+        "@types/node": "^26.6.1",
+        "tsx": "^4.23.13",
+        "typescript": "^7.0.2"
     }
 }

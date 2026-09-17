@@ -17,8 +17,18 @@ import type {
     SlotNotificationsApi,
     Transaction,
     TransactionSigner,
+    TransactionVersion,
     TransactionWithLifetime,
 } from '@solana/kit';
+
+/**
+ * The transaction versions the action namespace can build. Default: 1.
+ *
+ * Version 1 requires the `txv1` feature gate and a wallet that advertises
+ * version 1 support; when no version is requested and the wallet does not,
+ * the transaction is built as version 0.
+ */
+export type ActionTransactionVersion = Extract<TransactionVersion, 0 | 1>;
 
 /** RPC methods required by the action plugin. */
 export type ActionRpc = Rpc<
@@ -71,38 +81,56 @@ export type ActionSendOptions = {
     abortSignal?: AbortSignal;
     /** Commitment level for confirmation. Default: 'confirmed'. */
     commitment?: Commitment;
-    /** Compute unit limit for the transaction. */
+    /** Compute unit limit for the transaction. Estimated when unset on version 1. */
     computeUnitLimit?: number;
-    /** Priority fee in microLamports per compute unit. */
+    /** Priority fee in microLamports per compute unit. Version 0 only. */
     computeUnitPrice?: bigint;
+    /** Maximum size in bytes of account data the transaction may load. Version 1 only; estimated when unset. */
+    loadedAccountsDataSizeLimit?: number;
+    /** Total priority fee in lamports. Version 1 only. */
+    priorityFeeLamports?: bigint;
     /** Override the default signer for this call. */
     signer?: TransactionSigner;
     /** Skip preflight transaction checks. */
     skipPreflight?: boolean;
+    /** Transaction version to build. Default: the plugin's version, or 1. */
+    version?: ActionTransactionVersion;
 };
 
 /** Options for action.simulate(). */
 export type ActionSimulateOptions = {
     /** Abort signal to cancel the operation. */
     abortSignal?: AbortSignal;
-    /** Compute unit limit for the transaction. */
+    /** Compute unit limit for the transaction. Estimated when unset on version 1. */
     computeUnitLimit?: number;
-    /** Priority fee in microLamports per compute unit. */
+    /** Priority fee in microLamports per compute unit. Version 0 only. */
     computeUnitPrice?: bigint;
+    /** Maximum size in bytes of account data the transaction may load. Version 1 only; estimated when unset. */
+    loadedAccountsDataSizeLimit?: number;
+    /** Total priority fee in lamports. Version 1 only. */
+    priorityFeeLamports?: bigint;
     /** Override the default signer for this call. */
     signer?: TransactionSigner;
+    /** Transaction version to build. Default: the plugin's version, or 1. */
+    version?: ActionTransactionVersion;
 };
 
 /** Options for action.sign(). */
 export type ActionSignOptions = {
     /** Abort signal to cancel the operation. */
     abortSignal?: AbortSignal;
-    /** Compute unit limit for the transaction. */
+    /** Compute unit limit for the transaction. Estimated when unset on version 1. */
     computeUnitLimit?: number;
-    /** Priority fee in microLamports per compute unit. */
+    /** Priority fee in microLamports per compute unit. Version 0 only. */
     computeUnitPrice?: bigint;
+    /** Maximum size in bytes of account data the transaction may load. Version 1 only; estimated when unset. */
+    loadedAccountsDataSizeLimit?: number;
+    /** Total priority fee in lamports. Version 1 only. */
+    priorityFeeLamports?: bigint;
     /** Override the default signer for this call. */
     signer?: TransactionSigner;
+    /** Transaction version to build. Default: the plugin's version, or 1. */
+    version?: ActionTransactionVersion;
 };
 
 /** Options for action.sendSigned(). */
@@ -121,8 +149,14 @@ export type ActionPluginOptions = {
     commitment?: Commitment;
     /** Default compute unit limit. */
     computeUnitLimit?: number;
-    /** Default priority fee in microLamports per compute unit. */
+    /** Default priority fee in microLamports per compute unit. Version 0 only. */
     computeUnitPrice?: bigint;
+    /** Default maximum size in bytes of account data the transaction may load. Version 1 only. */
+    loadedAccountsDataSizeLimit?: number;
+    /** Default total priority fee in lamports. Version 1 only. */
+    priorityFeeLamports?: bigint;
+    /** Transaction version to build. Default: 1. */
+    version?: ActionTransactionVersion;
 };
 
 /** The action namespace added to the client. */

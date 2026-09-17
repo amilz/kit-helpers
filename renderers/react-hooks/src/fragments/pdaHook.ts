@@ -10,7 +10,7 @@ export function getPdaHookFragment(scope: { nameApi: NameApi; pdaPath: NodePath<
     const hookName = nameApi.pdaHook(node.name);
     const findPdaFn = nameApi.pdaFindFunction(node.name);
     const pdaSeedsType = nameApi.pdaSeedsType(node.name);
-    const hasVariableSeeds = node.seeds.filter(isNodeFilter('variablePdaSeedNode')).length > 0;
+    const hasVariableSeeds = (node.seeds ?? []).filter(isNodeFilter('variablePdaSeedNode')).length > 0;
 
     const seedsParam = hasVariableSeeds ? `seeds: ${pdaSeedsType}, ` : '';
     const seedsArg = hasVariableSeeds ? 'seeds, ' : '';

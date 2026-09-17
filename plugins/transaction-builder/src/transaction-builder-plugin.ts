@@ -26,6 +26,7 @@ type TransactionBuilderClient = {
  * @param options - Optional configuration for default behavior.
  * @param options.autoEstimateCus - Enable/disable auto-estimation of compute units. Default: true.
  * @param options.estimateMargin - Safety margin for CU estimation (e.g., 0.1 for 10%). Default: 0.1.
+ * @param options.version - Transaction version to build, 0 or 1. Default: 1.
  *
  * @example
  * ```ts
@@ -38,11 +39,23 @@ type TransactionBuilderClient = {
  *   .use(generatedPayerWithSol(lamports(1_000_000_000n)))
  *   .use(transactionBuilderPlugin());
  *
- * // Build and send a transaction
+ * // Build and send a version 1 transaction (the default)
  * const signature = await client
  *   .createTransaction()
  *   .add(transferInstruction)
  *   .setComputeLimit(200_000)
+ *   .setPriorityFeeLamports(5_000n)
+ *   .execute();
+ *
+ * // Version 0 transactions
+ * const v0Client = await createClient()
+ *   .use(localhostRpc())
+ *   .use(generatedPayerWithSol(lamports(1_000_000_000n)))
+ *   .use(transactionBuilderPlugin({ version: 0 }));
+ *
+ * const v0Signature = await v0Client
+ *   .createTransaction()
+ *   .add(transferInstruction)
  *   .setPriorityFee(1_000_000n)
  *   .execute();
  *

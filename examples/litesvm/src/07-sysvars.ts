@@ -9,12 +9,13 @@
  */
 
 import { createClient } from '@solana/kit';
-import { litesvm } from '@solana/kit-plugins';
+import { litesvm } from '@solana/kit-plugin-litesvm';
+import { generatedPayer } from '@solana/kit-plugin-payer';
 
 async function main() {
     console.log('=== Sysvars Example ===\n');
 
-    const client = createClient().use(litesvm());
+    const client = await createClient().use(generatedPayer()).use(litesvm());
 
     // Enable sysvars
     client.svm.withSysvars();
@@ -74,7 +75,8 @@ async function main() {
     // 6. Stake History
     console.log('\n--- Stake History ---');
     const stakeHistory = client.svm.getStakeHistory();
-    console.log('Stake history entries:', stakeHistory.length);
+    const currentEpochStake = stakeHistory.get(client.svm.getClock().epoch);
+    console.log('Effective stake this epoch:', currentEpochStake?.effective ?? 0n);
 
     console.log('\n--- Summary ---');
     console.log('Sysvars provide access to network state:');

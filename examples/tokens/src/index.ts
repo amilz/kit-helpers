@@ -26,7 +26,7 @@ async function main() {
         .use(airdrop())
         .use(generatedPayerWithSol(lamports(10_000_000_000n)))
         .use(airdropToken({ decimals: 6, amount: 1_000_000_000_000n }))
-        .use(transactionBuilderPlugin({ estimateMargin: 0, minPriorityFee: lamports(10n) }));
+        .use(transactionBuilderPlugin({ estimateMargin: 0, minPriorityFeeLamports: lamports(10n) }));
 
     // Token is already created and accessible on the client!
     console.log('\nToken created during .use():');

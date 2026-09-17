@@ -133,22 +133,54 @@ describe('createSolanaClient', () => {
         const kp = await generateKeyPairSigner();
         const mockWallet = createMockUiWallet('Client Both Test');
 
-        // @ts-expect-error — payer and wallet are mutually exclusive
         createSolanaClient({
+            // @ts-expect-error — payer and wallet are mutually exclusive
             payer: kp,
             url: URL,
             wallet: { wallets: [mockWallet] },
         });
     });
 
-    it('accepts priorityFees config', async () => {
+    it('accepts priorityFees config on a version 0 client', async () => {
         const kp = await generateKeyPairSigner();
         const client = createSolanaClient({
             payer: kp,
             priorityFees: 1000n as import('@solana/kit').MicroLamports,
             url: URL,
+            version: 0,
         });
 
         expect(client).toHaveProperty('sendTransaction');
+    });
+
+    it('accepts priorityFeeLamports config on the default version 1 client', async () => {
+        const kp = await generateKeyPairSigner();
+        const client = createSolanaClient({
+            payer: kp,
+            priorityFeeLamports: 5_000n as import('@solana/kit').Lamports,
+            url: URL,
+        });
+
+        expect(client).toHaveProperty('sendTransaction');
+    });
+
+    it('rejects mismatched priority fee units', async () => {
+        const kp = await generateKeyPairSigner();
+
+        expect(() =>
+            createSolanaClient({
+                payer: kp,
+                priorityFees: 1000n as import('@solana/kit').MicroLamports,
+                url: URL,
+            }),
+        ).toThrow('priorityFeeLamports');
+        expect(() =>
+            createSolanaClient({
+                payer: kp,
+                priorityFeeLamports: 5_000n as import('@solana/kit').Lamports,
+                url: URL,
+                version: 0,
+            }),
+        ).toThrow('priorityFees');
     });
 });

@@ -7,12 +7,13 @@
  */
 
 import { createClient, generateKeyPairSigner, lamports } from '@solana/kit';
-import { litesvm } from '@solana/kit-plugins';
+import { litesvm } from '@solana/kit-plugin-litesvm';
+import { generatedPayer } from '@solana/kit-plugin-payer';
 
 async function main() {
     console.log('=== Builder Methods Example ===\n');
 
-    const client = createClient().use(litesvm());
+    const client = await createClient().use(generatedPayer()).use(litesvm());
 
     console.log('--- Basic Configuration ---');
 
@@ -36,11 +37,10 @@ async function main() {
     console.log('  - Builtins: enabled');
     console.log('  - Precompiles: enabled');
 
-    // Set initial lamports for fee payer accounts
+    // Fund the account airdrops are paid from
     console.log('\n--- withLamports ---');
-    // This sets the default lamports for new accounts
-    client.svm.withLamports(1_000_000_000n);
-    console.log('Default lamports set to 1 SOL');
+    client.svm.withLamports(1_000_000_000_000n);
+    console.log('Airdrop source funded with 1000 SOL');
 
     // Enable transaction history
     console.log('\n--- withTransactionHistory ---');
@@ -52,18 +52,14 @@ async function main() {
     client.svm.withLogBytesLimit(10000n);
     console.log('Log bytes limit set to 10000');
 
-    // Use tap() for inline operations
-    console.log('\n--- tap() helper ---');
+    console.log('\n--- airdrop ---');
     const account = await generateKeyPairSigner();
 
-    client.svm.tap(svm => {
-        // Do something with the SVM inside the chain
-        svm.airdrop(account.address, lamports(5_000_000_000n));
-        console.log('Airdropped 5 SOL inside tap()');
-    });
+    client.svm.airdrop(account.address, lamports(5_000_000_000n));
+    console.log('Airdropped 5 SOL');
 
     const balance = client.svm.getBalance(account.address);
-    console.log('Account balance after tap():', Number(balance ?? 0n) / 1e9, 'SOL');
+    console.log('Account balance:', Number(balance ?? 0n) / 1e9, 'SOL');
 }
 
 main().catch(console.error);

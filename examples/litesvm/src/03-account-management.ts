@@ -9,12 +9,13 @@
  */
 
 import { address, createClient, generateKeyPairSigner, lamports } from '@solana/kit';
-import { litesvm } from '@solana/kit-plugins';
+import { litesvm } from '@solana/kit-plugin-litesvm';
+import { generatedPayer } from '@solana/kit-plugin-payer';
 
 async function main() {
     console.log('=== Account Management Example ===\n');
 
-    const client = createClient().use(litesvm());
+    const client = await createClient().use(generatedPayer()).use(litesvm());
 
     // Generate a test account
     const testAccount = await generateKeyPairSigner();

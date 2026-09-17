@@ -39,13 +39,13 @@ export function getProgramOverviewFragment(input: { programNode: ProgramNode; sc
 
     // Accounts summary.
     const accountsFragment =
-        programNode.accounts.length > 0
+        (programNode.accounts ?? []).length > 0
             ? mergeFragments(
                   [
                       fragment`${mdHeading('Accounts', 2)}`,
                       fragment`${mdTable(
                           ['Account', 'Size'],
-                          programNode.accounts.map(a => {
+                          (programNode.accounts ?? []).map(a => {
                               const link = mdLink(pascalCase(a.name), `accounts/${camelCase(a.name)}.md`);
                               let size: string;
                               try {
@@ -84,15 +84,15 @@ export function getProgramOverviewFragment(input: { programNode: ProgramNode; sc
 
     // PDAs summary.
     const pdasFragment =
-        programNode.pdas.length > 0
+        (programNode.pdas ?? []).length > 0
             ? mergeFragments(
                   [
                       fragment`${mdHeading('PDAs', 2)}`,
                       fragment`${mdTable(
                           ['PDA', 'Seeds'],
-                          programNode.pdas.map(p => {
+                          (programNode.pdas ?? []).map(p => {
                               const link = mdLink(pascalCase(p.name), `pdas/${camelCase(p.name)}.md`);
-                              const seedCount = p.seeds.length;
+                              const seedCount = (p.seeds ?? []).length;
                               const seedSummary =
                                   seedCount === 0 ? 'None' : `${seedCount} seed${seedCount > 1 ? 's' : ''}`;
                               return [link, seedSummary];
@@ -105,13 +105,13 @@ export function getProgramOverviewFragment(input: { programNode: ProgramNode; sc
 
     // Types summary.
     const typesFragment =
-        programNode.definedTypes.length > 0
+        (programNode.definedTypes ?? []).length > 0
             ? mergeFragments(
                   [
                       fragment`${mdHeading('Types', 2)}`,
                       fragment`${mdTable(
                           ['Type', 'Kind'],
-                          programNode.definedTypes.map(t => {
+                          (programNode.definedTypes ?? []).map(t => {
                               const link = mdLink(pascalCase(t.name), `types/${camelCase(t.name)}.md`);
                               const resolved = resolveNestedTypeNode(t.type);
                               let kind = 'alias';

@@ -77,6 +77,6 @@ const accountQuery = client.query.account(address, decoder);
 
 ## Requirements
 
-- `@solana/kit` ^5.2.0 as peer dependency
+- `@solana/kit` ^8.3.0 as peer dependency
 - `@solana-program/token` ^0.9.0 as peer dependency (for ATA derivation)
 - Client must have `rpc` property

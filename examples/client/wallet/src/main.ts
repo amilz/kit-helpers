@@ -1,6 +1,6 @@
 import { createSolanaClient } from '@kit-helpers/client';
 import { autoDiscover, onWalletRegistered, type UiWallet, type WalletStatus } from '@kit-helpers/wallet';
-import { generateKeyPair, getAddressFromPublicKey, type ClusterUrl } from '@solana/kit';
+import { address, generateKeyPair, getAddressFromPublicKey, type ClusterUrl } from '@solana/kit';
 
 // DOM elements
 const statusEl = document.getElementById('status')!;
@@ -70,7 +70,7 @@ function renderWallets(list: readonly UiWallet[]) {
 async function refreshBalance() {
     if (client.wallet.state.status !== 'connected') return;
     try {
-        const balance = await client.query.balance(client.wallet.state.session.account.address).fn();
+        const balance = await client.query.balance(address(client.wallet.state.session.account.address)).fn();
         balanceEl.textContent = `${(Number(balance) / 1e9).toFixed(4)} SOL`;
     } catch (e) {
         const msg = e instanceof Error ? e.message : String(e);
@@ -170,7 +170,12 @@ sendBtn.addEventListener('click', async () => {
         const destination = await getAddressFromPublicKey(kp.publicKey);
         const amount = BigInt(amountInput.value);
 
-        const ix = client.program.system.instructions.transferSol({ destination, amount });
+        const source = client.wallet.signer;
+        if (!source) {
+            throw new Error('The connected wallet cannot sign transactions.');
+        }
+
+        const ix = client.program.system.instructions.transferSol({ amount, destination, source });
         const sig = await client.action.send([ix]);
 
         sendResultEl.textContent = `Signature: ${sig}\nDestination: ${destination}`;

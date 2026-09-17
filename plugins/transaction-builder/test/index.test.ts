@@ -1,4 +1,11 @@
-import { address, createClient, generateKeyPairSigner, sequentialInstructionPlan, type Instruction } from '@solana/kit';
+import {
+    address,
+    createClient,
+    generateKeyPairSigner,
+    sequentialInstructionPlan,
+    type Instruction,
+    type V1TransactionConfig,
+} from '@solana/kit';
 import { describe, expect, it, vi } from 'vitest';
 
 import { createTransactionBuilder, transactionBuilderPlugin } from '../src';
@@ -70,7 +77,7 @@ describe('createTransactionBuilder', () => {
     it('returns a new builder when setting priority fee', async () => {
         const payer = await generateKeyPairSigner();
         const rpc = createMockRpc();
-        const builder1 = createTransactionBuilder({ payer, rpc });
+        const builder1 = createTransactionBuilder({ payer, rpc }, { version: 0 });
 
         const builder2 = builder1.setPriorityFee(1_000_000n);
 
@@ -80,7 +87,7 @@ describe('createTransactionBuilder', () => {
     it('setPriorityFee adds compute unit price instruction to message', async () => {
         const payer = await generateKeyPairSigner();
         const rpc = createMockRpc();
-        const builder = createTransactionBuilder({ payer, rpc });
+        const builder = createTransactionBuilder({ payer, rpc }, { version: 0 });
 
         const priorityFee = 5_000_000n; // 5 million microLamports
         const prepared = await builder
@@ -168,7 +175,7 @@ describe('createTransactionBuilder', () => {
     it('throws on invalid priority fee (negative)', async () => {
         const payer = await generateKeyPairSigner();
         const rpc = createMockRpc();
-        const builder = createTransactionBuilder({ payer, rpc });
+        const builder = createTransactionBuilder({ payer, rpc }, { version: 0 });
 
         expect(() => builder.setPriorityFee(-1n)).toThrow('Invalid priority fee');
     });
@@ -223,7 +230,7 @@ describe('createTransactionBuilder', () => {
         const payer = await generateKeyPairSigner();
         const simulateTransaction = vi.fn().mockReturnValue({
             send: vi.fn().mockResolvedValue({
-                value: { err: null, logs: [], returnData: null, unitsConsumed: 50000n },
+                value: { err: null, loadedAccountsDataSize: 0, logs: [], returnData: null, unitsConsumed: 50000n },
             }),
         });
         const rpc = createMockRpc({ simulateTransaction });
@@ -238,12 +245,12 @@ describe('createTransactionBuilder', () => {
         const payer = await generateKeyPairSigner();
         const simulateTransaction = vi.fn().mockReturnValue({
             send: vi.fn().mockResolvedValue({
-                value: { err: null, logs: [], returnData: null, unitsConsumed: 50000n },
+                value: { err: null, loadedAccountsDataSize: 0, logs: [], returnData: null, unitsConsumed: 50000n },
             }),
         });
         const rpc = createMockRpc({ simulateTransaction });
 
-        const builder = createTransactionBuilder({ payer, rpc });
+        const builder = createTransactionBuilder({ payer, rpc }, { version: 0 });
         await builder.add(createMockInstruction()).setComputeLimit(200_000).prepare();
 
         expect(simulateTransaction).not.toHaveBeenCalled();
@@ -253,12 +260,12 @@ describe('createTransactionBuilder', () => {
         const payer = await generateKeyPairSigner();
         const simulateTransaction = vi.fn().mockReturnValue({
             send: vi.fn().mockResolvedValue({
-                value: { err: null, logs: [], returnData: null, unitsConsumed: 50000n },
+                value: { err: null, loadedAccountsDataSize: 0, logs: [], returnData: null, unitsConsumed: 50000n },
             }),
         });
         const rpc = createMockRpc({ simulateTransaction });
 
-        const builder = createTransactionBuilder({ payer, rpc });
+        const builder = createTransactionBuilder({ payer, rpc }, { version: 0 });
         await builder.add(createMockInstruction()).autoEstimateCus(false).prepare();
 
         expect(simulateTransaction).not.toHaveBeenCalled();
@@ -269,7 +276,7 @@ describe('createTransactionBuilder', () => {
         // Return a CU estimate that when margin is applied would exceed 1,400,000
         const simulateTransaction = vi.fn().mockReturnValue({
             send: vi.fn().mockResolvedValue({
-                value: { err: null, logs: [], returnData: null, unitsConsumed: 1_350_000n },
+                value: { err: null, loadedAccountsDataSize: 0, logs: [], returnData: null, unitsConsumed: 1_350_000n },
             }),
         });
         const rpc = createMockRpc({ simulateTransaction });
@@ -319,13 +326,19 @@ describe('createTransactionBuilder', () => {
         const baseEstimate = 100_000n;
         const simulateTransaction = vi.fn().mockReturnValue({
             send: vi.fn().mockResolvedValue({
-                value: { err: null, logs: [], returnData: null, unitsConsumed: baseEstimate },
+                value: {
+                    err: null,
+                    loadedAccountsDataSize: 0,
+                    logs: [],
+                    returnData: null,
+                    unitsConsumed: baseEstimate,
+                },
             }),
         });
         const rpc = createMockRpc({ simulateTransaction });
 
         // Test with 50% margin (0.5), expected CU = ceil(100,000 * 1.5) = 150,000
-        const builder = createTransactionBuilder({ payer, rpc });
+        const builder = createTransactionBuilder({ payer, rpc }, { version: 0 });
         const prepared = await builder.add(createMockInstruction()).setEstimateMargin(0.5).prepare();
 
         // Verify simulation was called (meaning auto-estimate ran)
@@ -353,12 +366,12 @@ describe('createTransactionBuilder', () => {
         const payer = await generateKeyPairSigner();
         const simulateTransaction = vi.fn().mockReturnValue({
             send: vi.fn().mockResolvedValue({
-                value: { err: null, logs: [], returnData: null, unitsConsumed: 50000n },
+                value: { err: null, loadedAccountsDataSize: 0, logs: [], returnData: null, unitsConsumed: 50000n },
             }),
         });
         const rpc = createMockRpc({ simulateTransaction });
 
-        const builder = createTransactionBuilder({ payer, rpc }, { autoEstimateCus: false });
+        const builder = createTransactionBuilder({ payer, rpc }, { autoEstimateCus: false, version: 0 });
         await builder.add(createMockInstruction()).prepare();
 
         // simulateTransaction should NOT be called since auto-estimate is disabled via options
@@ -370,13 +383,19 @@ describe('createTransactionBuilder', () => {
         const baseEstimate = 100_000n;
         const simulateTransaction = vi.fn().mockReturnValue({
             send: vi.fn().mockResolvedValue({
-                value: { err: null, logs: [], returnData: null, unitsConsumed: baseEstimate },
+                value: {
+                    err: null,
+                    loadedAccountsDataSize: 0,
+                    logs: [],
+                    returnData: null,
+                    unitsConsumed: baseEstimate,
+                },
             }),
         });
         const rpc = createMockRpc({ simulateTransaction });
 
         // Test with 20% margin via options
-        const builder = createTransactionBuilder({ payer, rpc }, { estimateMargin: 0.2 });
+        const builder = createTransactionBuilder({ payer, rpc }, { estimateMargin: 0.2, version: 0 });
         const prepared = await builder.add(createMockInstruction()).prepare();
 
         const message = prepared.getMessage() as unknown as { instructions: Array<{ data: Uint8Array }> };
@@ -395,7 +414,7 @@ describe('createTransactionBuilder', () => {
         const rpc = createMockRpc();
 
         const minFee = 1_000_000n;
-        const builder = createTransactionBuilder({ payer, rpc }, { minPriorityFee: minFee });
+        const builder = createTransactionBuilder({ payer, rpc }, { minPriorityFee: minFee, version: 0 });
         const prepared = await builder.add(createMockInstruction()).setComputeLimit(100_000).prepare();
 
         const message = prepared.getMessage() as unknown as { instructions: Array<{ data: Uint8Array }> };
@@ -417,7 +436,7 @@ describe('createTransactionBuilder', () => {
 
         const minFee = 1_000_000n;
         const explicitFee = 500_000n; // Less than min, but explicit override should win
-        const builder = createTransactionBuilder({ payer, rpc }, { minPriorityFee: minFee });
+        const builder = createTransactionBuilder({ payer, rpc }, { minPriorityFee: minFee, version: 0 });
         const prepared = await builder
             .add(createMockInstruction())
             .setComputeLimit(100_000)
@@ -442,7 +461,7 @@ describe('createTransactionBuilder', () => {
         const rpc = createMockRpc();
 
         const minFee = 1_000_000n;
-        const builder = createTransactionBuilder({ payer, rpc }, { minPriorityFee: minFee });
+        const builder = createTransactionBuilder({ payer, rpc }, { minPriorityFee: minFee, version: 0 });
         const prepared = await builder
             .add(createMockInstruction())
             .setComputeLimit(100_000)
@@ -487,14 +506,14 @@ describe('transactionBuilderPlugin', () => {
         const payer = await generateKeyPairSigner();
         const simulateTransaction = vi.fn().mockReturnValue({
             send: vi.fn().mockResolvedValue({
-                value: { err: null, logs: [], returnData: null, unitsConsumed: 50000n },
+                value: { err: null, loadedAccountsDataSize: 0, logs: [], returnData: null, unitsConsumed: 50000n },
             }),
         });
         const rpc = createMockRpc({ simulateTransaction });
 
         const client = createClient()
             .use(() => ({ payer, rpc }))
-            .use(transactionBuilderPlugin({ autoEstimateCus: false }));
+            .use(transactionBuilderPlugin({ autoEstimateCus: false, version: 0 }));
 
         await client.createTransaction().add(createMockInstruction()).prepare();
 
@@ -507,7 +526,13 @@ describe('transactionBuilderPlugin', () => {
         const baseEstimate = 100_000n;
         const simulateTransaction = vi.fn().mockReturnValue({
             send: vi.fn().mockResolvedValue({
-                value: { err: null, logs: [], returnData: null, unitsConsumed: baseEstimate },
+                value: {
+                    err: null,
+                    loadedAccountsDataSize: 0,
+                    logs: [],
+                    returnData: null,
+                    unitsConsumed: baseEstimate,
+                },
             }),
         });
         const rpc = createMockRpc({ simulateTransaction });
@@ -515,7 +540,7 @@ describe('transactionBuilderPlugin', () => {
         // Set 25% margin via plugin options
         const client = createClient()
             .use(() => ({ payer, rpc }))
-            .use(transactionBuilderPlugin({ estimateMargin: 0.25 }));
+            .use(transactionBuilderPlugin({ estimateMargin: 0.25, version: 0 }));
 
         const prepared = await client.createTransaction().add(createMockInstruction()).prepare();
 
@@ -536,7 +561,13 @@ describe('transactionBuilderPlugin', () => {
         const baseEstimate = 100_000n;
         const simulateTransaction = vi.fn().mockReturnValue({
             send: vi.fn().mockResolvedValue({
-                value: { err: null, logs: [], returnData: null, unitsConsumed: baseEstimate },
+                value: {
+                    err: null,
+                    loadedAccountsDataSize: 0,
+                    logs: [],
+                    returnData: null,
+                    unitsConsumed: baseEstimate,
+                },
             }),
         });
         const rpc = createMockRpc({ simulateTransaction });
@@ -544,7 +575,7 @@ describe('transactionBuilderPlugin', () => {
         // Plugin defaults: 25% margin
         const client = createClient()
             .use(() => ({ payer, rpc }))
-            .use(transactionBuilderPlugin({ estimateMargin: 0.25 }));
+            .use(transactionBuilderPlugin({ estimateMargin: 0.25, version: 0 }));
 
         // Override to 50% margin on this transaction
         const prepared = await client.createTransaction().add(createMockInstruction()).setEstimateMargin(0.5).prepare();
@@ -567,7 +598,7 @@ describe('transactionBuilderPlugin', () => {
         const minFee = 2_000_000n;
         const client = createClient()
             .use(() => ({ payer, rpc }))
-            .use(transactionBuilderPlugin({ minPriorityFee: minFee }));
+            .use(transactionBuilderPlugin({ minPriorityFee: minFee, version: 0 }));
 
         const prepared = await client
             .createTransaction()
@@ -614,7 +645,7 @@ describe('TransactionBuilderPrepared', () => {
         });
         const rpc = createMockRpc({ simulateTransaction });
 
-        const builder = createTransactionBuilder({ payer, rpc });
+        const builder = createTransactionBuilder({ payer, rpc }, { version: 0 });
         const prepared = await builder.add(createMockInstruction()).prepare();
         const result = await prepared.simulate();
 
@@ -644,7 +675,7 @@ describe('TransactionBuilderPrepared', () => {
             .fn()
             .mockReturnValueOnce({
                 send: vi.fn().mockResolvedValue({
-                    value: { err: null, logs: [], returnData: null, unitsConsumed: 50000n },
+                    value: { err: null, loadedAccountsDataSize: 0, logs: [], returnData: null, unitsConsumed: 50000n },
                 }),
             })
             .mockReturnValue({
@@ -672,7 +703,7 @@ describe('TransactionBuilderPrepared', () => {
             .fn()
             .mockReturnValueOnce({
                 send: vi.fn().mockResolvedValue({
-                    value: { err: null, logs: [], returnData: null, unitsConsumed: 50000n },
+                    value: { err: null, loadedAccountsDataSize: 0, logs: [], returnData: null, unitsConsumed: 50000n },
                 }),
             })
             .mockReturnValue({
@@ -745,7 +776,7 @@ describe('execute()', () => {
         const payer = await generateKeyPairSigner();
         const simulateTransaction = vi.fn().mockReturnValue({
             send: vi.fn().mockResolvedValue({
-                value: { err: null, logs: [], returnData: null, unitsConsumed: 50000n },
+                value: { err: null, loadedAccountsDataSize: 0, logs: [], returnData: null, unitsConsumed: 50000n },
             }),
         });
         const rpc = createMockRpc({ simulateTransaction });
@@ -763,7 +794,7 @@ describe('execute()', () => {
         const payer = await generateKeyPairSigner();
         const simulateTransaction = vi.fn().mockReturnValue({
             send: vi.fn().mockResolvedValue({
-                value: { err: null, logs: [], returnData: null, unitsConsumed: 50000n },
+                value: { err: null, loadedAccountsDataSize: 0, logs: [], returnData: null, unitsConsumed: 50000n },
             }),
         });
         const rpc = createMockRpc({ simulateTransaction });
@@ -902,7 +933,7 @@ describe('Error handling', () => {
             .fn()
             .mockReturnValueOnce({
                 send: vi.fn().mockResolvedValue({
-                    value: { err: null, logs: [], returnData: null, unitsConsumed: 50000n },
+                    value: { err: null, loadedAccountsDataSize: 0, logs: [], returnData: null, unitsConsumed: 50000n },
                 }),
             })
             .mockReturnValue({
@@ -928,6 +959,196 @@ describe('Error handling', () => {
         await expect(builder.add(createMockInstruction()).setComputeLimit(100_000).prepare()).rejects.toHaveProperty(
             'cause',
             originalError,
+        );
+    });
+});
+
+describe('version 1 transactions', () => {
+    it('builds a version 1 message with its limits in the config', async () => {
+        const payer = await generateKeyPairSigner();
+        const rpc = createMockRpc();
+        const builder = createTransactionBuilder({ payer, rpc }, { version: 1 });
+
+        const prepared = await builder
+            .add(createMockInstruction())
+            .setComputeLimit(100_000)
+            .setLoadedAccountsDataSizeLimit(65_536)
+            .setPriorityFeeLamports(5_000n)
+            .prepare();
+
+        const message = prepared.getMessage() as unknown as {
+            config: V1TransactionConfig;
+            instructions: readonly Instruction[];
+            version: number;
+        };
+
+        expect(message.version).toBe(1);
+        expect(message.config).toStrictEqual({
+            computeUnitLimit: 100_000,
+            loadedAccountsDataSizeLimit: 65_536,
+            priorityFeeLamports: 5_000n,
+        });
+        // No ComputeBudget instructions are added — only the caller's own.
+        expect(message.instructions).toHaveLength(1);
+    });
+
+    it('estimates both resource limits by simulation', async () => {
+        const payer = await generateKeyPairSigner();
+        const simulateTransaction = vi.fn().mockReturnValue({
+            send: vi.fn().mockResolvedValue({
+                value: {
+                    err: null,
+                    loadedAccountsDataSize: 40_000,
+                    logs: [],
+                    returnData: null,
+                    unitsConsumed: 50_000n,
+                },
+            }),
+        });
+        const rpc = createMockRpc({ simulateTransaction });
+        const builder = createTransactionBuilder({ payer, rpc }, { version: 1 });
+
+        const prepared = await builder.add(createMockInstruction()).prepare();
+        const message = prepared.getMessage() as unknown as { config: V1TransactionConfig };
+
+        // 50,000 CUs plus the default 10% margin, rounded up.
+        expect(message.config.computeUnitLimit).toBe(55_001);
+        // 40,000 bytes rounded up to the next 32 KiB page.
+        expect(message.config.loadedAccountsDataSizeLimit).toBe(65_536);
+    });
+
+    it('estimates only the limit the caller left unset', async () => {
+        const payer = await generateKeyPairSigner();
+        const simulateTransaction = vi.fn().mockReturnValue({
+            send: vi.fn().mockResolvedValue({
+                value: {
+                    err: null,
+                    loadedAccountsDataSize: 40_000,
+                    logs: [],
+                    returnData: null,
+                    unitsConsumed: 50_000n,
+                },
+            }),
+        });
+        const rpc = createMockRpc({ simulateTransaction });
+        const builder = createTransactionBuilder({ payer, rpc }, { version: 1 });
+
+        const prepared = await builder.add(createMockInstruction()).setComputeLimit(123_456).prepare();
+        const message = prepared.getMessage() as unknown as { config: V1TransactionConfig };
+
+        expect(message.config.computeUnitLimit).toBe(123_456);
+        expect(message.config.loadedAccountsDataSizeLimit).toBe(65_536);
+    });
+
+    it('does not simulate when both limits are set explicitly', async () => {
+        const payer = await generateKeyPairSigner();
+        const simulateTransaction = vi.fn();
+        const rpc = createMockRpc({ simulateTransaction });
+        const builder = createTransactionBuilder({ payer, rpc }, { version: 1 });
+
+        await builder
+            .add(createMockInstruction())
+            .setComputeLimit(100_000)
+            .setLoadedAccountsDataSizeLimit(65_536)
+            .prepare();
+
+        expect(simulateTransaction).not.toHaveBeenCalled();
+    });
+
+    it('rejects a version 1 message with missing limits when estimation is off', async () => {
+        const payer = await generateKeyPairSigner();
+        const rpc = createMockRpc();
+        const builder = createTransactionBuilder({ payer, rpc }, { autoEstimateCus: false, version: 1 });
+
+        await expect(builder.add(createMockInstruction()).setComputeLimit(100_000).prepare()).rejects.toThrow(
+            'loaded accounts data size limit',
+        );
+    });
+
+    it('applies minPriorityFeeLamports as the default priority fee', async () => {
+        const payer = await generateKeyPairSigner();
+        const rpc = createMockRpc();
+        const builder = createTransactionBuilder({ payer, rpc }, { minPriorityFeeLamports: 7_000n, version: 1 });
+
+        const prepared = await builder
+            .add(createMockInstruction())
+            .setComputeLimit(100_000)
+            .setLoadedAccountsDataSizeLimit(65_536)
+            .prepare();
+
+        const message = prepared.getMessage() as unknown as { config: V1TransactionConfig };
+        expect(message.config.priorityFeeLamports).toBe(7_000n);
+    });
+
+    it('rejects an out of range loaded accounts data size limit', async () => {
+        const payer = await generateKeyPairSigner();
+        const rpc = createMockRpc();
+        const builder = createTransactionBuilder({ payer, rpc }, { version: 1 });
+
+        expect(() => builder.setLoadedAccountsDataSizeLimit(0)).toThrow('Invalid loaded accounts data size limit');
+        expect(() => builder.setLoadedAccountsDataSizeLimit(64 * 1024 * 1024 + 1)).toThrow(
+            'Invalid loaded accounts data size limit',
+        );
+    });
+
+    it('defaults to version 1', async () => {
+        const payer = await generateKeyPairSigner();
+        const rpc = createMockRpc();
+        const builder = createTransactionBuilder({ payer, rpc });
+
+        const prepared = await builder
+            .add(createMockInstruction())
+            .setComputeLimit(100_000)
+            .setLoadedAccountsDataSizeLimit(65_536)
+            .prepare();
+        const message = prepared.getMessage() as unknown as {
+            config: V1TransactionConfig;
+            instructions: readonly Instruction[];
+            version: number;
+        };
+
+        expect(message.version).toBe(1);
+        expect(message.config.computeUnitLimit).toBe(100_000);
+        expect(message.instructions).toHaveLength(1);
+    });
+
+    it('keeps the compute budget in instructions when asked for version 0', async () => {
+        const payer = await generateKeyPairSigner();
+        const rpc = createMockRpc();
+        const builder = createTransactionBuilder({ payer, rpc }, { version: 0 });
+
+        const prepared = await builder.add(createMockInstruction()).setComputeLimit(100_000).prepare();
+        const message = prepared.getMessage() as unknown as {
+            config?: V1TransactionConfig;
+            instructions: readonly Instruction[];
+            version: number;
+        };
+
+        expect(message.version).toBe(0);
+        expect(message.config).toBeUndefined();
+        expect(message.instructions).toHaveLength(2);
+    });
+
+    it('rejects a per-compute-unit priority fee on version 1', async () => {
+        const payer = await generateKeyPairSigner();
+        const rpc = createMockRpc();
+        const builder = createTransactionBuilder({ payer, rpc });
+
+        expect(() => builder.setPriorityFee(1_000n)).toThrow('setPriorityFeeLamports()');
+        expect(() => createTransactionBuilder({ payer, rpc }, { minPriorityFee: 1_000n })).toThrow(
+            'minPriorityFeeLamports',
+        );
+    });
+
+    it('rejects a total priority fee and a data size limit on version 0', async () => {
+        const payer = await generateKeyPairSigner();
+        const rpc = createMockRpc();
+        const builder = createTransactionBuilder({ payer, rpc }, { version: 0 });
+
+        expect(() => builder.setPriorityFeeLamports(5_000n)).toThrow('setPriorityFee()');
+        expect(() => builder.setLoadedAccountsDataSizeLimit(65_536)).toThrow('version 1');
+        expect(() => createTransactionBuilder({ payer, rpc }, { minPriorityFeeLamports: 5_000n, version: 0 })).toThrow(
+            'minPriorityFee',
         );
     });
 });
@@ -972,7 +1193,7 @@ function createMockRpc(
             overrides.simulateTransaction ??
             vi.fn().mockReturnValue({
                 send: vi.fn().mockResolvedValue({
-                    value: { err: null, logs: [], returnData: null, unitsConsumed: 0n },
+                    value: { err: null, loadedAccountsDataSize: 0, logs: [], returnData: null, unitsConsumed: 0n },
                 }),
             }),
         // eslint-disable-next-line @typescript-eslint/no-explicit-any

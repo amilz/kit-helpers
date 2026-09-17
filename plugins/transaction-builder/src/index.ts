@@ -6,6 +6,7 @@ export { createTransactionBuilder } from './transaction-builder';
 
 // Types
 export type {
+    BuilderTransactionVersion,
     NonceConfig,
     SendOptions,
     SignableTransactionMessage,

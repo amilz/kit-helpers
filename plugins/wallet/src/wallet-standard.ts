@@ -6,8 +6,17 @@ import {
     getTransactionCodec,
     getTransactionLifetimeConstraintFromCompiledTransactionMessage,
 } from '@solana/kit';
-import type { SolanaSignMessageFeature, SolanaSignTransactionFeature } from '@solana/wallet-standard-features';
-import { SolanaSignMessage, SolanaSignTransaction } from '@solana/wallet-standard-features';
+import type {
+    SolanaSignAndSendTransactionFeature,
+    SolanaSignMessageFeature,
+    SolanaSignTransactionFeature,
+    SolanaTransactionVersion,
+} from '@solana/wallet-standard-features';
+import {
+    SolanaSignAndSendTransaction,
+    SolanaSignMessage,
+    SolanaSignTransaction,
+} from '@solana/wallet-standard-features';
 import { StandardConnect, StandardDisconnect, StandardEvents } from '@wallet-standard/features';
 import type { UiWallet, UiWalletAccount } from '@wallet-standard/ui';
 import { getWalletAccountFeature, getWalletFeature } from '@wallet-standard/ui';
@@ -30,6 +39,46 @@ export function canSignTransactions(wallet: UiWallet): boolean {
 /** Check if a wallet supports signing messages (has SolanaSignMessage). */
 export function canSignMessages(wallet: UiWallet): boolean {
     return wallet.features.includes(SolanaSignMessage);
+}
+
+/**
+ * The transaction versions a wallet advertises that it can sign: those common
+ * to every signing feature it exposes, or none if it exposes no signing feature.
+ */
+export function getSupportedTransactionVersions(wallet: UiWallet): readonly SolanaTransactionVersion[] {
+    const featureVersions: SolanaTransactionVersion[][] = [];
+
+    if (wallet.features.includes(SolanaSignTransaction)) {
+        const feature = getWalletFeature(
+            wallet,
+            SolanaSignTransaction,
+        ) as SolanaSignTransactionFeature[typeof SolanaSignTransaction];
+        featureVersions.push([...(feature.supportedTransactionVersions ?? [])]);
+    }
+
+    if (wallet.features.includes(SolanaSignAndSendTransaction)) {
+        const feature = getWalletFeature(
+            wallet,
+            SolanaSignAndSendTransaction,
+        ) as SolanaSignAndSendTransactionFeature[typeof SolanaSignAndSendTransaction];
+        featureVersions.push([...(feature.supportedTransactionVersions ?? [])]);
+    }
+
+    if (featureVersions.length === 0) {
+        return [];
+    }
+
+    return featureVersions[0].filter(version => featureVersions.every(versions => versions.includes(version)));
+}
+
+/**
+ * Check whether a wallet advertises that it can sign a given transaction version.
+ *
+ * @param wallet - The wallet to inspect.
+ * @param version - The transaction version to check for.
+ */
+export function supportsTransactionVersion(wallet: UiWallet, version: SolanaTransactionVersion): boolean {
+    return getSupportedTransactionVersions(wallet).includes(version);
 }
 
 /**
